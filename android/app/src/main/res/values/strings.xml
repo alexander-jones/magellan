@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Magellan</string>
+
+    <string name="volume">"1.12M"</string>
+    <string name="price">"$0.00"</string>
+    <string name="ticker">"NYSE"</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+</resources>

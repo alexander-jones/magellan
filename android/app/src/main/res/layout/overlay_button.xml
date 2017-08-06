@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_marginLeft="2pt"
+    android:layout_marginTop="2pt"
+    android:layout_marginBottom="2pt"
+    android:layout_row="0"
+    android:layout_column="3"
+    android:layout_height="25pt"
+    android:layout_width="25pt"
+    android:textSize="14dip"
+    android:elevation="10dp"
+    android:background="@color/cardview_light_background"/>
