@@ -46,12 +46,11 @@ public class StockAnalyzerActivity extends AppCompatActivity
         OnChartGestureListener, OnChartValueSelectedListener, StockQuote.HistoryQueryListener{
 
     private final int ONE_DAY_TAB = 0;
-    private final int INTRA_DAY_TAB = 1;
-    private final int ONE_WEEK_TAB = 2;
-    private final int ONE_MONTH_TAB = 3;
-    private final int THREE_MONTH_TAB = 4;
-    private final int ONE_YEAR_TAB = 5;
-    private final int ALL_TAB = 6;
+    private final int ONE_WEEK_TAB = 1;
+    private final int ONE_MONTH_TAB = 2;
+    private final int THREE_MONTH_TAB = 3;
+    private final int ONE_YEAR_TAB = 4;
+    private final int ALL_TAB = 5;
     private String mSymbol;
 
     private TextView mPrimaryValueTextView;
@@ -121,7 +120,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mSymbol = "AMC";
+        mSymbol = "AMD";
 
         getSupportActionBar().setTitle(mSymbol);
         launchTaskForTab(mIntervalTabLayout.getSelectedTabPosition());
@@ -161,11 +160,6 @@ public class StockAnalyzerActivity extends AppCompatActivity
                 intervalCategory = HistoryRequest.HistoryRequestType.MINUTES;
                 start = end.minus(Duration.standardDays(1));
                 break;
-            case INTRA_DAY_TAB:
-                interval = 5;
-                intervalCategory = HistoryRequest.HistoryRequestType.MINUTES;
-                start = end.minus(Duration.standardDays(1));
-                break;
             case ONE_WEEK_TAB:
                 interval = 30;
                 intervalCategory = HistoryRequest.HistoryRequestType.MINUTES;
@@ -184,7 +178,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
                 start = end.minus(Duration.standardDays(365));
                 break;
             case ALL_TAB:
-                intervalCategory = HistoryRequest.HistoryRequestType.MONTHLY;
+                intervalCategory = HistoryRequest.HistoryRequestType.WEEKLY;
+                start = end.minus(Duration.standardDays(60 *365));
                 break;
             default:
                 Log.e("Magellan", "Encountered Unknown Duration Tab Index");
