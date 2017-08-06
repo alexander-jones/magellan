@@ -20,8 +20,12 @@ android {
 }
 
 dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'joda-time:joda-time:2.9.2'
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
-    compile group: 'com.yahoofinance-api', name: 'YahooFinanceAPI', version: '3.8.0'
+    compile 'com.github.bumptech.glide:okhttp-integration:1.4.0@aar'
+    compile 'com.squareup.okhttp:okhttp:2.7.5'
+    compile 'com.github.barchart:barchart-ondemand-client-java:barchart-ondemand-client-2.0.3'
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'

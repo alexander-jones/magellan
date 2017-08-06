@@ -1,7 +1,5 @@
 package com.magellan.magellan;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import android.support.design.widget.TabLayout;
@@ -23,6 +21,8 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.GridLayout;
 
+import com.barchart.ondemand.api.HistoryRequest;
+import com.barchart.ondemand.api.responses.HistoryBar;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -35,14 +35,15 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
-import java.util.ArrayList;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
-import yahoofinance.histquotes.HistoricalQuote;
-import yahoofinance.histquotes.Interval;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class StockAnalyzerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        OnChartGestureListener, OnChartValueSelectedListener, StockQuote.StockQueryListener{
+        OnChartGestureListener, OnChartValueSelectedListener, StockQuote.HistoryQueryListener{
 
     private final int ONE_DAY_TAB = 0;
     private final int INTRA_DAY_TAB = 1;
@@ -60,7 +61,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private TabLayout mIntervalTabLayout;
     private LineChart mChart;
 
-    private StockQuote.QueryTask mQuoteTask;
+    private StockQuote.HistoryTask mQuoteTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +73,6 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
         mPrimaryValueTextView = (TextView) findViewById(R.id.primary_value);
         mIntervalTabLayout = (TabLayout) findViewById(R.id.interval_tabs);
-        mIntervalTabLayout.getTabAt(ONE_YEAR_TAB).select();
 
         mOverlayClassesContainer = (GridLayout) findViewById(R.id.overlay_classes);
         mActiveOverlaysContainer = (RecyclerView) findViewById(R.id.active_overlays);
@@ -82,9 +82,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
         mActiveOverlayAdapter = new ActiveOverlayAdapter();
         mActiveOverlaysContainer.setAdapter(mActiveOverlayAdapter);
 
-
-
         mChart = (LineChart) findViewById(R.id.chart);
+        mChart.setNoDataText("");
         mChart.setOnChartGestureListener(this);
         mChart.setOnChartValueSelectedListener(this);
         mChart.setDrawGridBackground(false);
@@ -145,102 +144,103 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     private void launchTaskForTab(int position)
     {
-        Calendar start = null;
-        Interval interval = null;
-        Calendar end = GregorianCalendar.getInstance();
+        DateTime start = null;
+        HistoryRequest.HistoryRequestType interval = null;
+        DateTime end = DateTime.now();
+        int endDay = end.dayOfWeek().get();
+        if (endDay == 6)
+            end = end.minus(Duration.standardDays(1));
+        else if (endDay == 7)
+            end = end.minus(Duration.standardDays(2));
+
         switch (position)
         {
             case ONE_DAY_TAB:
-                interval = Interval.MONTHLY;
-                start = (Calendar)end.clone();
-                start.add(Calendar.DAY_OF_WEEK, -1);
+                interval = HistoryRequest.HistoryRequestType.MINUTES;
+                start = end.minus(Duration.standardDays(1));
                 break;
             case INTRA_DAY_TAB:
-                interval = Interval.MONTHLY;
-                start = (Calendar)end.clone();
-                start.add(Calendar.DAY_OF_WEEK, -1);
+                interval = HistoryRequest.HistoryRequestType.MINUTES;
+                start = end.minus(Duration.standardDays(1));
                 break;
             case ONE_WEEK_TAB:
-                interval = Interval.MONTHLY;
-                start = (Calendar)end.clone();
-                start.add(Calendar.WEEK_OF_MONTH, -1);
+                interval = HistoryRequest.HistoryRequestType.MINUTES;
+                start = end.minus(Duration.standardDays(7));
                 break;
             case ONE_MONTH_TAB:
-                interval = Interval.DAILY;
-                start = (Calendar)end.clone();
-                start.add(Calendar.MONTH, -1);
+                interval = HistoryRequest.HistoryRequestType.DAILY;
+                start = end.minus(Duration.standardDays(30));
                 break;
             case THREE_MONTH_TAB:
-                interval = Interval.MONTHLY;
-                start = (Calendar)end.clone();
-                start.add(Calendar.MONTH, -3);
+                interval = HistoryRequest.HistoryRequestType.DAILY;
+                start = end.minus(Duration.standardDays(90));
                 break;
             case ONE_YEAR_TAB:
-                interval = Interval.MONTHLY;
-                start = (Calendar)end.clone();
-                start.add(Calendar.YEAR, -1);
+                interval = HistoryRequest.HistoryRequestType.WEEKLY;
+                start = end.minus(Duration.standardDays(365));
                 break;
             case ALL_TAB:
-                interval = Interval.MONTHLY;
+                interval = HistoryRequest.HistoryRequestType.MONTHLY;
                 break;
             default:
                 Log.e("Magellan", "Encountered Unknown Duration Tab Index");
                 break;
         }
-        mQuoteTask = new StockQuote.QueryTask(this);
-        mQuoteTask.execute(new StockQuote.Query(mSymbol, start, end, interval));
+        mQuoteTask = new StockQuote.HistoryTask(this);
+        mQuoteTask.execute(new StockQuote.HistoryQuery(mSymbol, start, end, interval));
     }
 
-    public void onStockHistoryRetrieved(List<List<HistoricalQuote>> stockHistories)
+    public void onStockHistoryRetrieved(List<Collection<HistoryBar>> stockHistories)
     {
         LineData data = null;
         ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
-        for (int i = 0; i < stockHistories.size(); i++) {
-            {
-                List<HistoricalQuote> stockHistory = stockHistories.get(i);
-                if (stockHistory == null) {
-                    continue;
-                }
-
-                ArrayList<Entry> values = new ArrayList<Entry>();
-                for (int j = 0; j < stockHistory.size(); j++) {
-                    float value = stockHistory.get(j).getClose().floatValue();
-                    values.add(new Entry(j, value, null));
-                }
-
-                if (mChart.getData() != null &&
-                        mChart.getData().getDataSetCount() > 0) {
-                    LineDataSet set1 = (LineDataSet) mChart.getData().getDataSetByIndex(i);
-                    set1.setValues(values);
-                    mChart.getData().notifyDataChanged();
-                    continue;
-                }
-
-                LineDataSet set1 = new LineDataSet(values, "");
-                set1.setDrawIcons(false);
-
-                // set the line to be drawn like this "- - - - - -"
-                set1.disableDashedLine();
-                set1.enableDashedHighlightLine(10f, 5f, 0f);
-                set1.setHighLightColor(ContextCompat.getColor(this, R.color.colorPrimary));
-                set1.setLineWidth(1f);
-                set1.setValueTextSize(9f);
-                set1.setDrawFilled(true);
-                set1.setFormLineWidth(1f);
-                set1.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
-                set1.setFormSize(15.f);
-                set1.setColor(ContextCompat.getColor(this, R.color.colorSecondary));
-                set1.setFillColor(ContextCompat.getColor(this, R.color.colorSecondary));
-                set1.setDrawCircles(false);
-                set1.setDrawValues(false);
-                dataSets.add(set1);
-
-                mPrimaryValueTextView.setText(String.format("$%.2f", values.get(values.size() - 1).getY()));
+        for (int i = 0; i < stockHistories.size(); i++)
+        {
+            Collection<HistoryBar> stockHistory = stockHistories.get(i);
+            if (stockHistory == null) {
+                continue;
             }
 
-            data = new LineData(dataSets);
-            mChart.setData(data);
+            ArrayList<Entry> values = new ArrayList<Entry>();
+            int j = 0;
+            for (HistoryBar element : stockHistory) {
+                double value = element.getClose();
+                values.add(new Entry(j, (float)value, null));
+                j++;
+            }
+
+            /*if (mChart.getData() != null &&
+                    mChart.getData().getDataSetCount() > 0) {
+                LineDataSet set1 = (LineDataSet) mChart.getData().getDataSetByIndex(i);
+                set1.setValues(values);
+                mChart.getData().notifyDataChanged();
+                continue;
+            }*/
+
+            LineDataSet set1 = new LineDataSet(values, "");
+            set1.setDrawIcons(false);
+
+            // set the line to be drawn like this "- - - - - -"
+            set1.disableDashedLine();
+            set1.enableDashedHighlightLine(10f, 5f, 0f);
+            set1.setHighLightColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            set1.setLineWidth(1f);
+            set1.setValueTextSize(9f);
+            set1.setDrawFilled(true);
+            set1.setFormLineWidth(1f);
+            set1.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
+            set1.setFormSize(15.f);
+            set1.setColor(ContextCompat.getColor(this, R.color.colorSecondary));
+            set1.setFillColor(ContextCompat.getColor(this, R.color.colorSecondary));
+            set1.setDrawCircles(false);
+            set1.setDrawValues(false);
+            dataSets.add(set1);
+
+            mPrimaryValueTextView.setText(String.format("$%.2f", values.get(values.size() - 1).getY()));
         }
+
+        data = new LineData(dataSets);
+        mChart.setData(data);
 
         mChart.notifyDataSetChanged();
         mChart.fitScreen();

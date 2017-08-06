@@ -1,94 +1,90 @@
 package com.magellan.magellan;
 
-import android.app.Activity;
-import android.graphics.DashPathEffect;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.barchart.ondemand.BarchartOnDemandClient;
+import com.barchart.ondemand.api.HistoryRequest;
+import com.barchart.ondemand.api.responses.History;
+import com.barchart.ondemand.api.responses.HistoryBar;
+
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Calendar;
-
-import yahoofinance.YahooFinance;
-import yahoofinance.Stock;
-import yahoofinance.histquotes.HistoricalQuote;
-import yahoofinance.histquotes.Interval;
+import java.util.Map;
 
 public class StockQuote {
 
-    public static class Query
+    public static class HistoryQuery
     {
         public String symbol;
-        public Calendar start;
-        public Calendar end;
-        public Interval interval;
+        public DateTime start;
+        public DateTime end;
+        public HistoryRequest.HistoryRequestType interval;
 
-        public Query(String sym, Calendar st, Calendar e, Interval i)
+        public HistoryQuery(String sym, DateTime st, DateTime e, HistoryRequest.HistoryRequestType i)
         {
             symbol = sym;
             start = st;
             end = e;
+            interval = i;
         }
     }
 
-    public static interface StockQueryListener
+    public static interface HistoryQueryListener
     {
-        public void onStockHistoryRetrieved(List<List<HistoricalQuote>> mQuoteResults);
+        public void onStockHistoryRetrieved(List<Collection<HistoryBar>> mQuoteResults);
     }
 
-    public static class QueryTask extends AsyncTask<Query, Integer, Long> {
+    public static class HistoryTask extends AsyncTask<HistoryQuery, Integer, Long> {
 
-        private StockQueryListener mListener;
-        private List<List<HistoricalQuote>> mStockHistories;
+        private HistoryQueryListener mListener;
+        private List<Collection<HistoryBar>> mStockHistories;
 
-        public QueryTask(StockQueryListener listener)
+        public HistoryTask(HistoryQueryListener listener)
         {
             super();
             mListener = listener;
         }
 
-        protected Long doInBackground(Query... queries) {
+        protected Long doInBackground(HistoryQuery... queries) {
             int count = queries.length;
             long result = 0;
-            mStockHistories = new ArrayList<List<HistoricalQuote>>();
+            mStockHistories = new ArrayList<Collection<HistoryBar>>();
             for (int i = 0; i < count; i++) {
-                Query query = queries[i];
-                Stock stock;
+                HistoryQuery query = queries[i];
                 try
                 {
-                    if (query.start == null)
-                    {
-                        if (query.interval == null)
-                            stock = YahooFinance.get(query.symbol);
-                        else
-                            stock = YahooFinance.get(query.symbol, query.interval);
-                    }
-                    else if (query.end == null)
-                    {
-                        if (query.interval == null)
-                            stock = YahooFinance.get(query.symbol, query.start);
-                        else
-                            stock = YahooFinance.get(query.symbol, query.start, query.interval);
-                    }
+                    BarchartOnDemandClient onDemand = new BarchartOnDemandClient.Builder().apiKey("053b0a25336ff63cdaccec0316ed8b84").baseUrl("http://marketdata.websol.barchart.com/").build();
+                    final HistoryRequest.Builder builder = new HistoryRequest.Builder();
+                    builder.symbol(query.symbol);
+                    if (query.interval == null)
+                        builder.type(HistoryRequest.HistoryRequestType.MINUTES);
                     else
-                    {
-                        if (query.interval == null)
-                            stock = YahooFinance.get(query.symbol, query.start, query.end);
-                        else
-                            stock = YahooFinance.get(query.symbol, query.start, query.end, query.interval);
-                    }
-                    mStockHistories.add(stock.getHistory());
+                        builder.type(query.interval);
+
+                    if (query.start != null)
+                        builder.start(query.start);
+
+                    if (query.end != null)
+                        builder.end(query.end);
+
+                    HistoryRequest built = builder.build();
+                    Map<String, Object> params = builder.build().parameters();
+                    final History history = onDemand.fetch(built);
+                    mStockHistories.add(history.all());
                 }
                 catch (IOException e)
+                {
+                    Log.e("Magellan", String.format("Stock line data for symbol '%s'could not be retrieved!", query.symbol));
+                    result = result & (1 >> i);
+                    mStockHistories.add(null);
+                    continue;
+                }
+                catch (Exception e)
                 {
                     Log.e("Magellan", String.format("Stock line data for symbol '%s'could not be retrieved!", query.symbol));
                     result = result & (1 >> i);

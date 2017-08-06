@@ -11,7 +11,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
@@ -24,7 +23,7 @@ public class PortfolioActivity extends AppCompatActivity
         OnChartGestureListener, OnChartValueSelectedListener{
 
     private LineChart mChart;
-    private StockQuote.QueryTask mQuoteTask;
+    private StockQuote.HistoryTask mQuoteTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
