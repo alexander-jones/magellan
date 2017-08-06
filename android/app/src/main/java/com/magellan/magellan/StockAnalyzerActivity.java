@@ -21,8 +21,6 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.GridLayout;
 
-import com.barchart.ondemand.api.HistoryRequest;
-import com.barchart.ondemand.api.responses.HistoryBar;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -39,18 +37,18 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 public class StockAnalyzerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        OnChartGestureListener, OnChartValueSelectedListener, StockQuote.HistoryQueryListener{
+        OnChartGestureListener, OnChartValueSelectedListener, Stock.HistoryQueryListener{
 
     private final int ONE_DAY_TAB = 0;
     private final int ONE_WEEK_TAB = 1;
     private final int ONE_MONTH_TAB = 2;
     private final int THREE_MONTH_TAB = 3;
     private final int ONE_YEAR_TAB = 4;
-    private final int ALL_TAB = 5;
+    private final int FIVE_YEAR_TAB = 5;
+    private final int TEN_YEAR_TAB = 6;
     private String mSymbol;
 
     private TextView mPrimaryValueTextView;
@@ -60,7 +58,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private TabLayout mIntervalTabLayout;
     private LineChart mChart;
 
-    private StockQuote.HistoryTask mQuoteTask;
+    private Stock.HistoryTask mQuoteTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +142,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private void launchTaskForTab(int position)
     {
         DateTime start = null;
-        HistoryRequest.HistoryRequestType intervalCategory = null;
+        Stock.IntervalType intervalType = null;
         int interval = 1;
         DateTime end = DateTime.now();
         int endDay = end.dayOfWeek().get();
@@ -157,55 +155,58 @@ public class StockAnalyzerActivity extends AppCompatActivity
         {
             case ONE_DAY_TAB:
                 interval = 5;
-                intervalCategory = HistoryRequest.HistoryRequestType.MINUTES;
+                intervalType = Stock.IntervalType.Minute;
                 start = end.minus(Duration.standardDays(1));
                 break;
             case ONE_WEEK_TAB:
                 interval = 30;
-                intervalCategory = HistoryRequest.HistoryRequestType.MINUTES;
+                intervalType = Stock.IntervalType.Minute;
                 start = end.minus(Duration.standardDays(7));
                 break;
             case ONE_MONTH_TAB:
-                intervalCategory = HistoryRequest.HistoryRequestType.DAILY;
+                intervalType = Stock.IntervalType.Daily;
                 start = end.minus(Duration.standardDays(30));
                 break;
             case THREE_MONTH_TAB:
-                intervalCategory = HistoryRequest.HistoryRequestType.DAILY;
+                intervalType = Stock.IntervalType.Weekly;
                 start = end.minus(Duration.standardDays(90));
                 break;
             case ONE_YEAR_TAB:
-                intervalCategory = HistoryRequest.HistoryRequestType.WEEKLY;
+                intervalType = Stock.IntervalType.Monthly;
                 start = end.minus(Duration.standardDays(365));
                 break;
-            case ALL_TAB:
-                intervalCategory = HistoryRequest.HistoryRequestType.WEEKLY;
-                start = end.minus(Duration.standardDays(60 *365));
+            case FIVE_YEAR_TAB:
+                intervalType = Stock.IntervalType.Monthly;
+                start = end.minus(Duration.standardDays(5 *365));
+                break;
+            case TEN_YEAR_TAB:
+                intervalType = Stock.IntervalType.Monthly;
+                start = end.minus(Duration.standardDays(10 *365));
                 break;
             default:
                 Log.e("Magellan", "Encountered Unknown Duration Tab Index");
                 break;
         }
-        mQuoteTask = new StockQuote.HistoryTask(this);
-        mQuoteTask.execute(new StockQuote.HistoryQuery(mSymbol, start, end, intervalCategory, interval));
+        mQuoteTask = new Stock.HistoryTask(this);
+        mQuoteTask.execute(new Stock.HistoryQuery(mSymbol, start, end, intervalType, interval));
     }
 
-    public void onStockHistoryRetrieved(List<Collection<HistoryBar>> stockHistories)
+    public void onStockHistoryRetrieved(List<Stock.IQuoteCollection> stockHistories)
     {
         LineData data = null;
         ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
         for (int i = 0; i < stockHistories.size(); i++)
         {
-            Collection<HistoryBar> stockHistory = stockHistories.get(i);
+            Stock.IQuoteCollection stockHistory = stockHistories.get(i);
             if (stockHistory == null) {
                 continue;
             }
 
             ArrayList<Entry> values = new ArrayList<Entry>();
-            int j = 0;
-            for (HistoryBar element : stockHistory) {
-                double value = element.getClose();
-                values.add(new Entry(j, (float)value, null));
-                j++;
+            for (int j = 0; j < stockHistory.size(); j++)
+            {
+                Stock.IQuote quote = stockHistory.get(j);
+                values.add(new Entry(j, (float)quote.getClose(), null));
             }
 
             /*if (mChart.getData() != null &&
