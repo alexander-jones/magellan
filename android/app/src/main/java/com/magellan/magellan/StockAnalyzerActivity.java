@@ -145,7 +145,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private void launchTaskForTab(int position)
     {
         DateTime start = null;
-        HistoryRequest.HistoryRequestType interval = null;
+        HistoryRequest.HistoryRequestType intervalCategory = null;
+        int interval = 1;
         DateTime end = DateTime.now();
         int endDay = end.dayOfWeek().get();
         if (endDay == 6)
@@ -156,38 +157,41 @@ public class StockAnalyzerActivity extends AppCompatActivity
         switch (position)
         {
             case ONE_DAY_TAB:
-                interval = HistoryRequest.HistoryRequestType.MINUTES;
+                interval = 5;
+                intervalCategory = HistoryRequest.HistoryRequestType.MINUTES;
                 start = end.minus(Duration.standardDays(1));
                 break;
             case INTRA_DAY_TAB:
-                interval = HistoryRequest.HistoryRequestType.MINUTES;
+                interval = 5;
+                intervalCategory = HistoryRequest.HistoryRequestType.MINUTES;
                 start = end.minus(Duration.standardDays(1));
                 break;
             case ONE_WEEK_TAB:
-                interval = HistoryRequest.HistoryRequestType.MINUTES;
+                interval = 30;
+                intervalCategory = HistoryRequest.HistoryRequestType.MINUTES;
                 start = end.minus(Duration.standardDays(7));
                 break;
             case ONE_MONTH_TAB:
-                interval = HistoryRequest.HistoryRequestType.DAILY;
+                intervalCategory = HistoryRequest.HistoryRequestType.DAILY;
                 start = end.minus(Duration.standardDays(30));
                 break;
             case THREE_MONTH_TAB:
-                interval = HistoryRequest.HistoryRequestType.DAILY;
+                intervalCategory = HistoryRequest.HistoryRequestType.DAILY;
                 start = end.minus(Duration.standardDays(90));
                 break;
             case ONE_YEAR_TAB:
-                interval = HistoryRequest.HistoryRequestType.WEEKLY;
+                intervalCategory = HistoryRequest.HistoryRequestType.WEEKLY;
                 start = end.minus(Duration.standardDays(365));
                 break;
             case ALL_TAB:
-                interval = HistoryRequest.HistoryRequestType.MONTHLY;
+                intervalCategory = HistoryRequest.HistoryRequestType.MONTHLY;
                 break;
             default:
                 Log.e("Magellan", "Encountered Unknown Duration Tab Index");
                 break;
         }
         mQuoteTask = new StockQuote.HistoryTask(this);
-        mQuoteTask.execute(new StockQuote.HistoryQuery(mSymbol, start, end, interval));
+        mQuoteTask.execute(new StockQuote.HistoryQuery(mSymbol, start, end, intervalCategory, interval));
     }
 
     public void onStockHistoryRetrieved(List<Collection<HistoryBar>> stockHistories)

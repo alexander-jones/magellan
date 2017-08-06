@@ -23,13 +23,15 @@ public class StockQuote {
         public String symbol;
         public DateTime start;
         public DateTime end;
-        public HistoryRequest.HistoryRequestType interval;
+        public HistoryRequest.HistoryRequestType intervalCategeory;
+        public int interval;
 
-        public HistoryQuery(String sym, DateTime st, DateTime e, HistoryRequest.HistoryRequestType i)
+        public HistoryQuery(String sym, DateTime st, DateTime e, HistoryRequest.HistoryRequestType ic, int i)
         {
             symbol = sym;
             start = st;
             end = e;
+            intervalCategeory = ic;
             interval = i;
         }
     }
@@ -60,11 +62,11 @@ public class StockQuote {
                 {
                     BarchartOnDemandClient onDemand = new BarchartOnDemandClient.Builder().apiKey("053b0a25336ff63cdaccec0316ed8b84").baseUrl("http://marketdata.websol.barchart.com/").build();
                     final HistoryRequest.Builder builder = new HistoryRequest.Builder();
-                    builder.symbol(query.symbol);
-                    if (query.interval == null)
+                    builder.symbol(query.symbol).interval(query.interval);
+                    if (query.intervalCategeory == null)
                         builder.type(HistoryRequest.HistoryRequestType.MINUTES);
                     else
-                        builder.type(query.interval);
+                        builder.type(query.intervalCategeory);
 
                     if (query.start != null)
                         builder.start(query.start);
