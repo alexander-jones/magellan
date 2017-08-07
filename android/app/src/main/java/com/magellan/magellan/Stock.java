@@ -10,7 +10,6 @@ import com.barchart.ondemand.api.responses.HistoryBar;
 
 import org.joda.time.DateTime;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,12 +17,14 @@ import java.util.Map;
 
 public class Stock {
 
-    public static enum IntervalType
+    private static IQuoteService mQuoteService;
+
+    public static enum IntervalUnit
     {
         Minute,
-        Daily,
-        Weekly,
-        Monthly
+        Day,
+        Week,
+        Month
     }
 
     public static class HistoryQuery
@@ -31,15 +32,15 @@ public class Stock {
         public String symbol;
         public DateTime start;
         public DateTime end;
-        public IntervalType intervalType;
+        public IntervalUnit intervalUnit;
         public int interval;
 
-        public HistoryQuery(String sym, DateTime st, DateTime e, IntervalType ic, int i)
+        public HistoryQuery(String sym, DateTime st, DateTime e, IntervalUnit iu, int i)
         {
             symbol = sym;
             start = st;
             end = e;
-            intervalType = ic;
+            intervalUnit = iu;
             interval = i;
         }
     }
@@ -59,11 +60,62 @@ public class Stock {
         int size();
     }
 
-    public static interface IStockService
+    public static interface IQuoteService
     {
         IQuoteCollection execute(HistoryQuery query);
     }
 
+    public static IQuoteService getQuoteService()
+    {
+        if (mQuoteService == null)
+            mQuoteService = new BarChartStockService();
+        return mQuoteService;
+    }
+
+    public static interface HistoryQueryListener
+    {
+        public void onStockHistoryRetrieved(List<IQuoteCollection> mQuoteResults);
+    }
+
+    public static class HistoryQueryTask extends AsyncTask<HistoryQuery, Integer, Long> {
+
+        private HistoryQueryListener mListener;
+        private List<IQuoteCollection> mStockHistories;
+
+        public HistoryQueryTask(HistoryQueryListener listener)
+        {
+            super();
+            mListener = listener;
+        }
+
+        protected Long doInBackground(HistoryQuery... queries) {
+            IQuoteService quoteService = getQuoteService();
+            int count = queries.length;
+            long result = 0;
+            mStockHistories = new ArrayList<IQuoteCollection>();
+            for (int i = 0; i < count; i++) {
+                HistoryQuery query = queries[i];
+                mStockHistories.add(quoteService.execute(query));
+                publishProgress((int) ((i / (float) count) * 100));
+
+                if (isCancelled()) break;
+            }
+            return result;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+            //setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Long result) {
+
+            mListener.onStockHistoryRetrieved(mStockHistories);
+        }
+    }
+
+    /**********************************
+     BarChart service implementations
+    ***********************************/
     private static class BarChartQuote implements IQuote
     {
         private HistoryBar mSource;
@@ -78,33 +130,37 @@ public class Stock {
     private static class BarChartQuoteCollection implements IQuoteCollection
     {
         HistoryBar [] mSource;
-        public BarChartQuoteCollection(Collection<HistoryBar> source) { source.toArray(mSource);}
+        public BarChartQuoteCollection(Collection<HistoryBar> source) { mSource = new HistoryBar [source.size()]; source.toArray(mSource);}
         public IQuote get(int i) { return new BarChartQuote(mSource[i]);}
         public int size() {return mSource.length;}
     }
 
-    private static class BarChartStockService implements IStockService
+    private static class BarChartStockService implements IQuoteService
     {
+        BarchartOnDemandClient mClient;
+        public BarChartStockService()
+        {
+            mClient = new BarchartOnDemandClient.Builder().apiKey("053b0a25336ff63cdaccec0316ed8b84").baseUrl("http://marketdata.websol.barchart.com/").build();
+        }
         public IQuoteCollection execute(HistoryQuery query)
         {
             try {
-                BarchartOnDemandClient onDemand = new BarchartOnDemandClient.Builder().apiKey("053b0a25336ff63cdaccec0316ed8b84").baseUrl("http://marketdata.websol.barchart.com/").build();
                 final HistoryRequest.Builder builder = new HistoryRequest.Builder();
                 builder.symbol(query.symbol).interval(query.interval);
-                if (query.intervalType == null)
+                if (query.intervalUnit == null)
                     builder.type(HistoryRequest.HistoryRequestType.MINUTES);
                 else {
-                    switch (query.intervalType) {
+                    switch (query.intervalUnit) {
                         case Minute:
                             builder.type(HistoryRequest.HistoryRequestType.MINUTES);
                             break;
-                        case Daily:
+                        case Day:
                             builder.type(HistoryRequest.HistoryRequestType.DAILY);
                             break;
-                        case Weekly:
+                        case Week:
                             builder.type(HistoryRequest.HistoryRequestType.WEEKLY);
                             break;
-                        case Monthly:
+                        case Month:
                             builder.type(HistoryRequest.HistoryRequestType.MONTHLY);
                             break;
                         default:
@@ -121,7 +177,7 @@ public class Stock {
 
                 HistoryRequest built = builder.build();
                 Map<String, Object> params = builder.build().parameters();
-                final History history = onDemand.fetch(built);
+                final History history = mClient.fetch(built);
                 return new BarChartQuoteCollection(history.all());
             }
             catch (Exception e)
@@ -129,47 +185,6 @@ public class Stock {
                 Log.e("Magellan", String.format("Stock line data for symbol '%s'could not be retrieved!", query.symbol));
                 return null;
             }
-        }
-    }
-
-    public static interface HistoryQueryListener
-    {
-        public void onStockHistoryRetrieved(List<IQuoteCollection> mQuoteResults);
-    }
-
-    public static class HistoryTask extends AsyncTask<HistoryQuery, Integer, Long> {
-
-        private HistoryQueryListener mListener;
-        private List<IQuoteCollection> mStockHistories;
-
-        public HistoryTask(HistoryQueryListener listener)
-        {
-            super();
-            mListener = listener;
-        }
-
-        protected Long doInBackground(HistoryQuery... queries) {
-            BarChartStockService stockService = new BarChartStockService();
-            int count = queries.length;
-            long result = 0;
-            mStockHistories = new ArrayList<IQuoteCollection>();
-            for (int i = 0; i < count; i++) {
-                HistoryQuery query = queries[i];
-                mStockHistories.add(stockService.execute(query));
-                publishProgress((int) ((i / (float) count) * 100));
-
-                if (isCancelled()) break;
-            }
-            return result;
-        }
-
-        protected void onProgressUpdate(Integer... progress) {
-            //setProgressPercent(progress[0]);
-        }
-
-        protected void onPostExecute(Long result) {
-
-            mListener.onStockHistoryRetrieved(mStockHistories);
         }
     }
 }

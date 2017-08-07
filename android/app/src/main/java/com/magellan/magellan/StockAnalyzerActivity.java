@@ -58,7 +58,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private TabLayout mIntervalTabLayout;
     private LineChart mChart;
 
-    private Stock.HistoryTask mQuoteTask;
+    private Stock.HistoryQueryTask mQuoteTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +142,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private void launchTaskForTab(int position)
     {
         DateTime start = null;
-        Stock.IntervalType intervalType = null;
+        Stock.IntervalUnit intervalUnit = null;
         int interval = 1;
         DateTime end = DateTime.now();
         int endDay = end.dayOfWeek().get();
@@ -155,40 +155,42 @@ public class StockAnalyzerActivity extends AppCompatActivity
         {
             case ONE_DAY_TAB:
                 interval = 5;
-                intervalType = Stock.IntervalType.Minute;
+                intervalUnit = Stock.IntervalUnit.Minute;
                 start = end.minus(Duration.standardDays(1));
                 break;
             case ONE_WEEK_TAB:
                 interval = 30;
-                intervalType = Stock.IntervalType.Minute;
+                intervalUnit = Stock.IntervalUnit.Minute;
                 start = end.minus(Duration.standardDays(7));
                 break;
             case ONE_MONTH_TAB:
-                intervalType = Stock.IntervalType.Daily;
+                interval = 120;
+                intervalUnit = Stock.IntervalUnit.Minute;
                 start = end.minus(Duration.standardDays(30));
                 break;
             case THREE_MONTH_TAB:
-                intervalType = Stock.IntervalType.Weekly;
+                interval = 360;
+                intervalUnit = Stock.IntervalUnit.Minute;
                 start = end.minus(Duration.standardDays(90));
                 break;
             case ONE_YEAR_TAB:
-                intervalType = Stock.IntervalType.Monthly;
+                intervalUnit = Stock.IntervalUnit.Day;
                 start = end.minus(Duration.standardDays(365));
                 break;
             case FIVE_YEAR_TAB:
-                intervalType = Stock.IntervalType.Monthly;
+                intervalUnit = Stock.IntervalUnit.Week;
                 start = end.minus(Duration.standardDays(5 *365));
                 break;
             case TEN_YEAR_TAB:
-                intervalType = Stock.IntervalType.Monthly;
+                intervalUnit = Stock.IntervalUnit.Month;
                 start = end.minus(Duration.standardDays(10 *365));
                 break;
             default:
                 Log.e("Magellan", "Encountered Unknown Duration Tab Index");
                 break;
         }
-        mQuoteTask = new Stock.HistoryTask(this);
-        mQuoteTask.execute(new Stock.HistoryQuery(mSymbol, start, end, intervalType, interval));
+        mQuoteTask = new Stock.HistoryQueryTask(this);
+        mQuoteTask.execute(new Stock.HistoryQuery(mSymbol, start, end, intervalUnit, interval));
     }
 
     public void onStockHistoryRetrieved(List<Stock.IQuoteCollection> stockHistories)

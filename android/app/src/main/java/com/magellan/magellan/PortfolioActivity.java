@@ -23,7 +23,7 @@ public class PortfolioActivity extends AppCompatActivity
         OnChartGestureListener, OnChartValueSelectedListener{
 
     private LineChart mChart;
-    private Stock.HistoryTask mQuoteTask;
+    private Stock.HistoryQueryTask mQuoteTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
