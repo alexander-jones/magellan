@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class Stock {
 
-    private static IQuoteService mQuoteService;
+    private static IQuoteService mQuoteService = new BarChartStockService();
 
     public static enum IntervalUnit
     {
@@ -67,8 +67,6 @@ public class Stock {
 
     public static IQuoteService getQuoteService()
     {
-        if (mQuoteService == null)
-            mQuoteService = new BarChartStockService();
         return mQuoteService;
     }
 

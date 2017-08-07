@@ -200,7 +200,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         for (int i = 0; i < stockHistories.size(); i++)
         {
             Stock.IQuoteCollection stockHistory = stockHistories.get(i);
-            if (stockHistory == null) {
+            if (stockHistory == null || stockHistory.size() == 0) {
                 continue;
             }
 
