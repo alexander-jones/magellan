@@ -20,7 +20,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.GridLayout;
+import android.text.Html;
 
+import com.barchart.ondemand.util.QueryUtil;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -34,24 +36,33 @@ import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
+import java.util.TimeZone;
 
 public class StockAnalyzerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnChartGestureListener, OnChartValueSelectedListener, Stock.HistoryQueryListener{
 
-    private final int ONE_DAY_TAB = 0;
-    private final int ONE_WEEK_TAB = 1;
-    private final int ONE_MONTH_TAB = 2;
-    private final int THREE_MONTH_TAB = 3;
-    private final int ONE_YEAR_TAB = 4;
-    private final int FIVE_YEAR_TAB = 5;
-    private final int TEN_YEAR_TAB = 6;
+    private enum QuotePeriod
+    {
+        OneDay,
+        OneWeek,
+        OneMonth,
+        ThreeMonths,
+        OneYear,
+        FiveYears,
+        TenYears
+    }
+
     private String mSymbol;
 
     private TextView mPrimaryValueTextView;
+    private TextView mSecondaryValueTextView;
     private GridLayout mOverlayClassesContainer;
     private RecyclerView mActiveOverlaysContainer;
     private ActiveOverlayAdapter mActiveOverlayAdapter;
@@ -59,6 +70,14 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private LineChart mChart;
 
     private Stock.HistoryQueryTask mQuoteTask;
+    private QueryContext mLastQuery = new QueryContext();
+
+    private class QueryContext
+    {
+        Stock.HistoryQuery query;
+        Stock.IQuoteCollection results;
+        QuotePeriod quotePeriod;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +88,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         getSupportActionBar().setDisplayShowTitleEnabled(true);
 
         mPrimaryValueTextView = (TextView) findViewById(R.id.primary_value);
+        mSecondaryValueTextView = (TextView) findViewById(R.id.secondary_value);
         mIntervalTabLayout = (TabLayout) findViewById(R.id.interval_tabs);
 
         mOverlayClassesContainer = (GridLayout) findViewById(R.id.overlay_classes);
@@ -151,46 +171,49 @@ public class StockAnalyzerActivity extends AppCompatActivity
         else if (endDay == 7)
             end = end.minus(Duration.standardDays(2));
 
-        switch (position)
+
+        QuotePeriod [] quotePeriods = QuotePeriod.values();
+        if (position <0 || position > quotePeriods.length)
+            Log.e("Magellan", "Encountered Unknown Duration Tab Index");
+
+        mLastQuery.quotePeriod = quotePeriods[position];
+        switch (mLastQuery.quotePeriod)
         {
-            case ONE_DAY_TAB:
+            case OneDay:
                 interval = 5;
                 intervalUnit = Stock.IntervalUnit.Minute;
                 start = end.minus(Duration.standardDays(1));
                 break;
-            case ONE_WEEK_TAB:
-                interval = 30;
+            case OneWeek:
+                interval = 10;
                 intervalUnit = Stock.IntervalUnit.Minute;
                 start = end.minus(Duration.standardDays(7));
                 break;
-            case ONE_MONTH_TAB:
-                interval = 120;
-                intervalUnit = Stock.IntervalUnit.Minute;
+            case OneMonth:
+                intervalUnit = Stock.IntervalUnit.Day;
                 start = end.minus(Duration.standardDays(30));
                 break;
-            case THREE_MONTH_TAB:
-                interval = 360;
-                intervalUnit = Stock.IntervalUnit.Minute;
+            case ThreeMonths:
+                intervalUnit = Stock.IntervalUnit.Day;
                 start = end.minus(Duration.standardDays(90));
                 break;
-            case ONE_YEAR_TAB:
-                intervalUnit = Stock.IntervalUnit.Day;
+            case OneYear:
+                intervalUnit = Stock.IntervalUnit.Week;
                 start = end.minus(Duration.standardDays(365));
                 break;
-            case FIVE_YEAR_TAB:
+            case FiveYears:
                 intervalUnit = Stock.IntervalUnit.Week;
                 start = end.minus(Duration.standardDays(5 *365));
                 break;
-            case TEN_YEAR_TAB:
+            case TenYears:
                 intervalUnit = Stock.IntervalUnit.Month;
                 start = end.minus(Duration.standardDays(10 *365));
                 break;
-            default:
-                Log.e("Magellan", "Encountered Unknown Duration Tab Index");
-                break;
         }
+        mLastQuery.query = new Stock.HistoryQuery(mSymbol, start, end, intervalUnit, interval);
+        mLastQuery.results = null;
         mQuoteTask = new Stock.HistoryQueryTask(this);
-        mQuoteTask.execute(new Stock.HistoryQuery(mSymbol, start, end, intervalUnit, interval));
+        mQuoteTask.execute(mLastQuery.query);
     }
 
     public void onStockHistoryRetrieved(List<Stock.IQuoteCollection> stockHistories)
@@ -204,11 +227,12 @@ public class StockAnalyzerActivity extends AppCompatActivity
                 continue;
             }
 
+            mLastQuery.results = stockHistory;
             ArrayList<Entry> values = new ArrayList<Entry>();
             for (int j = 0; j < stockHistory.size(); j++)
             {
                 Stock.IQuote quote = stockHistory.get(j);
-                values.add(new Entry(j, (float)quote.getClose(), null));
+                values.add(new Entry(j, (float)quote.getClose(), quote));
             }
 
             /*if (mChart.getData() != null &&
@@ -241,6 +265,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
             mPrimaryValueTextView.setText(String.format("$%.2f", values.get(values.size() - 1).getY()));
         }
 
+        updateSecondaryTextView(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
         data = new LineData(dataSets);
         mChart.setData(data);
 
@@ -346,13 +371,63 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
+
         mPrimaryValueTextView.setText(String.format("$%.2f", e.getY()));
+        updateSecondaryTextView(mLastQuery.results.get(0), (Stock.IQuote)e.getData());
     }
 
     @Override
     public void onNothingSelected() {
 
+        updateSecondaryTextView(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
     }
 
+    private String priceDiffToString(float priceDiff)
+    {
+        if (priceDiff < 0.0)
+            return String.format("-$%.2f", Math.abs(priceDiff));
+        else
+            return String.format("+$%.2f", priceDiff);
+    }
+
+    private static DateTimeFormatter timeOfDayFormatter = DateTimeFormat.forPattern("h:mm a Z");
+    private static DateTimeFormatter dayOfYearFormatter = DateTimeFormat.forPattern("MMM d y");
+    private void updateSecondaryTextView(Stock.IQuote startQuote, Stock.IQuote endQuote)
+    {
+        float priceDiff = (endQuote.getClose() - startQuote.getClose());
+        float priceDiffPercent = (priceDiff / startQuote.getClose()) * 100.0f;
+
+        DateTime endTime = endQuote.getTime();
+        String timeString;
+        switch (mLastQuery.quotePeriod)
+        {
+            case OneDay:
+                timeString = timeOfDayFormatter.print(endTime);
+                break;
+            case OneWeek:
+                timeString = timeOfDayFormatter.print(endTime);
+                break;
+            case OneMonth:
+                timeString = dayOfYearFormatter.print(endTime);
+                break;
+            case ThreeMonths:
+                timeString = dayOfYearFormatter.print(endTime);
+                break;
+            case OneYear:
+                timeString = dayOfYearFormatter.print(endTime);
+                break;
+            case FiveYears:
+                timeString = dayOfYearFormatter.print(endTime);
+                break;
+            case TenYears:
+                timeString = dayOfYearFormatter.print(endTime);
+                break;
+            default:
+                Log.e("Magellan", "Encountered Unknown Duration Tab Index");
+                timeString = "";
+                break;
+        }
+        mSecondaryValueTextView.setText(Html.fromHtml(String.format("%s (%.2f%%) <b>%s</b>", priceDiffToString(priceDiff), priceDiffPercent, timeString)));
+    }
 
 }

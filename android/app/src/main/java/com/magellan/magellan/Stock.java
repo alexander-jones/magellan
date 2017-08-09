@@ -47,6 +47,7 @@ public class Stock {
 
     public static interface IQuote
     {
+        DateTime getTime();
         float getClose();
         float getOpen();
         float getLow();
@@ -118,6 +119,7 @@ public class Stock {
     {
         private HistoryBar mSource;
         public BarChartQuote(HistoryBar source) { mSource = source;}
+        public DateTime getTime() { return DateTime.parse(mSource.getTimestamp());}
         public float getClose() { return (float)mSource.getClose();}
         public float getOpen() { return (float)mSource.getClose();}
         public float getLow() { return (float)mSource.getClose();}
