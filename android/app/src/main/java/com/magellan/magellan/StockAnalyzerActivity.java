@@ -217,6 +217,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     public void onStockHistoryRetrieved(List<Stock.IQuoteCollection> stockHistories)
     {
+        Duration queryDuration = new Duration(mLastQuery.query.start, mLastQuery.query.end); //.getIntervalAsDuration();
+        Duration intervalDuration = mLastQuery.query.getIntervalAsDuration();
         LineData data = null;
         ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
         for (int i = 0; i < stockHistories.size(); i++)
@@ -225,14 +227,29 @@ public class StockAnalyzerActivity extends AppCompatActivity
             if (stockHistory == null || stockHistory.size() == 0) {
                 continue;
             }
-
             mLastQuery.results = stockHistory;
+
+            Duration missingEndDuration = new Duration(stockHistory.get(stockHistory.size() -1).getTime(), mLastQuery.query.end);
+            Duration missingStartDuration = new Duration(mLastQuery.query.start, stockHistory.get(0).getTime());
+
+            int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
+            int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / queryDuration.getStandardMinutes());
+
             ArrayList<Entry> values = new ArrayList<Entry>();
-            for (int j = 0; j < stockHistory.size(); j++)
+            int startPadding = 0;
+            for (int j = startPadding; j < missingStartSteps; ++startPadding, ++j)
+                values.add(new Entry(j, 0, null));
+
+            int j = startPadding;
+            for (; j < stockHistory.size() + startPadding; ++j)
             {
-                Stock.IQuote quote = stockHistory.get(j);
+                Stock.IQuote quote = stockHistory.get(j - startPadding);
                 values.add(new Entry(j, (float)quote.getClose(), quote));
             }
+
+            float lastValue = stockHistory.get(stockHistory.size() - 1).getClose();
+            for (; j < stockHistory.size() + missingEndSteps; ++j)
+                values.add(new Entry(j, lastValue, null));
 
             /*if (mChart.getData() != null &&
                     mChart.getData().getDataSetCount() > 0) {
@@ -370,6 +387,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
+        if (e.getData() == null)
+            return;
 
         mPrimaryValueTextView.setText(String.format("$%.2f", e.getY()));
         updateSecondaryTextView(mLastQuery.results.get(0), (Stock.IQuote)e.getData());

@@ -9,6 +9,7 @@ import com.barchart.ondemand.api.responses.History;
 import com.barchart.ondemand.api.responses.HistoryBar;
 
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +43,24 @@ public class Stock {
             end = e;
             intervalUnit = iu;
             interval = i;
+        }
+
+        public Duration getIntervalAsDuration()
+        {
+            switch (intervalUnit)
+            {
+                case Minute:
+                    return Duration.standardMinutes(interval);
+                case Day:
+                    return Duration.standardDays(interval);
+                case Week:
+                    return Duration.standardDays(interval * 7);
+                case Month:
+                    return Duration.standardDays(interval * 30);
+                default:
+                    Log.e("Magellan", "getIntervalAsDuration(): intervalUnit is corrupt");
+                    return null;
+            }
         }
     }
 
