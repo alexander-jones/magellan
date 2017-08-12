@@ -177,8 +177,10 @@ public class Stock {
 
                 HistoryRequest built = builder.build();
                 Map<String, Object> params = builder.build().parameters();
-                final History history = mClient.fetch(built);
-                return new BarChartQuoteCollection(history.all());
+                final Collection<HistoryBar> quotes = mClient.fetch(built).all();
+                if (quotes == null)
+                    return null;
+                return new BarChartQuoteCollection(quotes);
             }
             catch (Exception e)
             {
