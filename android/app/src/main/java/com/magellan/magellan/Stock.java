@@ -80,6 +80,12 @@ public class Stock {
         int size();
     }
 
+    public static class QuoteCollectionContext
+    {
+        int missingStartSteps; // describes the number of interval steps missing from the start of the Stock.IQuoteCollection compared to the period requested
+        int missingEndSteps; // describes the number of interval steps missing from the end of the Stock.IQuoteCollection compared to the period requested
+    }
+
     public static interface IQuoteService
     {
         IQuoteCollection execute(HistoryQuery query);

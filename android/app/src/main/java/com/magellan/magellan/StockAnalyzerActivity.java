@@ -77,10 +77,15 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private TabLayout mIntervalTabLayout;
 
     private CombinedChart mPriceChart;
+    private CombinedData mPriceChartData;
+
     private CombinedChart mVolumeChart;
+    private CombinedData mVolumeChartData;
 
     private Stock.HistoryQueryTask mQuoteTask;
     private QueryContext mLastQuery = new QueryContext();
+
+    private List<Metric.IChartLayer> mChartLayers = new ArrayList<Metric.IChartLayer>();
 
     private class QueryContext
     {
@@ -114,12 +119,20 @@ public class StockAnalyzerActivity extends AppCompatActivity
         float chart_spacing_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_SPACING, getResources().getDisplayMetrics());
 
         mPriceChart = (CombinedChart) findViewById(R.id.price_chart);
+        mPriceChartData = new CombinedData();
         initializeChart(mPriceChart);
         mPriceChart.setViewPortOffsets(chart_margin_px, chart_margin_px, chart_margin_px, 0);
 
         mVolumeChart = (CombinedChart) findViewById(R.id.volume_chart);
+        mVolumeChartData = new CombinedData();
         initializeChart(mVolumeChart);
         mVolumeChart.setViewPortOffsets(chart_margin_px,chart_margin_px,chart_margin_px,chart_spacing_px);
+
+        mChartLayers.add(new StockPriceMetric.ChartLayer(StockPriceMetric.ChartType.Line));
+        mChartLayers.add(new VolumeMetric.ChartLayer());
+
+        for (Metric.IChartLayer layer : mChartLayers)
+            layer.init(this, mPriceChartData, mVolumeChartData);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -245,8 +258,6 @@ public class StockAnalyzerActivity extends AppCompatActivity
     {
         Duration queryDuration = new Duration(mLastQuery.query.start, mLastQuery.query.end); //.getIntervalAsDuration();
         Duration intervalDuration = mLastQuery.query.getIntervalAsDuration();
-        ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
-        ArrayList<IBarDataSet> volumeDataSets = new ArrayList<IBarDataSet>();
         for (int i = 0; i < stockHistories.size(); i++)
         {
             Stock.IQuoteCollection stockHistory = stockHistories.get(i);
@@ -261,78 +272,22 @@ public class StockAnalyzerActivity extends AppCompatActivity
             Duration missingStartDuration = new Duration(mLastQuery.query.start, initialQuote.getTime());
             Duration missingEndDuration = new Duration(finalQuote.getTime(), mLastQuery.query.end);
 
-            int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
-            int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
+            Stock.QuoteCollectionContext quoteContext = new Stock.QuoteCollectionContext();
+            quoteContext.missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
+            quoteContext.missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
 
-            ArrayList<Entry> priceValues = new ArrayList<Entry>();
-            ArrayList<BarEntry> volumeValues = new ArrayList<BarEntry>();
-            float startingOpen = initialQuote.getOpen();
-            for (int j = 0; j < missingStartSteps; ++j) {
-                priceValues.add(new Entry(j, startingOpen, null));
-                volumeValues.add(new BarEntry(j, 0, null));
-            }
+            for (Metric.IChartLayer layer : mChartLayers)
+                layer.onQuoteResults(stockHistory, quoteContext);
 
-            for (int j = missingStartSteps; j < stockHistory.size() + missingStartSteps; ++j)
-            {
-                Stock.IQuote quote = stockHistory.get(j - missingStartSteps);
-                priceValues.add(new Entry(j, (float)quote.getClose(), quote));
-                volumeValues.add(new BarEntry(j, (float)quote.getVolume(), quote));
-            }
-
-            float finalClose = finalQuote.getClose();
-            for (int j = missingStartSteps +stockHistory.size() ; j < stockHistory.size() + missingStartSteps + missingEndSteps; ++j){
-
-                priceValues.add(new Entry(j, finalClose, null));
-                volumeValues.add(new BarEntry(j, 0, null));
-            }
-
-            /*if (mPriceChart.getData() != null &&
-                    mPriceChart.getData().getDataSetCount() > 0) {
-                LineDataSet set1 = (LineDataSet) mPriceChart.getData().getDataSetByIndex(i);
-                set1.setValues(values);
-                mPriceChart.getData().notifyDataChanged();
-                continue;
-            }*/
-
-            LineDataSet lineSet = new LineDataSet(priceValues, "");
-            lineSet.setDrawIcons(false);
-            lineSet.disableDashedLine();
-            lineSet.enableDashedHighlightLine(10f, 5f, 0f);
-            lineSet.setHighLightColor(ContextCompat.getColor(this, R.color.colorPrimary));
-            lineSet.setLineWidth(1f);
-            lineSet.setValueTextSize(9f);
-            lineSet.setDrawFilled(true);
-            lineSet.setFormLineWidth(1f);
-            lineSet.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
-            lineSet.setFormSize(15.f);
-            lineSet.setColor(ContextCompat.getColor(this, R.color.colorSecondary));
-            lineSet.setFillColor(ContextCompat.getColor(this, R.color.colorSecondary));
-            lineSet.setDrawCircles(false);
-            lineSet.setDrawValues(false);
-            priceDataSets.add(lineSet);
-
-            BarDataSet barSet = new BarDataSet(volumeValues, "");
-            barSet.setDrawIcons(false);
-            barSet.setDrawValues(false);
-            barSet.setHighLightColor(ContextCompat.getColor(this, R.color.colorPrimary));
-            barSet.setColor(ContextCompat.getColor(this, R.color.colorSecondary));
-            volumeDataSets.add(barSet);
-
-            mPrimaryValueTextView.setText(String.format("$%.2f", priceValues.get(priceValues.size() - 1).getY()));
+            mPrimaryValueTextView.setText(String.format("$%.2f", finalQuote.getClose()));
         }
-
-        CombinedData combinedPriceData = new CombinedData();
-        combinedPriceData.setData(new LineData(priceDataSets));
         updateSecondaryTextView(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
-        mPriceChart.setData(combinedPriceData);
+
+        mPriceChart.setData(mPriceChartData);
         mPriceChart.notifyDataSetChanged();
         mPriceChart.fitScreen();
 
-        BarData bd = new BarData(volumeDataSets);
-        bd.setBarWidth(1);
-        CombinedData combinedVolumeData = new CombinedData();
-        combinedVolumeData.setData(bd);
-        mVolumeChart.setData(combinedVolumeData);
+        mVolumeChart.setData(mVolumeChartData);
         mVolumeChart.notifyDataSetChanged();
         mVolumeChart.fitScreen();
         mLastQuery.complete = true;
