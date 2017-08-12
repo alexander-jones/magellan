@@ -158,19 +158,18 @@ public class StockAnalyzerActivity extends AppCompatActivity
         });
     }
 
-
     private void launchTaskForTab(int position)
     {
         DateTime start = null;
         Stock.IntervalUnit intervalUnit = null;
         int interval = 1;
-        DateTime end = DateTime.now();
+        DateTime end = DateTime.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("EST")))
+                .withHourOfDay(16).withMinuteOfHour(0); // 4:00 pm is NYSE close
         int endDay = end.dayOfWeek().get();
         if (endDay == 6)
             end = end.minus(Duration.standardDays(1));
         else if (endDay == 7)
             end = end.minus(Duration.standardDays(2));
-
 
         QuotePeriod [] quotePeriods = QuotePeriod.values();
         if (position <0 || position > quotePeriods.length)
@@ -182,32 +181,32 @@ public class StockAnalyzerActivity extends AppCompatActivity
             case OneDay:
                 interval = 5;
                 intervalUnit = Stock.IntervalUnit.Minute;
-                start = end.minus(Duration.standardDays(1));
+                start = end.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open
                 break;
             case OneWeek:
                 interval = 10;
                 intervalUnit = Stock.IntervalUnit.Minute;
-                start = end.minus(Duration.standardDays(7));
+                start = end.minusWeeks(1);
                 break;
             case OneMonth:
                 intervalUnit = Stock.IntervalUnit.Day;
-                start = end.minus(Duration.standardDays(30));
+                start = end.minusMonths(1);
                 break;
             case ThreeMonths:
                 intervalUnit = Stock.IntervalUnit.Day;
-                start = end.minus(Duration.standardDays(90));
+                start = end.minusMonths(3);
                 break;
             case OneYear:
                 intervalUnit = Stock.IntervalUnit.Week;
-                start = end.minus(Duration.standardDays(365));
+                start = end.minusYears(1);
                 break;
             case FiveYears:
                 intervalUnit = Stock.IntervalUnit.Week;
-                start = end.minus(Duration.standardDays(5 *365));
+                start = end.minusYears(5);
                 break;
             case TenYears:
                 intervalUnit = Stock.IntervalUnit.Month;
-                start = end.minus(Duration.standardDays(10 *365));
+                start = end.minusYears(10);
                 break;
         }
         mLastQuery.query = new Stock.HistoryQuery(mSymbol, start, end, intervalUnit, interval);
@@ -390,7 +389,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
             return String.format("+$%.2f", priceDiff);
     }
 
-    private static DateTimeFormatter timeOfDayFormatter = DateTimeFormat.forPattern("h:mm a Z");
+    private static DateTimeFormatter timeOfDayFormatter = DateTimeFormat.forPattern("h:mm a z").withZone(DateTimeZone.getDefault());
     private static DateTimeFormatter dayOfYearFormatter = DateTimeFormat.forPattern("MMM d y");
     private void updateSecondaryTextView(Stock.IQuote startQuote, Stock.IQuote endQuote)
     {
@@ -427,7 +426,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
                 timeString = "";
                 break;
         }
-        mSecondaryValueTextView.setText(Html.fromHtml(String.format("%s (%.2f%%) <b>%s</b>", priceDiffToString(priceDiff), priceDiffPercent, timeString)));
+        mSecondaryValueTextView.setText(String.format("%s (%.2f%%) %s", priceDiffToString(priceDiff), priceDiffPercent, timeString));
     }
 
 }
