@@ -138,7 +138,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mSymbol = "AMD";
+        mSymbol = "SNAP";
 
         getSupportActionBar().setTitle(mSymbol);
         launchTaskForTab(mIntervalTabLayout.getSelectedTabPosition());
@@ -170,6 +170,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
             end = end.minus(Duration.standardDays(1));
         else if (endDay == 7)
             end = end.minus(Duration.standardDays(2));
+        start = end.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open
 
         QuotePeriod [] quotePeriods = QuotePeriod.values();
         if (position <0 || position > quotePeriods.length)
@@ -181,35 +182,34 @@ public class StockAnalyzerActivity extends AppCompatActivity
             case OneDay:
                 interval = 5;
                 intervalUnit = Stock.IntervalUnit.Minute;
-                start = end.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open
                 break;
             case OneWeek:
                 interval = 10;
                 intervalUnit = Stock.IntervalUnit.Minute;
-                start = end.minusWeeks(1);
+                start = start.minusWeeks(1);
                 break;
             case OneMonth:
                 intervalUnit = Stock.IntervalUnit.Day;
-                start = end.minusMonths(1);
+                start = start.minusMonths(1);
                 break;
             case ThreeMonths:
                 intervalUnit = Stock.IntervalUnit.Day;
-                start = end.minusMonths(3);
+                start = start.minusMonths(3);
                 break;
             case OneYear:
                 intervalUnit = Stock.IntervalUnit.Week;
-                start = end.minusYears(1);
+                start = start.minusYears(1);
                 break;
             case FiveYears:
                 intervalUnit = Stock.IntervalUnit.Week;
-                start = end.minusYears(5);
+                start = start.minusYears(5);
                 break;
             case TenYears:
                 intervalUnit = Stock.IntervalUnit.Month;
-                start = end.minusYears(10);
+                start = start.minusYears(10);
                 break;
         }
-        mLastQuery.query = new Stock.HistoryQuery(mSymbol, start, end, intervalUnit, interval);
+        mLastQuery.query = new Stock.HistoryQuery(mSymbol, start, null, intervalUnit, interval);
         mLastQuery.results = null;
         mQuoteTask = new Stock.HistoryQueryTask(this);
         mQuoteTask.execute(mLastQuery.query);
@@ -229,27 +229,29 @@ public class StockAnalyzerActivity extends AppCompatActivity
             }
             mLastQuery.results = stockHistory;
 
-            Duration missingEndDuration = new Duration(stockHistory.get(stockHistory.size() -1).getTime(), mLastQuery.query.end);
-            Duration missingStartDuration = new Duration(mLastQuery.query.start, stockHistory.get(0).getTime());
+            Stock.IQuote initialQuote = stockHistory.get(0);
+            Stock.IQuote finalQuote = stockHistory.get(stockHistory.size() -1);
+
+            Duration missingStartDuration = new Duration(mLastQuery.query.start, initialQuote.getTime());
+            Duration missingEndDuration = new Duration(finalQuote.getTime(), mLastQuery.query.end);
 
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / queryDuration.getStandardMinutes());
 
             ArrayList<Entry> values = new ArrayList<Entry>();
-            int startPadding = 0;
-            for (int j = startPadding; j < missingStartSteps; ++startPadding, ++j)
-                values.add(new Entry(j, 0, null));
+            float startingOpen = initialQuote.getOpen();
+            for (int j = 0; j < missingStartSteps; ++j)
+                values.add(new Entry(j, startingOpen, null));
 
-            int j = startPadding;
-            for (; j < stockHistory.size() + startPadding; ++j)
+            for (int j = missingStartSteps; j < stockHistory.size() + missingStartSteps; ++j)
             {
-                Stock.IQuote quote = stockHistory.get(j - startPadding);
+                Stock.IQuote quote = stockHistory.get(j - missingStartSteps);
                 values.add(new Entry(j, (float)quote.getClose(), quote));
             }
 
-            float lastValue = stockHistory.get(stockHistory.size() - 1).getClose();
-            for (; j < stockHistory.size() + missingEndSteps; ++j)
-                values.add(new Entry(j, lastValue, null));
+            float finalClose = finalQuote.getClose();
+            for (int j = missingStartSteps +stockHistory.size() ; j < stockHistory.size() + missingStartSteps + missingEndSteps; ++j)
+                values.add(new Entry(j, finalClose, null));
 
             /*if (mChart.getData() != null &&
                     mChart.getData().getDataSetCount() > 0) {
@@ -387,11 +389,12 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
-        if (e.getData() == null)
+        mPrimaryValueTextView.setText(String.format("$%.2f", e.getY()));
+        Stock.IQuote quote = (Stock.IQuote)e.getData();
+        if (quote == null)
             return;
 
-        mPrimaryValueTextView.setText(String.format("$%.2f", e.getY()));
-        updateSecondaryTextView(mLastQuery.results.get(0), (Stock.IQuote)e.getData());
+        updateSecondaryTextView(mLastQuery.results.get(0), quote);
     }
 
     @Override

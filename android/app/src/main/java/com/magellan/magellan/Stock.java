@@ -140,9 +140,9 @@ public class Stock {
         public BarChartQuote(HistoryBar source) { mSource = source;}
         public DateTime getTime() { return DateTime.parse(mSource.getTimestamp());}
         public float getClose() { return (float)mSource.getClose();}
-        public float getOpen() { return (float)mSource.getClose();}
-        public float getLow() { return (float)mSource.getClose();}
-        public float getHigh() { return (float)mSource.getClose();}
+        public float getOpen() { return (float)mSource.getOpen();}
+        public float getLow() { return (float)mSource.getLow();}
+        public float getHigh() { return (float)mSource.getHigh();}
         public int getVolume() { return mSource.getVolume();}
     }
 
