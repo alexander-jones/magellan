@@ -5,6 +5,7 @@ import java.util.List;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.TypedValue;
 import android.util.Log;
 import android.graphics.DashPathEffect;
 import android.os.Bundle;
@@ -22,14 +23,18 @@ import android.widget.TextView;
 import android.widget.GridLayout;
 import android.text.Html;
 
-import com.barchart.ondemand.util.QueryUtil;
-import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.CombinedData;
+import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
@@ -59,6 +64,9 @@ public class StockAnalyzerActivity extends AppCompatActivity
         TenYears
     }
 
+    private static int CHART_MARGIN = 10;
+    private static int CHART_SPACING = 5;
+
     private String mSymbol;
 
     private TextView mPrimaryValueTextView;
@@ -67,7 +75,9 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private RecyclerView mActiveOverlaysContainer;
     private ActiveOverlayAdapter mActiveOverlayAdapter;
     private TabLayout mIntervalTabLayout;
-    private LineChart mChart;
+
+    private CombinedChart mPriceChart;
+    private CombinedChart mVolumeChart;
 
     private Stock.HistoryQueryTask mQuoteTask;
     private QueryContext mLastQuery = new QueryContext();
@@ -77,6 +87,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         Stock.HistoryQuery query;
         Stock.IQuoteCollection results;
         QuotePeriod quotePeriod;
+        boolean complete = false;
     }
 
     @Override
@@ -99,35 +110,16 @@ public class StockAnalyzerActivity extends AppCompatActivity
         mActiveOverlayAdapter = new ActiveOverlayAdapter();
         mActiveOverlaysContainer.setAdapter(mActiveOverlayAdapter);
 
-        mChart = (LineChart) findViewById(R.id.chart);
-        mChart.setNoDataText("");
-        mChart.setOnChartGestureListener(this);
-        mChart.setOnChartValueSelectedListener(this);
-        mChart.setDrawGridBackground(false);
-        mChart.setDrawMarkers(false);
-        mChart.setDrawBorders(true);
-        mChart.getDescription().setText("");
-        mChart.disableScroll();
-        mChart.setPinchZoom(false);
-        mChart.setDoubleTapToZoomEnabled(false);
-        mChart.setScaleEnabled(false);
+        float chart_margin_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_MARGIN, getResources().getDisplayMetrics());
+        float chart_spacing_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_SPACING, getResources().getDisplayMetrics());
 
-        mChart.getLegend().setEnabled(false);
+        mPriceChart = (CombinedChart) findViewById(R.id.price_chart);
+        initializeChart(mPriceChart);
+        mPriceChart.setViewPortOffsets(chart_margin_px, chart_margin_px, chart_margin_px, 0);
 
-        XAxis xAxis = mChart.getXAxis();
-        xAxis.setDrawLabels(false);
-        xAxis.setDrawAxisLine(false);
-        xAxis.setDrawGridLines(false);
-
-        YAxis leftAxis = mChart.getAxisLeft();
-        leftAxis.setDrawLabels(false);
-        leftAxis.setDrawAxisLine(false);
-        leftAxis.setDrawGridLines(false);
-
-        YAxis rightAxis =  mChart.getAxisRight();
-        rightAxis.setDrawLabels(false);
-        rightAxis.setDrawAxisLine(false);
-        rightAxis.setDrawGridLines(false);
+        mVolumeChart = (CombinedChart) findViewById(R.id.volume_chart);
+        initializeChart(mVolumeChart);
+        mVolumeChart.setViewPortOffsets(chart_margin_px,chart_margin_px,chart_margin_px,chart_spacing_px);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -158,6 +150,39 @@ public class StockAnalyzerActivity extends AppCompatActivity
         });
     }
 
+    
+    // initialize default settins for any charts in this activity
+    private void initializeChart(CombinedChart chart)
+    {
+        chart.setNoDataText("");
+        chart.setOnChartGestureListener(this);
+        chart.setOnChartValueSelectedListener(this);
+        chart.setDrawGridBackground(false);
+        chart.setDrawMarkers(false);
+        chart.setDrawBorders(true);
+        chart.getDescription().setText("");
+        chart.disableScroll();
+        chart.setPinchZoom(false);
+        chart.setDoubleTapToZoomEnabled(false);
+        chart.setScaleEnabled(false);
+        chart.getLegend().setEnabled(false);
+
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setDrawLabels(false);
+        xAxis.setDrawAxisLine(false);
+        xAxis.setDrawGridLines(false);
+
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.setDrawLabels(false);
+        leftAxis.setDrawAxisLine(false);
+        leftAxis.setDrawGridLines(false);
+
+        YAxis rightAxis =  chart.getAxisRight();
+        rightAxis.setDrawLabels(false);
+        rightAxis.setDrawAxisLine(false);
+        rightAxis.setDrawGridLines(false);
+    }
+
     private void launchTaskForTab(int position)
     {
         DateTime start = null;
@@ -176,6 +201,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         if (position <0 || position > quotePeriods.length)
             Log.e("Magellan", "Encountered Unknown Duration Tab Index");
 
+        mLastQuery.complete = false;
         mLastQuery.quotePeriod = quotePeriods[position];
         switch (mLastQuery.quotePeriod)
         {
@@ -209,7 +235,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
                 start = start.minusYears(10);
                 break;
         }
-        mLastQuery.query = new Stock.HistoryQuery(mSymbol, start, null, intervalUnit, interval);
+        mLastQuery.query = new Stock.HistoryQuery(mSymbol, start, end, intervalUnit, interval);
         mLastQuery.results = null;
         mQuoteTask = new Stock.HistoryQueryTask(this);
         mQuoteTask.execute(mLastQuery.query);
@@ -219,8 +245,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
     {
         Duration queryDuration = new Duration(mLastQuery.query.start, mLastQuery.query.end); //.getIntervalAsDuration();
         Duration intervalDuration = mLastQuery.query.getIntervalAsDuration();
-        LineData data = null;
-        ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
+        ArrayList<IBarDataSet> volumeDataSets = new ArrayList<IBarDataSet>();
         for (int i = 0; i < stockHistories.size(); i++)
         {
             Stock.IQuoteCollection stockHistory = stockHistories.get(i);
@@ -236,59 +262,80 @@ public class StockAnalyzerActivity extends AppCompatActivity
             Duration missingEndDuration = new Duration(finalQuote.getTime(), mLastQuery.query.end);
 
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
-            int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / queryDuration.getStandardMinutes());
+            int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
 
-            ArrayList<Entry> values = new ArrayList<Entry>();
+            ArrayList<Entry> priceValues = new ArrayList<Entry>();
+            ArrayList<BarEntry> volumeValues = new ArrayList<BarEntry>();
             float startingOpen = initialQuote.getOpen();
-            for (int j = 0; j < missingStartSteps; ++j)
-                values.add(new Entry(j, startingOpen, null));
+            for (int j = 0; j < missingStartSteps; ++j) {
+                priceValues.add(new Entry(j, startingOpen, null));
+                volumeValues.add(new BarEntry(j, 0, null));
+            }
 
             for (int j = missingStartSteps; j < stockHistory.size() + missingStartSteps; ++j)
             {
                 Stock.IQuote quote = stockHistory.get(j - missingStartSteps);
-                values.add(new Entry(j, (float)quote.getClose(), quote));
+                priceValues.add(new Entry(j, (float)quote.getClose(), quote));
+                volumeValues.add(new BarEntry(j, (float)quote.getVolume(), quote));
             }
 
             float finalClose = finalQuote.getClose();
-            for (int j = missingStartSteps +stockHistory.size() ; j < stockHistory.size() + missingStartSteps + missingEndSteps; ++j)
-                values.add(new Entry(j, finalClose, null));
+            for (int j = missingStartSteps +stockHistory.size() ; j < stockHistory.size() + missingStartSteps + missingEndSteps; ++j){
 
-            /*if (mChart.getData() != null &&
-                    mChart.getData().getDataSetCount() > 0) {
-                LineDataSet set1 = (LineDataSet) mChart.getData().getDataSetByIndex(i);
+                priceValues.add(new Entry(j, finalClose, null));
+                volumeValues.add(new BarEntry(j, 0, null));
+            }
+
+            /*if (mPriceChart.getData() != null &&
+                    mPriceChart.getData().getDataSetCount() > 0) {
+                LineDataSet set1 = (LineDataSet) mPriceChart.getData().getDataSetByIndex(i);
                 set1.setValues(values);
-                mChart.getData().notifyDataChanged();
+                mPriceChart.getData().notifyDataChanged();
                 continue;
             }*/
 
-            LineDataSet set1 = new LineDataSet(values, "");
-            set1.setDrawIcons(false);
+            LineDataSet lineSet = new LineDataSet(priceValues, "");
+            lineSet.setDrawIcons(false);
+            lineSet.disableDashedLine();
+            lineSet.enableDashedHighlightLine(10f, 5f, 0f);
+            lineSet.setHighLightColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            lineSet.setLineWidth(1f);
+            lineSet.setValueTextSize(9f);
+            lineSet.setDrawFilled(true);
+            lineSet.setFormLineWidth(1f);
+            lineSet.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
+            lineSet.setFormSize(15.f);
+            lineSet.setColor(ContextCompat.getColor(this, R.color.colorSecondary));
+            lineSet.setFillColor(ContextCompat.getColor(this, R.color.colorSecondary));
+            lineSet.setDrawCircles(false);
+            lineSet.setDrawValues(false);
+            priceDataSets.add(lineSet);
 
-            // set the line to be drawn like this "- - - - - -"
-            set1.disableDashedLine();
-            set1.enableDashedHighlightLine(10f, 5f, 0f);
-            set1.setHighLightColor(ContextCompat.getColor(this, R.color.colorPrimary));
-            set1.setLineWidth(1f);
-            set1.setValueTextSize(9f);
-            set1.setDrawFilled(true);
-            set1.setFormLineWidth(1f);
-            set1.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
-            set1.setFormSize(15.f);
-            set1.setColor(ContextCompat.getColor(this, R.color.colorSecondary));
-            set1.setFillColor(ContextCompat.getColor(this, R.color.colorSecondary));
-            set1.setDrawCircles(false);
-            set1.setDrawValues(false);
-            dataSets.add(set1);
+            BarDataSet barSet = new BarDataSet(volumeValues, "");
+            barSet.setDrawIcons(false);
+            barSet.setDrawValues(false);
+            barSet.setHighLightColor(ContextCompat.getColor(this, R.color.colorPrimary));
+            barSet.setColor(ContextCompat.getColor(this, R.color.colorSecondary));
+            volumeDataSets.add(barSet);
 
-            mPrimaryValueTextView.setText(String.format("$%.2f", values.get(values.size() - 1).getY()));
+            mPrimaryValueTextView.setText(String.format("$%.2f", priceValues.get(priceValues.size() - 1).getY()));
         }
 
+        CombinedData combinedPriceData = new CombinedData();
+        combinedPriceData.setData(new LineData(priceDataSets));
         updateSecondaryTextView(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
-        data = new LineData(dataSets);
-        mChart.setData(data);
+        mPriceChart.setData(combinedPriceData);
+        mPriceChart.notifyDataSetChanged();
+        mPriceChart.fitScreen();
 
-        mChart.notifyDataSetChanged();
-        mChart.fitScreen();
+        BarData bd = new BarData(volumeDataSets);
+        bd.setBarWidth(1);
+        CombinedData combinedVolumeData = new CombinedData();
+        combinedVolumeData.setData(bd);
+        mVolumeChart.setData(combinedVolumeData);
+        mVolumeChart.notifyDataSetChanged();
+        mVolumeChart.fitScreen();
+        mLastQuery.complete = true;
     }
 
     @Override
@@ -389,16 +436,22 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
+        if (!mLastQuery.complete)
+            return;
+
         mPrimaryValueTextView.setText(String.format("$%.2f", e.getY()));
         Stock.IQuote quote = (Stock.IQuote)e.getData();
         if (quote == null)
             return;
 
+        //mVolumeChart.highlightValue(e.getX(), (int)e.getX());
         updateSecondaryTextView(mLastQuery.results.get(0), quote);
     }
 
     @Override
     public void onNothingSelected() {
+        if (!mLastQuery.complete)
+            return;
 
         updateSecondaryTextView(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
     }
@@ -415,8 +468,11 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private static DateTimeFormatter dayOfYearFormatter = DateTimeFormat.forPattern("MMM d y");
     private void updateSecondaryTextView(Stock.IQuote startQuote, Stock.IQuote endQuote)
     {
-        float priceDiff = (endQuote.getClose() - startQuote.getClose());
+        float priceDiff = endQuote.getClose() - startQuote.getClose();
         float priceDiffPercent = (priceDiff / startQuote.getClose()) * 100.0f;
+
+        float volumeDiff = endQuote.getVolume() - startQuote.getVolume();
+        float volumeDiffPercent = (volumeDiff / startQuote.getVolume()) * 100.0f;
 
         DateTime endTime = endQuote.getTime();
         String timeString;

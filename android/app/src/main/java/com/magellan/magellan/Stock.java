@@ -148,9 +148,21 @@ public class Stock {
 
     private static class BarChartQuoteCollection implements IQuoteCollection
     {
-        HistoryBar [] mSource;
-        public BarChartQuoteCollection(Collection<HistoryBar> source) { mSource = new HistoryBar [source.size()]; source.toArray(mSource);}
-        public IQuote get(int i) { return new BarChartQuote(mSource[i]);}
+        private BarChartQuote [] mSource;
+        public BarChartQuoteCollection(Collection<HistoryBar> source)
+        {
+            // not sure if it is better to lazily construct the BarCharQuote objects
+            // but I'd imagine anyone making the query wants to access ALL of the data
+            // and may want to access individual data points multiple times
+            // so we'll do the construction up front.
+            HistoryBar [] tmp = new HistoryBar [source.size()];
+            source.toArray(tmp);
+
+            mSource = new BarChartQuote [source.size()];
+            for (int i = 0; i < source.size(); i++)
+                mSource[i] = new BarChartQuote(tmp[i]);
+        }
+        public IQuote get(int i) { return mSource[i];}
         public int size() {return mSource.length;}
     }
 

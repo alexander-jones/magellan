@@ -22,7 +22,7 @@ public class PortfolioActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnChartGestureListener, OnChartValueSelectedListener{
 
-    private LineChart mChart;
+    private LineChart mPriceChart;
     private Stock.HistoryQueryTask mQuoteTask;
 
     @Override
@@ -33,12 +33,12 @@ public class PortfolioActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        mChart = (LineChart) findViewById(R.id.chart);
-        mChart.setOnChartGestureListener(this);
-        mChart.setOnChartValueSelectedListener(this);
-        mChart.setDrawGridBackground(false);
-        mChart.setDrawBorders(true);
-        mChart.setDrawMarkers(false);
+        mPriceChart = (LineChart) findViewById(R.id.chart);
+        mPriceChart.setOnChartGestureListener(this);
+        mPriceChart.setOnChartValueSelectedListener(this);
+        mPriceChart.setDrawGridBackground(false);
+        mPriceChart.setDrawBorders(true);
+        mPriceChart.setDrawMarkers(false);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
