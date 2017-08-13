@@ -3,8 +3,8 @@
     android:layout_marginRight="5pt"
     android:layout_row="0"
     android:layout_column="3"
-    android:layout_height="18pt"
-    android:layout_width="20pt"
+    android:layout_height="@dimen/layer_button_dimen"
+    android:layout_width="@dimen/layer_button_dimen"
     android:textSize="14dip"
     android:elevation="10dp"
     android:background="@color/cardview_light_background"/>

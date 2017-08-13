@@ -111,13 +111,13 @@
                 android:layout_marginBottom="10dp"
                 android:layout_below="@+id/date"
                 android:orientation="horizontal"
-                android:weightSum="6"
+                android:weightSum="1"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="4"
+                    android:layout_weight="1"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
                     android:gravity="center"
@@ -189,45 +189,43 @@
                     </android.support.design.widget.TabLayout>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="fill_parent"
-                    android:layout_weight="2"
-                    android:layout_marginRight="10dp"
-                    android:orientation="vertical"
-                    android:background="@color/cardview_light_background"
-                    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:orientation="horizontal"
+                android:background="@color/cardview_light_background"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                   android:layout_height="match_parent"
                         android:layout_marginTop="@dimen/layer_button_padding"
-                        android:layout_marginLeft="@dimen/layer_button_padding"
-                        android:layout_marginRight="@dimen/layer_button_padding"
-                        android:orientation="horizontal">
+                        android:layout_marginBottom="@dimen/layer_button_padding"
+                        android:layout_marginLeft="@dimen/layer_button_padding">
 
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/price_layers"
-                            android:layout_width="wrap_content"
-                            android:layout_height="@dimen/layer_button_dimen"
+                            android:layout_width="@dimen/layer_button_dimen"
+                            android:layout_height="wrap_content"
                             android:background="@color/cardview_light_background"
-                            android:layout_marginRight="@dimen/layer_button_padding"
-                            android:layout_alignParentLeft="true"
-                            android:layout_toLeftOf="@+id/add_price_layer_button"
-                            android:orientation="horizontal"/>
+                            android:layout_marginBottom="@dimen/layer_button_padding"
+                            android:layout_alignParentTop="true"
+                            android:layout_above="@+id/add_price_layer_button"
+                            android:orientation="vertical"/>
 
                         <ImageButton
                             android:id="@+id/add_price_layer_button"
                             android:layout_width="@dimen/layer_button_dimen"
                             android:layout_height="@dimen/layer_button_dimen"
-                            android:layout_alignParentRight="true"
+                            android:layout_alignParentBottom="true"
                             android:src="@drawable/ic_add_black_24dp"
                             android:background="@color/cardview_light_background"/>
                     </RelativeLayout>
 
                     <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
                         android:layout_marginTop="@dimen/layer_button_padding"
                         android:layout_marginBottom="@dimen/layer_button_padding"
                         android:layout_marginLeft="@dimen/layer_button_padding"
@@ -237,26 +235,25 @@
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/layer_button_padding"
                         android:layout_marginBottom="@dimen/layer_button_padding"
-                        android:layout_marginLeft="@dimen/layer_button_padding"
-                        android:layout_marginRight="@dimen/layer_button_padding"
-                        android:orientation="horizontal">
+                        android:layout_marginRight="@dimen/layer_button_padding">
 
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/volume_layers"
-                            android:layout_width="wrap_content"
-                            android:layout_height="@dimen/layer_button_dimen"
+                            android:layout_width="@dimen/layer_button_dimen"
+                            android:layout_height="wrap_content"
                             android:background="@color/cardview_light_background"
-                            android:layout_marginRight="@dimen/layer_button_padding"
-                            android:layout_alignParentLeft="true"
-                            android:layout_toLeftOf="@+id/add_volume_layer_button"
-                            android:orientation="horizontal"/>
+                            android:layout_marginBottom="@dimen/layer_button_padding"
+                            android:layout_alignParentTop="true"
+                            android:layout_above="@+id/add_volume_layer_button"
+                            android:orientation="vertical"/>
 
                         <ImageButton
                             android:id="@+id/add_volume_layer_button"
                             android:layout_width="@dimen/layer_button_dimen"
                             android:layout_height="@dimen/layer_button_dimen"
-                            android:layout_alignParentRight="true"
+                            android:layout_alignParentBottom="true"
                             android:src="@drawable/ic_add_black_24dp"
                             android:background="@color/cardview_light_background"/>
                     </RelativeLayout>
