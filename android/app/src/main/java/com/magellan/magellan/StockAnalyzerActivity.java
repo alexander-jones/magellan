@@ -2,7 +2,10 @@ package com.magellan.magellan;
 
 import java.util.List;
 
+import android.graphics.Color;
 import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.TypedValue;
@@ -18,7 +21,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.GridLayout;
 
 import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.charts.CombinedChart;
@@ -65,9 +67,10 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private TextView mVolumeChangeText;
     private TextView mStockText;
     private TextView mDateText;
-    private GridLayout mOverlayClassesContainer;
-    private RecyclerView mActiveOverlaysContainer;
-    private ActiveOverlayAdapter mActiveOverlayAdapter;
+    private RecyclerView mPriceLayersContainer;
+    private Metric.LayerAdapter mPriceLayerAdapter;
+    private RecyclerView mVolumeLayersContainer;
+    private Metric.LayerAdapter mVolumeLayerAdapter;
     private TabLayout mIntervalTabLayout;
 
     private CombinedChart mPriceChart;
@@ -79,7 +82,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private Stock.HistoryQueryTask mQuoteTask;
     private QueryContext mLastQuery = new QueryContext();
 
-    private List<Metric.IChartLayer> mChartLayers = new ArrayList<Metric.IChartLayer>();
+    private List<Metric.IChartLayer> mStockPriceLayers = new ArrayList<Metric.IChartLayer>();
+    private List<Metric.IChartLayer> mVolumeLayers = new ArrayList<Metric.IChartLayer>();
 
     private class QueryContext
     {
@@ -105,13 +109,24 @@ public class StockAnalyzerActivity extends AppCompatActivity
         mVolumeChangeText = (TextView) findViewById(R.id.volume_change);
         mIntervalTabLayout = (TabLayout) findViewById(R.id.interval_tabs);
 
-        mOverlayClassesContainer = (GridLayout) findViewById(R.id.overlay_classes);
-        mActiveOverlaysContainer = (RecyclerView) findViewById(R.id.active_overlays);
-        mActiveOverlaysContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        mActiveOverlaysContainer.setHasFixedSize(true);
+        mPriceLayersContainer = (RecyclerView) findViewById(R.id.price_layers);
+        mPriceLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        mPriceLayersContainer.setHasFixedSize(true);
 
-        mActiveOverlayAdapter = new ActiveOverlayAdapter();
-        mActiveOverlaysContainer.setAdapter(mActiveOverlayAdapter);
+        List<String> testActiveLayerLabels = new ArrayList<String>();
+        testActiveLayerLabels.add("SP");
+        mPriceLayerAdapter = new Metric.LayerAdapter(testActiveLayerLabels, ContextCompat.getColor(this, R.color.colorSecondary), Color.WHITE);
+        mPriceLayersContainer.setAdapter(mPriceLayerAdapter);
+
+        mVolumeLayersContainer = (RecyclerView) findViewById(R.id.volume_layers);
+        mVolumeLayersContainer = (RecyclerView) findViewById(R.id.volume_layers);
+        mVolumeLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        mVolumeLayersContainer.setHasFixedSize(true);
+
+        List<String> testActiveVolumeLayerLabels = new ArrayList<String>();
+        testActiveVolumeLayerLabels.add("Vol");
+        mVolumeLayerAdapter = new Metric.LayerAdapter(testActiveVolumeLayerLabels, ContextCompat.getColor(this, R.color.colorSecondary), Color.WHITE);
+        mVolumeLayersContainer.setAdapter(mVolumeLayerAdapter);
 
         float chart_margin_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_MARGIN, getResources().getDisplayMetrics());
         float chart_spacing_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_SPACING, getResources().getDisplayMetrics());
@@ -126,11 +141,14 @@ public class StockAnalyzerActivity extends AppCompatActivity
         initializeChart(mVolumeChart);
         mVolumeChart.setViewPortOffsets(chart_margin_px,chart_margin_px,chart_margin_px,chart_spacing_px);
 
-        mChartLayers.add(new StockPriceMetric.ChartLayer(StockPriceMetric.ChartType.Line));
-        mChartLayers.add(new VolumeMetric.ChartLayer());
+        mStockPriceLayers.add(new StockPriceMetric.BasicChartLayer(StockPriceMetric.ChartType.Line));
+        mVolumeLayers.add(new VolumeMetric.BasicChartLayer());
 
-        for (Metric.IChartLayer layer : mChartLayers)
-            layer.init(this, mPriceChartData, mVolumeChartData);
+        for (Metric.IChartLayer layer : mStockPriceLayers)
+            layer.init(this, mPriceChartData);
+
+        for (Metric.IChartLayer layer : mVolumeLayers)
+            layer.init(this, mVolumeChartData);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -141,10 +159,11 @@ public class StockAnalyzerActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mSymbol = "SNAP";
+        mSymbol = "AMC";
         mStockText.setText(mSymbol);
 
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(false);
         launchTaskForTab(mIntervalTabLayout.getSelectedTabPosition());
         mIntervalTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -153,12 +172,10 @@ public class StockAnalyzerActivity extends AppCompatActivity
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
+            public void onTabUnselected(TabLayout.Tab tab) {}
 
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
 
@@ -277,7 +294,10 @@ public class StockAnalyzerActivity extends AppCompatActivity
             quoteContext.missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             quoteContext.missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
 
-            for (Metric.IChartLayer layer : mChartLayers)
+            for (Metric.IChartLayer layer : mStockPriceLayers)
+                layer.onQuoteResults(stockHistory, quoteContext);
+
+            for (Metric.IChartLayer layer : mVolumeLayers)
                 layer.onQuoteResults(stockHistory, quoteContext);
 
             updateHeaderText(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
@@ -357,9 +377,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
             return;
 
         Entry entry = mPriceChart.getEntryByTouchPoint(me.getX(), me.getY()); // this is not the xth element but the x screen pos...
-        Highlight highlight = new Highlight(entry.getX(), 0, 0);
-        highlight.setDataIndex(0);
-        highlightQuote((Stock.IQuote)entry.getData(), highlight);
+        highlightQuote(entry);
     }
 
     @Override
@@ -401,11 +419,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         if (!mLastQuery.complete)
             return;
 
-        Stock.IQuote quote = (Stock.IQuote)e.getData();
-        if (quote == null)
-            return;
-
-        highlightQuote(quote, h);
+        highlightQuote(e);
     }
 
     @Override
@@ -420,8 +434,14 @@ public class StockAnalyzerActivity extends AppCompatActivity
         updateHeaderText(mLastQuery.results.get(0), lastQuery);
     }
 
-    private void highlightQuote(Stock.IQuote quote, Highlight h)
+    private void highlightQuote(Entry e)
     {
+        Stock.IQuote quote = (Stock.IQuote)e.getData();
+        if (quote == null)
+            return;
+
+        Highlight h = new Highlight(e.getX(), 0, 0);
+        h.setDataIndex(0);
         mPriceChart.highlightValue(h, false);
         mVolumeChart.highlightValue(h, false);
         updateHeaderText(mLastQuery.results.get(0), quote);
@@ -455,7 +475,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         float priceDiffPercent = (priceDiff / startQuote.getClose()) * 100.0f;
 
         int volumeDiff = endQuote.getVolume() - startQuote.getVolume();
-        float volumeDiffPercent = (volumeDiff / startQuote.getVolume()) * 100.0f;
+        float volumeDiffPercent = ((float)volumeDiff / (float)startQuote.getVolume()) * 100.0f;
 
         DateTime endTime = endQuote.getTime();
         String timeString;

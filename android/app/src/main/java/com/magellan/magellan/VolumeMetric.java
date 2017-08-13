@@ -13,13 +13,12 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import java.util.ArrayList;
 
 public class VolumeMetric {
-    public static class ChartLayer implements Metric.IChartLayer {
+    public static class BasicChartLayer implements Metric.IChartLayer {
 
         private Context mContext;
         private CombinedData mVolumeChartData;
-        private BarData mBarData = null;
 
-        public void init(Context context, CombinedData priceChartData, CombinedData volumeChartData)
+        public void init(Context context, CombinedData volumeChartData)
         {
             mContext = context;
             mVolumeChartData = volumeChartData;
@@ -53,6 +52,7 @@ public class VolumeMetric {
             barSet.setDrawValues(false);
             barSet.setHighLightColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
             barSet.setColor(ContextCompat.getColor(mContext, R.color.colorSecondary));
+            barSet.setBarBorderWidth(0.0f);
             volumeDataSets.add(barSet);
 
             BarData bd = new BarData(volumeDataSets);

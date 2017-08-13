@@ -23,7 +23,7 @@ public class StockPriceMetric {
         Line
     }
 
-    public static class ChartLayer implements Metric.IChartLayer
+    public static class BasicChartLayer implements Metric.IChartLayer
     {
         private Context mContext;
         private CombinedData mPriceChartData;
@@ -31,12 +31,12 @@ public class StockPriceMetric {
         private LineData mLineData = null;
         private CandleData mCandleData = null;
 
-        public ChartLayer(ChartType type)
+        public BasicChartLayer(ChartType type)
         {
             mType = type;
         }
 
-        public void init(Context context, CombinedData priceChartData, CombinedData volumeChartData)
+        public void init(Context context, CombinedData priceChartData)
         {
             mContext = context;
             mPriceChartData = priceChartData;

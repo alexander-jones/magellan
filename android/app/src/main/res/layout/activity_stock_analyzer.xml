@@ -30,8 +30,8 @@
 
         <LinearLayout
             android:id="@+id/portfolio_layout"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="@color/colorAccent"
             android:orientation="vertical"
             app:layout_anchor="@id/app_bar"
@@ -39,7 +39,7 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:id="@+id/header_layout">
 
                 <View
@@ -111,175 +111,178 @@
                     android:layout_toRightOf="@+id/stock"
                     android:layout_below="@+id/volume"/>
 
-                <android.support.v7.widget.CardView
-                    android:id="@+id/card_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_below="@+id/price_change"
-                    android:background="@color/colorAccent">
-
-                    <RelativeLayout
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content">
-
-                        <com.github.mikephil.charting.charts.CombinedChart
-                            android:id="@+id/price_chart"
-                            android:layout_width="match_parent"
-                            android:layout_height="250dp"/>
-
-                        <com.github.mikephil.charting.charts.CombinedChart
-                            android:id="@+id/volume_chart"
-                            android:layout_width="match_parent"
-                            android:layout_height="50dp"
-                            android:layout_below="@+id/price_chart"/>
-
-                        <android.support.design.widget.TabLayout
-                            android:id="@+id/interval_tabs"
-                            android:layout_height="wrap_content"
-                            android:layout_width="match_parent"
-                            android:layout_below="@+id/volume_chart"
-                            app:tabIndicatorColor="@color/colorPrimary"
-                            app:tabSelectedTextColor="@color/colorPrimary"
-                            app:tabTextColor="@color/colorPrimaryDark">
-
-                            <android.support.design.widget.TabItem
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="1D"
-                                android:background="@color/cardview_light_background"/>
-
-                            <android.support.design.widget.TabItem
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="1W"
-                                android:background="@color/cardview_light_background"/>
-
-                            <android.support.design.widget.TabItem
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="1M"
-                                android:background="@color/cardview_light_background"/>
-
-                            <android.support.design.widget.TabItem
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="3M"
-                                android:background="@color/cardview_light_background"/>
-
-                            <android.support.design.widget.TabItem
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="1Y"
-                                android:background="@color/cardview_light_background"/>
-
-                            <android.support.design.widget.TabItem
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="5Y"
-                                android:background="@color/cardview_light_background"/>
-
-                            <android.support.design.widget.TabItem
-                                android:layout_height="wrap_content"
-                                android:layout_width="wrap_content"
-                                android:text="10Y"
-                                android:background="@color/cardview_light_background"/>
-
-                        </android.support.design.widget.TabLayout>
-
-                    </RelativeLayout>
-                </android.support.v7.widget.CardView>
-            </RelativeLayout>
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:background="@color/cardview_light_background"
-                android:orientation="vertical"
-                android:layout_margin="10dp"
-                app:layout_anchor="@id/app_bar"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/active_overlays"
-                    android:layout_width="match_parent"
-                    android:layout_height="29pt"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_centerHorizontal="true"
-                    android:background="@color/cardview_light_background"
-                    android:orientation="horizontal"
-                    android:layout_below="@+id/secondary_value"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:background="@android:color/darker_gray"/>
-
-                <GridLayout
-                    android:id="@+id/overlay_classes"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:rowCount="4"
-                    android:columnCount="4"
-                    android:background="@color/cardview_light_background">
+                    android:layout_below="@+id/price_change"
+                    android:weightSum="1"
+                    android:orientation="vertical">
 
-                    <Button
-                        android:layout_marginTop="5dp"
-                        android:layout_marginLeft="5dp"
-                        android:text="SP"
-                        android:layout_row="0"
-                        android:layout_column="0"
-                        android:layout_height="25pt"
-                        android:layout_width="25pt"
-                        android:textSize="14dip"
-                        android:elevation="10dp"
-                        android:background="@color/cardview_light_background"/>
-                    <Button
-                        android:layout_marginTop="5dp"
-                        android:layout_marginLeft="5dp"
-                        android:text="MA"
-                        android:layout_row="0"
-                        android:layout_column="1"
-                        android:layout_height="25pt"
-                        android:layout_width="25pt"
-                        android:textSize="14dip"
-                        android:elevation="10dp"
-                        android:background="@color/cardview_light_background"/>
-                    <Button
-                        android:layout_marginTop="5dp"
-                        android:layout_marginLeft="5dp"
-                        android:text="VOL"
-                        android:layout_row="0"
-                        android:layout_column="2"
-                        android:layout_height="25pt"
-                        android:layout_width="25pt"
-                        android:textSize="14dip"
-                        android:elevation="10dp"
-                        android:background="@color/cardview_light_background"/>
+                    <android.support.v7.widget.CardView
+                        android:id="@+id/card_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:background="@color/colorAccent">
 
-                    <Button
-                        android:layout_marginTop="5dp"
-                        android:layout_marginLeft="5dp"
-                        android:text="DIV"
-                        android:layout_row="0"
-                        android:layout_column="3"
-                        android:layout_height="25pt"
-                        android:layout_width="25pt"
-                        android:textSize="14dip"
-                        android:elevation="10dp"
-                        android:background="@color/cardview_light_background"/>
-                </GridLayout>
-            </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:weightSum="1"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:weightSum="7"
+                                android:orientation="vertical">
+
+                                <com.github.mikephil.charting.charts.CombinedChart
+                                    android:id="@+id/price_chart"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="5"/>
+
+                                <com.github.mikephil.charting.charts.CombinedChart
+                                    android:id="@+id/volume_chart"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="2"
+                                    android:layout_below="@+id/price_chart"/>
+                            </LinearLayout>
+
+                            <android.support.design.widget.TabLayout
+                                android:id="@+id/interval_tabs"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:tabIndicatorColor="@color/colorPrimary"
+                                app:tabSelectedTextColor="@color/colorPrimary"
+                                app:tabTextColor="@color/colorPrimaryDark">
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="1D"
+                                    android:background="@color/cardview_light_background"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="1W"
+                                    android:background="@color/cardview_light_background"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="1M"
+                                    android:background="@color/cardview_light_background"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="3M"
+                                    android:background="@color/cardview_light_background"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="1Y"
+                                    android:background="@color/cardview_light_background"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="5Y"
+                                    android:background="@color/cardview_light_background"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="10Y"
+                                    android:background="@color/cardview_light_background"/>
+
+                            </android.support.design.widget.TabLayout>
+
+                        </LinearLayout>
+                    </android.support.v7.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/cardview_light_background"
+                        android:orientation="vertical"
+                        android:layout_margin="10dp"
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/layer_button_padding"
+                            android:layout_marginLeft="@dimen/layer_button_padding"
+                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:orientation="horizontal">
+
+                            <android.support.v7.widget.RecyclerView
+                                android:id="@+id/price_layers"
+                                android:layout_width="wrap_content"
+                                android:layout_height="@dimen/layer_button_dimen"
+                                android:background="@color/cardview_light_background"
+                                android:layout_marginRight="@dimen/layer_button_padding"
+                                android:layout_alignParentLeft="true"
+                                android:layout_toLeftOf="@+id/add_price_layer_button"
+                                android:orientation="horizontal"/>
+
+                            <ImageButton
+                                android:id="@+id/add_price_layer_button"
+                                android:layout_width="@dimen/layer_button_dimen"
+                                android:layout_height="@dimen/layer_button_dimen"
+                                android:layout_alignParentRight="true"
+                                android:src="@drawable/ic_add_black_24dp"
+                                android:background="@color/cardview_light_background"/>
+                        </RelativeLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="@dimen/layer_button_padding"
+                            android:layout_marginBottom="@dimen/layer_button_padding"
+                            android:layout_marginLeft="@dimen/layer_button_padding"
+                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:background="@android:color/darker_gray"/>
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/layer_button_padding"
+                            android:layout_marginLeft="@dimen/layer_button_padding"
+                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:orientation="horizontal">
+
+                            <android.support.v7.widget.RecyclerView
+                                android:id="@+id/volume_layers"
+                                android:layout_width="wrap_content"
+                                android:layout_height="@dimen/layer_button_dimen"
+                                android:background="@color/cardview_light_background"
+                                android:layout_marginRight="@dimen/layer_button_padding"
+                                android:layout_alignParentLeft="true"
+                                android:layout_toLeftOf="@+id/add_volume_layer_button"
+                                android:orientation="horizontal"/>
+
+                            <ImageButton
+                                android:id="@+id/add_volume_layer_button"
+                                android:layout_width="@dimen/layer_button_dimen"
+                                android:layout_height="@dimen/layer_button_dimen"
+                                android:layout_alignParentRight="true"
+                                android:src="@drawable/ic_add_black_24dp"
+                                android:background="@color/cardview_light_background"/>
+                        </RelativeLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </RelativeLayout>
         </LinearLayout>
 
     </android.support.design.widget.CoordinatorLayout>
