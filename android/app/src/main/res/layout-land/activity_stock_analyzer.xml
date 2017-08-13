@@ -107,157 +107,160 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_weight="1"
                 android:layout_below="@+id/date"
-                android:orientation="horizontal"
+                android:layout_margin="10dp"
+                android:gravity="center"
+                android:orientation="vertical"
                 android:weightSum="1"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:background="@color/cardview_light_background">
+                    android:weightSum="2"
+                    android:orientation="horizontal">
 
-                    <com.github.mikephil.charting.charts.CombinedChart
-                        android:id="@+id/price_chart"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="5"/>
-
-                    <com.github.mikephil.charting.charts.CombinedChart
-                        android:id="@+id/volume_chart"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="2"/>
-
-                    <android.support.design.widget.TabLayout
-                        android:id="@+id/interval_tabs"
-                        android:layout_width="match_parent"
+                    <RelativeLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        app:tabIndicatorColor="@color/colorPrimary"
-                        app:tabSelectedTextColor="@color/colorPrimary"
-                        app:tabTextColor="@color/colorPrimaryDark">
-
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="1D"
-                            android:background="@color/cardview_light_background"/>
-
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="1W"
-                            android:background="@color/cardview_light_background"/>
-
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="1M"
-                            android:background="@color/cardview_light_background"/>
-
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="3M"
-                            android:background="@color/cardview_light_background"/>
-
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="1Y"
-                            android:background="@color/cardview_light_background"/>
-
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="5Y"
-                            android:background="@color/cardview_light_background"/>
-
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="10Y"
-                            android:background="@color/cardview_light_background"/>
-
-                    </android.support.design.widget.TabLayout>
-                </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginRight="10dp"
-                android:orientation="horizontal"
-                android:background="@color/cardview_light_background"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                   android:layout_height="match_parent"
-                        android:layout_marginTop="@dimen/layer_button_padding"
+                        android:layout_weight="1"
+                        android:paddingBottom="@dimen/layer_button_padding"
                         android:layout_marginBottom="@dimen/layer_button_padding"
-                        android:layout_marginLeft="@dimen/layer_button_padding">
+                        android:layout_marginRight="@dimen/layer_button_padding"
+                        android:background="@color/cardview_light_background"
+                        android:orientation="horizontal">
+
+                        <com.github.mikephil.charting.charts.CombinedChart
+                            android:id="@+id/price_chart"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentLeft="true"
+                            android:layout_margin="@dimen/layer_button_padding"
+                            android:layout_above="@+id/price_layers"/>
 
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/price_layers"
-                            android:layout_width="@dimen/layer_button_dimen"
-                            android:layout_height="wrap_content"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/layer_button_dimen"
                             android:background="@color/cardview_light_background"
-                            android:layout_marginBottom="@dimen/layer_button_padding"
-                            android:layout_alignParentTop="true"
-                            android:layout_above="@+id/add_price_layer_button"
-                            android:orientation="vertical"/>
+                            android:layout_marginLeft="@dimen/layer_button_padding"
+                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_toLeftOf="@+id/add_price_layer_button"
+                            android:orientation="horizontal"/>
 
                         <ImageButton
                             android:id="@+id/add_price_layer_button"
                             android:layout_width="@dimen/layer_button_dimen"
                             android:layout_height="@dimen/layer_button_dimen"
-                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_below="@+id/price_chart"
+                            android:layout_marginLeft="@dimen/layer_button_padding"
+                            android:layout_marginRight="@dimen/layer_button_padding"
                             android:src="@drawable/ic_add_black_24dp"
                             android:background="@color/cardview_light_background"/>
                     </RelativeLayout>
 
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="@dimen/layer_button_padding"
-                        android:layout_marginBottom="@dimen/layer_button_padding"
-                        android:layout_marginLeft="@dimen/layer_button_padding"
-                        android:layout_marginRight="@dimen/layer_button_padding"
-                        android:background="@android:color/darker_gray"/>
-
                     <RelativeLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/layer_button_padding"
+                        android:layout_weight="1"
                         android:layout_marginBottom="@dimen/layer_button_padding"
-                        android:layout_marginRight="@dimen/layer_button_padding">
+                        android:background="@color/cardview_light_background"
+                        android:paddingBottom="@dimen/layer_button_padding"
+                        android:orientation="horizontal">
+
+                        <com.github.mikephil.charting.charts.CombinedChart
+                            android:id="@+id/volume_chart"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentLeft="true"
+                            android:layout_margin="@dimen/layer_button_padding"
+                            android:layout_above="@+id/volume_layers"/>
 
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/volume_layers"
-                            android:layout_width="@dimen/layer_button_dimen"
-                            android:layout_height="wrap_content"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/layer_button_dimen"
                             android:background="@color/cardview_light_background"
-                            android:layout_marginBottom="@dimen/layer_button_padding"
-                            android:layout_alignParentTop="true"
-                            android:layout_above="@+id/add_volume_layer_button"
-                            android:orientation="vertical"/>
+                            android:layout_marginLeft="@dimen/layer_button_padding"
+                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_toLeftOf="@+id/add_volume_layer_button"
+                            android:orientation="horizontal"/>
 
                         <ImageButton
                             android:id="@+id/add_volume_layer_button"
                             android:layout_width="@dimen/layer_button_dimen"
                             android:layout_height="@dimen/layer_button_dimen"
-                            android:layout_alignParentBottom="true"
+                            android:layout_marginLeft="@dimen/layer_button_padding"
+                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:layout_alignParentRight="true"
+                            android:layout_below="@+id/volume_chart"
                             android:src="@drawable/ic_add_black_24dp"
                             android:background="@color/cardview_light_background"/>
                     </RelativeLayout>
                 </LinearLayout>
+
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/interval_tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:tabMaxWidth="0dp"
+                    app:tabGravity="fill"
+                    app:tabMode="fixed"
+                    app:tabIndicatorColor="@color/colorPrimary"
+                    app:tabSelectedTextColor="@color/colorPrimary"
+                    app:tabTextColor="@color/colorPrimaryDark"
+                    android:background="@color/cardview_light_background">
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1D"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1W"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1M"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="3M"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1Y"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="5Y"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="10Y"
+                        android:background="@color/cardview_light_background"/>
+
+                </android.support.design.widget.TabLayout>
             </LinearLayout>
         </RelativeLayout>
 

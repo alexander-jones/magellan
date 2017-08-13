@@ -134,12 +134,12 @@ public class StockAnalyzerActivity extends AppCompatActivity
         mPriceChart = (CombinedChart) findViewById(R.id.price_chart);
         mPriceChartData = new CombinedData();
         initializeChart(mPriceChart);
-        mPriceChart.setViewPortOffsets(chart_margin_px, chart_margin_px, chart_margin_px, 0);
+        mPriceChart.setViewPortOffsets(0,0,0,0);
 
         mVolumeChart = (CombinedChart) findViewById(R.id.volume_chart);
         mVolumeChartData = new CombinedData();
         initializeChart(mVolumeChart);
-        mVolumeChart.setViewPortOffsets(chart_margin_px,chart_margin_px,chart_margin_px,chart_spacing_px);
+        mVolumeChart.setViewPortOffsets(0,0,0,0);
 
         mStockPriceLayers.add(new StockPriceMetric.BasicChartLayer(StockPriceMetric.ChartType.Line));
         mVolumeLayers.add(new VolumeMetric.BasicChartLayer());
@@ -455,14 +455,23 @@ public class StockAnalyzerActivity extends AppCompatActivity
             return String.format("+$%.2f", priceDiff);
     }
 
+    private String volumeDiffToString(int volumeDiff)
+    {
+        String baseStr = volumeToString(volumeDiff);
+        if (volumeDiff >  0)
+            return "+" + baseStr;
+        return baseStr;
+    }
+
     private String volumeToString(int volume)
     {
-        if (volume > 1000000000) // you never know amiright?
+        float absVolume = Math.abs(volume);
+        if (absVolume > 1000000000) // you never know amiright?
             return String.format("%.2fB", (float)volume / 1000000000.0f);
-        else if (volume > 1000000)
+        else if (absVolume > 1000000)
             return String.format("%.2fM", (float)volume / 1000000.0f);
-        else if (volume > 1000)
-            return String.format("%.2fM", (float)volume / 1000.0f);
+        else if (absVolume > 1000)
+            return String.format("%.2fK", (float)volume / 1000.0f);
         else
             return String.format("%d", volume);
     }
@@ -511,7 +520,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         mPriceText.setText(String.format("$%.2f", endQuote.getClose()));
         mPriceChangeText.setText(String.format("%s (%.2f%%)", priceDiffToString(priceDiff), priceDiffPercent));
         mVolumeText.setText(volumeToString(endQuote.getVolume()));
-        mVolumeChangeText.setText(String.format("%s (%.2f%%)", volumeToString(volumeDiff), volumeDiffPercent));
+        mVolumeChangeText.setText(String.format("%s (%.2f%%)", volumeDiffToString(volumeDiff), volumeDiffPercent));
     }
 
 }
