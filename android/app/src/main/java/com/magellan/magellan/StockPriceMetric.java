@@ -67,6 +67,7 @@ public class StockPriceMetric {
 
                 LineDataSet lineSet = new LineDataSet(priceValues, "");
                 lineSet.setDrawIcons(false);
+                lineSet.setHighlightEnabled(true);
                 lineSet.disableDashedLine();
                 lineSet.enableDashedHighlightLine(10f, 5f, 0f);
                 lineSet.setHighLightColor(ContextCompat.getColor(mContext, R.color.colorPrimary));

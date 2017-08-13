@@ -36,39 +36,80 @@
             android:id="@+id/header_layout">
 
             <View
-                android:id="@+id/spacing"
+                android:id="@+id/header_background"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_alignParentTop="true"
+                android:layout_height="200dp"
                 android:background="@color/colorPrimary"/>
 
             <TextView
-                android:id="@+id/primary_value"
-                android:layout_width="match_parent"
+                android:id="@+id/stock"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Loacing..."
-                android:gravity="center"
+                android:text="STOCK"
                 android:textSize="30sp"
-                android:textColor="@color/colorTextPrimary"
-                android:layout_centerHorizontal="true"/>
+                android:gravity="center"
+                android:layout_centerHorizontal="true"
+                android:textColor="@color/colorTextPrimary"/>
 
             <TextView
-                android:id="@+id/secondary_value"
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Today"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@+id/stock"
+                android:textColor="@color/colorTextPrimary"/>
+
+            <TextView
+                android:id="@+id/price"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="$0.00"
+                android:textSize="30sp"
+                android:gravity="center"
+                android:layout_toLeftOf="@+id/stock"
+                android:textColor="@color/colorTextPrimary"/>
+
+            <TextView
+                android:id="@+id/price_change"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+%0.00 (0.00%)"
                 android:gravity="center"
                 android:textSize="15sp"
                 android:textColor="@color/colorTextPrimary"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@+id/primary_value"/>
+                android:layout_toLeftOf="@+id/stock"
+                android:layout_below="@+id/price"/>
+
+            <TextView
+                android:id="@+id/volume"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0.00K"
+                android:textSize="30sp"
+                android:gravity="center"
+                android:layout_toRightOf="@+id/stock"
+                android:textColor="@color/colorTextPrimary"/>
+
+            <TextView
+                android:id="@+id/volume_change"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+0 (0.00%)"
+                android:gravity="center"
+                android:textSize="15sp"
+                android:textColor="@color/colorTextPrimary"
+                android:layout_toRightOf="@+id/stock"
+                android:layout_below="@+id/volume"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                android:layout_below="@+id/secondary_value"
+                android:layout_below="@+id/date"
                 android:orientation="horizontal"
                 android:weightSum="5"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">

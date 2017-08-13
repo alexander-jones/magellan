@@ -7,9 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.TypedValue;
 import android.util.Log;
-import android.graphics.DashPathEffect;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.view.MotionEvent;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -21,21 +19,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.GridLayout;
-import android.text.Html;
 
 import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -69,8 +59,12 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     private String mSymbol;
 
-    private TextView mPrimaryValueTextView;
-    private TextView mSecondaryValueTextView;
+    private TextView mPriceText;
+    private TextView mPriceChangeText;
+    private TextView mVolumeText;
+    private TextView mVolumeChangeText;
+    private TextView mStockText;
+    private TextView mDateText;
     private GridLayout mOverlayClassesContainer;
     private RecyclerView mActiveOverlaysContainer;
     private ActiveOverlayAdapter mActiveOverlayAdapter;
@@ -103,8 +97,12 @@ public class StockAnalyzerActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
 
-        mPrimaryValueTextView = (TextView) findViewById(R.id.primary_value);
-        mSecondaryValueTextView = (TextView) findViewById(R.id.secondary_value);
+        mStockText = (TextView) findViewById(R.id.stock);
+        mDateText = (TextView) findViewById(R.id.date);
+        mPriceText = (TextView) findViewById(R.id.price);
+        mPriceChangeText = (TextView) findViewById(R.id.price_change);
+        mVolumeText = (TextView) findViewById(R.id.volume);
+        mVolumeChangeText = (TextView) findViewById(R.id.volume_change);
         mIntervalTabLayout = (TabLayout) findViewById(R.id.interval_tabs);
 
         mOverlayClassesContainer = (GridLayout) findViewById(R.id.overlay_classes);
@@ -144,8 +142,9 @@ public class StockAnalyzerActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         mSymbol = "SNAP";
+        mStockText.setText(mSymbol);
 
-        getSupportActionBar().setTitle(mSymbol);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
         launchTaskForTab(mIntervalTabLayout.getSelectedTabPosition());
         mIntervalTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -168,6 +167,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private void initializeChart(CombinedChart chart)
     {
         chart.setNoDataText("");
+        chart.setHighlightPerTapEnabled(false);
+        chart.setHighlightPerDragEnabled(true);
         chart.setOnChartGestureListener(this);
         chart.setOnChartValueSelectedListener(this);
         chart.setDrawGridBackground(false);
@@ -256,7 +257,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     public void onStockHistoryRetrieved(List<Stock.IQuoteCollection> stockHistories)
     {
-        Duration queryDuration = new Duration(mLastQuery.query.start, mLastQuery.query.end); //.getIntervalAsDuration();
+        boolean oneValidHistory = false;
         Duration intervalDuration = mLastQuery.query.getIntervalAsDuration();
         for (int i = 0; i < stockHistories.size(); i++)
         {
@@ -279,9 +280,9 @@ public class StockAnalyzerActivity extends AppCompatActivity
             for (Metric.IChartLayer layer : mChartLayers)
                 layer.onQuoteResults(stockHistory, quoteContext);
 
-            mPrimaryValueTextView.setText(String.format("$%.2f", finalQuote.getClose()));
+            updateHeaderText(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
+            oneValidHistory = true;
         }
-        updateSecondaryTextView(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
 
         mPriceChart.setData(mPriceChartData);
         mPriceChart.notifyDataSetChanged();
@@ -290,7 +291,7 @@ public class StockAnalyzerActivity extends AppCompatActivity
         mVolumeChart.setData(mVolumeChartData);
         mVolumeChart.notifyDataSetChanged();
         mVolumeChart.fitScreen();
-        mLastQuery.complete = true;
+        mLastQuery.complete = oneValidHistory;
     }
 
     @Override
@@ -352,11 +353,18 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     @Override
     public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+        if (!mLastQuery.complete)
+            return;
+
+        Entry entry = mPriceChart.getEntryByTouchPoint(me.getX(), me.getY()); // this is not the xth element but the x screen pos...
+        Highlight highlight = new Highlight(entry.getX(), 0, 0);
+        highlight.setDataIndex(0);
+        highlightQuote((Stock.IQuote)entry.getData(), highlight);
     }
 
     @Override
     public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-
+        onNothingSelected();
     }
 
     @Override
@@ -371,7 +379,6 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
     @Override
     public void onChartSingleTapped(MotionEvent me) {
-
     }
 
     @Override
@@ -394,13 +401,11 @@ public class StockAnalyzerActivity extends AppCompatActivity
         if (!mLastQuery.complete)
             return;
 
-        mPrimaryValueTextView.setText(String.format("$%.2f", e.getY()));
         Stock.IQuote quote = (Stock.IQuote)e.getData();
         if (quote == null)
             return;
 
-        //mVolumeChart.highlightValue(e.getX(), (int)e.getX());
-        updateSecondaryTextView(mLastQuery.results.get(0), quote);
+        highlightQuote(quote, h);
     }
 
     @Override
@@ -408,7 +413,18 @@ public class StockAnalyzerActivity extends AppCompatActivity
         if (!mLastQuery.complete)
             return;
 
-        updateSecondaryTextView(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
+        mPriceChart.highlightValue(null);
+        mVolumeChart.highlightValue(null);
+
+        Stock.IQuote lastQuery = mLastQuery.results.get(mLastQuery.results.size() -1);
+        updateHeaderText(mLastQuery.results.get(0), lastQuery);
+    }
+
+    private void highlightQuote(Stock.IQuote quote, Highlight h)
+    {
+        mPriceChart.highlightValue(h, false);
+        mVolumeChart.highlightValue(h, false);
+        updateHeaderText(mLastQuery.results.get(0), quote);
     }
 
     private String priceDiffToString(float priceDiff)
@@ -419,14 +435,26 @@ public class StockAnalyzerActivity extends AppCompatActivity
             return String.format("+$%.2f", priceDiff);
     }
 
+    private String volumeToString(int volume)
+    {
+        if (volume > 1000000000) // you never know amiright?
+            return String.format("%.2fB", (float)volume / 1000000000.0f);
+        else if (volume > 1000000)
+            return String.format("%.2fM", (float)volume / 1000000.0f);
+        else if (volume > 1000)
+            return String.format("%.2fM", (float)volume / 1000.0f);
+        else
+            return String.format("%d", volume);
+    }
+
     private static DateTimeFormatter timeOfDayFormatter = DateTimeFormat.forPattern("h:mm a z").withZone(DateTimeZone.getDefault());
     private static DateTimeFormatter dayOfYearFormatter = DateTimeFormat.forPattern("MMM d y");
-    private void updateSecondaryTextView(Stock.IQuote startQuote, Stock.IQuote endQuote)
+    private void updateHeaderText(Stock.IQuote startQuote, Stock.IQuote endQuote)
     {
         float priceDiff = endQuote.getClose() - startQuote.getClose();
         float priceDiffPercent = (priceDiff / startQuote.getClose()) * 100.0f;
 
-        float volumeDiff = endQuote.getVolume() - startQuote.getVolume();
+        int volumeDiff = endQuote.getVolume() - startQuote.getVolume();
         float volumeDiffPercent = (volumeDiff / startQuote.getVolume()) * 100.0f;
 
         DateTime endTime = endQuote.getTime();
@@ -459,7 +487,11 @@ public class StockAnalyzerActivity extends AppCompatActivity
                 timeString = "";
                 break;
         }
-        mSecondaryValueTextView.setText(String.format("%s (%.2f%%) %s", priceDiffToString(priceDiff), priceDiffPercent, timeString));
+        mDateText.setText(timeString);
+        mPriceText.setText(String.format("$%.2f", endQuote.getClose()));
+        mPriceChangeText.setText(String.format("%s (%.2f%%)", priceDiffToString(priceDiff), priceDiffPercent));
+        mVolumeText.setText(volumeToString(endQuote.getVolume()));
+        mVolumeChangeText.setText(String.format("%s (%.2f%%)", volumeToString(volumeDiff), volumeDiffPercent));
     }
 
 }

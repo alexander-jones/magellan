@@ -48,6 +48,7 @@ public class VolumeMetric {
                 volumeValues.add(new BarEntry(j, 0, null));
 
             BarDataSet barSet = new BarDataSet(volumeValues, "");
+            barSet.setHighlightEnabled(true);
             barSet.setDrawIcons(false);
             barSet.setDrawValues(false);
             barSet.setHighLightColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
