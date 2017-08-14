@@ -111,132 +111,45 @@
                     android:layout_toRightOf="@+id/stock"
                     android:layout_below="@+id/volume"/>
 
+
                 <LinearLayout
+                    android:id="@+id/metric_cards"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_below="@+id/price_change"
-                    android:weightSum="1"
+                    android:layout_marginTop="@dimen/spacing_external"
+                    android:layout_marginLeft="@dimen/spacing_external"
+                    android:layout_marginRight="@dimen/spacing_external"
+                    android:weightSum="2"
+                    android:layout_above="@+id/interval_tabs"
                     android:orientation="vertical">
-
-                    <android.support.v7.widget.CardView
-                        android:id="@+id/card_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginRight="10dp"
-                        android:background="@color/colorAccent">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:weightSum="1"
-                            android:orientation="vertical">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_weight="1"
-                                android:weightSum="7"
-                                android:orientation="vertical">
-
-                                <com.github.mikephil.charting.charts.CombinedChart
-                                    android:id="@+id/price_chart"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="0dp"
-                                    android:layout_weight="5"
-                                    android:layout_margin="@dimen/layer_button_padding"/>
-
-                                <com.github.mikephil.charting.charts.CombinedChart
-                                    android:id="@+id/volume_chart"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="0dp"
-                                    android:layout_weight="2"
-                                    android:layout_below="@+id/price_chart"
-                                    android:layout_margin="@dimen/layer_button_padding"/>
-                            </LinearLayout>
-
-                            <android.support.design.widget.TabLayout
-                                android:id="@+id/interval_tabs"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                app:tabMaxWidth="0dp"
-                                app:tabGravity="fill"
-                                app:tabMode="fixed"
-                                app:tabIndicatorColor="@color/colorPrimary"
-                                app:tabSelectedTextColor="@color/colorPrimary"
-                                app:tabTextColor="@color/colorPrimaryDark">
-
-                                <android.support.design.widget.TabItem
-                                    android:layout_height="wrap_content"
-                                    android:layout_width="wrap_content"
-                                    android:text="1D"
-                                    android:background="@color/cardview_light_background"/>
-
-                                <android.support.design.widget.TabItem
-                                    android:layout_height="wrap_content"
-                                    android:layout_width="wrap_content"
-                                    android:text="1W"
-                                    android:background="@color/cardview_light_background"/>
-
-                                <android.support.design.widget.TabItem
-                                    android:layout_height="wrap_content"
-                                    android:layout_width="wrap_content"
-                                    android:text="1M"
-                                    android:background="@color/cardview_light_background"/>
-
-                                <android.support.design.widget.TabItem
-                                    android:layout_height="wrap_content"
-                                    android:layout_width="wrap_content"
-                                    android:text="3M"
-                                    android:background="@color/cardview_light_background"/>
-
-                                <android.support.design.widget.TabItem
-                                    android:layout_height="wrap_content"
-                                    android:layout_width="wrap_content"
-                                    android:text="1Y"
-                                    android:background="@color/cardview_light_background"/>
-
-                                <android.support.design.widget.TabItem
-                                    android:layout_height="wrap_content"
-                                    android:layout_width="wrap_content"
-                                    android:text="5Y"
-                                    android:background="@color/cardview_light_background"/>
-
-                                <android.support.design.widget.TabItem
-                                    android:layout_height="wrap_content"
-                                    android:layout_width="wrap_content"
-                                    android:text="10Y"
-                                    android:background="@color/cardview_light_background"/>
-
-                            </android.support.design.widget.TabLayout>
-
-                        </LinearLayout>
-                    </android.support.v7.widget.CardView>
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@color/cardview_light_background"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginBottom="@dimen/spacing_external"
                         android:orientation="vertical"
-                        android:layout_margin="10dp"
-                        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+                        android:background="@color/cardview_light_background">
+
+                        <com.github.mikephil.charting.charts.CombinedChart
+                            android:id="@+id/price_chart"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:layout_margin="@dimen/spacing_internal"/>
 
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/layer_button_padding"
-                            android:layout_marginLeft="@dimen/layer_button_padding"
-                            android:layout_marginRight="@dimen/layer_button_padding"
-                            android:orientation="horizontal">
+                            android:layout_margin="@dimen/spacing_internal">
 
                             <android.support.v7.widget.RecyclerView
                                 android:id="@+id/price_layers"
                                 android:layout_width="wrap_content"
                                 android:layout_height="@dimen/layer_button_dimen"
                                 android:background="@color/cardview_light_background"
-                                android:layout_marginRight="@dimen/layer_button_padding"
+                                android:layout_marginRight="@dimen/spacing_internal"
                                 android:layout_alignParentLeft="true"
                                 android:layout_toLeftOf="@+id/add_price_layer_button"
                                 android:orientation="horizontal"/>
@@ -249,22 +162,29 @@
                                 android:src="@drawable/ic_add_black_24dp"
                                 android:background="@color/cardview_light_background"/>
                         </RelativeLayout>
+                    </LinearLayout>
 
-                        <View
+                    <LinearLayout
+                        android:id="@+id/volume_card"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:background="@color/cardview_light_background">>
+
+                        <com.github.mikephil.charting.charts.CombinedChart
+                            android:id="@+id/volume_chart"
                             android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginTop="@dimen/layer_button_padding"
-                            android:layout_marginBottom="@dimen/layer_button_padding"
-                            android:layout_marginLeft="@dimen/layer_button_padding"
-                            android:layout_marginRight="@dimen/layer_button_padding"
-                            android:background="@android:color/darker_gray"/>
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:layout_margin="@dimen/spacing_internal"/>
 
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="@dimen/layer_button_padding"
-                            android:layout_marginLeft="@dimen/layer_button_padding"
-                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:layout_marginBottom="@dimen/spacing_internal"
+                            android:layout_marginLeft="@dimen/spacing_internal"
+                            android:layout_marginRight="@dimen/spacing_internal"
                             android:orientation="horizontal">
 
                             <android.support.v7.widget.RecyclerView
@@ -272,7 +192,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="@dimen/layer_button_dimen"
                                 android:background="@color/cardview_light_background"
-                                android:layout_marginRight="@dimen/layer_button_padding"
+                                android:layout_marginRight="@dimen/spacing_internal"
                                 android:layout_alignParentLeft="true"
                                 android:layout_toLeftOf="@+id/add_volume_layer_button"
                                 android:orientation="horizontal"/>
@@ -287,6 +207,65 @@
                         </RelativeLayout>
                     </LinearLayout>
                 </LinearLayout>
+
+
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/interval_tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/spacing_external"
+                    android:layout_alignParentBottom="true"
+                    app:tabMaxWidth="0dp"
+                    app:tabGravity="fill"
+                    app:tabMode="fixed"
+                    app:tabIndicatorColor="@color/colorPrimary"
+                    app:tabSelectedTextColor="@color/colorPrimary"
+                    app:tabTextColor="@color/colorPrimaryDark"
+                    android:background="@color/cardview_light_background">
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1D"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1W"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1M"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="3M"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1Y"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="5Y"
+                        android:background="@color/cardview_light_background"/>
+
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="10Y"
+                        android:background="@color/cardview_light_background"/>
+
+                </android.support.design.widget.TabLayout>
             </RelativeLayout>
         </LinearLayout>
 

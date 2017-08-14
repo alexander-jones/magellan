@@ -109,7 +109,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:layout_below="@+id/date"
-                android:layout_margin="10dp"
+                android:layout_margin="@dimen/spacing_external"
                 android:gravity="center"
                 android:orientation="vertical"
                 android:weightSum="1"
@@ -126,9 +126,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:paddingBottom="@dimen/layer_button_padding"
-                        android:layout_marginBottom="@dimen/layer_button_padding"
-                        android:layout_marginRight="@dimen/layer_button_padding"
+                        android:paddingBottom="@dimen/spacing_internal"
+                        android:layout_marginBottom="@dimen/spacing_internal"
+                        android:layout_marginRight="@dimen/spacing_internal"
                         android:background="@color/cardview_light_background"
                         android:orientation="horizontal">
 
@@ -137,7 +137,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_alignParentLeft="true"
-                            android:layout_margin="@dimen/layer_button_padding"
+                            android:layout_margin="@dimen/spacing_internal"
                             android:layout_above="@+id/price_layers"/>
 
                         <android.support.v7.widget.RecyclerView
@@ -145,8 +145,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="@dimen/layer_button_dimen"
                             android:background="@color/cardview_light_background"
-                            android:layout_marginLeft="@dimen/layer_button_padding"
-                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:layout_marginLeft="@dimen/spacing_internal"
+                            android:layout_marginRight="@dimen/spacing_internal"
                             android:layout_alignParentLeft="true"
                             android:layout_alignParentBottom="true"
                             android:layout_toLeftOf="@+id/add_price_layer_button"
@@ -158,8 +158,8 @@
                             android:layout_height="@dimen/layer_button_dimen"
                             android:layout_alignParentRight="true"
                             android:layout_below="@+id/price_chart"
-                            android:layout_marginLeft="@dimen/layer_button_padding"
-                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:layout_marginLeft="@dimen/spacing_internal"
+                            android:layout_marginRight="@dimen/spacing_internal"
                             android:src="@drawable/ic_add_black_24dp"
                             android:background="@color/cardview_light_background"/>
                     </RelativeLayout>
@@ -168,9 +168,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginBottom="@dimen/layer_button_padding"
+                        android:layout_marginBottom="@dimen/spacing_internal"
                         android:background="@color/cardview_light_background"
-                        android:paddingBottom="@dimen/layer_button_padding"
+                        android:paddingBottom="@dimen/spacing_internal"
                         android:orientation="horizontal">
 
                         <com.github.mikephil.charting.charts.CombinedChart
@@ -178,7 +178,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_alignParentLeft="true"
-                            android:layout_margin="@dimen/layer_button_padding"
+                            android:layout_margin="@dimen/spacing_internal"
                             android:layout_above="@+id/volume_layers"/>
 
                         <android.support.v7.widget.RecyclerView
@@ -186,8 +186,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="@dimen/layer_button_dimen"
                             android:background="@color/cardview_light_background"
-                            android:layout_marginLeft="@dimen/layer_button_padding"
-                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:layout_marginLeft="@dimen/spacing_internal"
+                            android:layout_marginRight="@dimen/spacing_internal"
                             android:layout_alignParentLeft="true"
                             android:layout_alignParentBottom="true"
                             android:layout_toLeftOf="@+id/add_volume_layer_button"
@@ -197,8 +197,8 @@
                             android:id="@+id/add_volume_layer_button"
                             android:layout_width="@dimen/layer_button_dimen"
                             android:layout_height="@dimen/layer_button_dimen"
-                            android:layout_marginLeft="@dimen/layer_button_padding"
-                            android:layout_marginRight="@dimen/layer_button_padding"
+                            android:layout_marginLeft="@dimen/spacing_internal"
+                            android:layout_marginRight="@dimen/spacing_internal"
                             android:layout_alignParentRight="true"
                             android:layout_below="@+id/volume_chart"
                             android:src="@drawable/ic_add_black_24dp"

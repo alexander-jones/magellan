@@ -1,7 +1,9 @@
 package com.magellan.magellan;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.Paint;
 import android.support.v4.content.ContextCompat;
 
 import com.github.mikephil.charting.charts.CombinedChart;
@@ -99,11 +101,18 @@ public class StockPriceMetric {
                     priceValues.add(new CandleEntry(j, quote.getHigh(), quote.getLow(), quote.getOpen(), quote.getClose(), quote));
                 }
 
-                float finalClose = finalQuote.getClose();
                 for (int j = context.missingStartSteps + stockHistory.size(); j < stockHistory.size() + context.missingStartSteps + context.missingEndSteps; ++j)
                     priceValues.add(new CandleEntry(j, finalQuote.getHigh(), finalQuote.getLow(), finalQuote.getOpen(), finalQuote.getClose(), null));
 
                 CandleDataSet candleSet = new CandleDataSet(priceValues, "");
+                candleSet.setColor(Color.rgb(80, 80, 80));
+                candleSet.setShadowColor(Color.DKGRAY);
+                candleSet.setShadowWidth(0.7f);
+                candleSet.setDecreasingColor(ContextCompat.getColor(mContext, R.color.colorPriceDown));
+                candleSet.setDecreasingPaintStyle(Paint.Style.FILL);
+                candleSet.setIncreasingColor(ContextCompat.getColor(mContext, R.color.colorPriceUp));
+                candleSet.setIncreasingPaintStyle(Paint.Style.STROKE);
+                candleSet.setNeutralColor(Color.BLUE);
                 candleSet.setDrawIcons(false);
                 candleSet.setHighlightEnabled(true);
                 candleSet.enableDashedHighlightLine(10f, 5f, 0f);
