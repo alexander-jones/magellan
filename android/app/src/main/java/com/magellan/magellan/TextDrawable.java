@@ -23,7 +23,7 @@ public class TextDrawable extends Drawable {
     public TextDrawable(Context context, String text) {
         mText = text;
         mPaint = new Paint();
-        mPaint.setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark));
+        mPaint.setColor(ContextCompat.getColor(context, R.color.colorPrimaryDarkest));
         int size = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 25, context.getResources().getDisplayMetrics());
         mFudge = size / 2;
         mPaint.setTextSize(mFudge);

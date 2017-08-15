@@ -38,7 +38,7 @@
             <View
                 android:id="@+id/header_background"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="150dp"
                 android:background="@color/colorPrimary"/>
 
 
@@ -46,8 +46,8 @@
                 android:id="@+id/datetime_header_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_internal"
                 android:gravity="center"
-                android:layout_weight="0"
                 android:orientation="horizontal">
 
                 <TextView
@@ -72,10 +72,41 @@
 
             </LinearLayout>
 
+            <android.support.design.widget.TabLayout
+                android:id="@+id/stock_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary"
+                android:layout_below="@+id/datetime_header_layout"
+                android:layout_marginLeft="@dimen/spacing_external"
+                android:layout_marginRight="@dimen/spacing_external"
+                app:tabMaxWidth="0dp"
+                app:tabGravity="fill"
+                app:tabMode="fixed"
+                app:tabIndicatorColor="@color/colorSecondary"
+                app:tabSelectedTextColor="@color/colorSecondary"
+                app:tabTextColor="@color/colorSecondary">
+
+                <android.support.design.widget.TabItem
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="AMC"/>
+
+                <android.support.design.widget.TabItem
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="AMD"/>
+
+                <android.support.design.widget.TabItem
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="BPMX"/>
+            </android.support.design.widget.TabLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@+id/datetime_header_layout"
+                android:layout_below="@+id/stock_tabs"
                 android:layout_marginTop="@dimen/spacing_internal"
                 android:layout_marginLeft="@dimen/spacing_external"
                 android:layout_marginRight="@dimen/spacing_external"

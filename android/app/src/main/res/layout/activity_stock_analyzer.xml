@@ -28,14 +28,75 @@
 
         </android.support.design.widget.AppBarLayout>
 
+
         <LinearLayout
             android:id="@+id/portfolio_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorSecondary"
+            android:background="@color/colorPrimary"
             android:orientation="vertical"
             app:layout_anchor="@id/app_bar"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <LinearLayout
+                android:id="@+id/datetime_header_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:background="@color/colorPrimary">
+
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Today"
+                    android:layout_marginRight="@dimen/spacing_external"
+                    android:textSize="@dimen/large_header_text_size"
+                    android:textColor="@color/colorTextPrimary"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12:55 PM EST"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:textSize="@dimen/small_header_text_size"
+                    android:textColor="@color/colorTextPrimary"/>
+
+            </LinearLayout>
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/stock_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary"
+                android:layout_marginLeft="@dimen/spacing_external"
+                android:layout_marginRight="@dimen/spacing_external"
+                app:tabMaxWidth="0dp"
+                app:tabGravity="fill"
+                app:tabMode="fixed"
+                app:tabIndicatorColor="@color/colorSecondary"
+                app:tabSelectedTextColor="@color/colorSecondary"
+                app:tabTextColor="@color/colorSecondary">
+
+                <android.support.design.widget.TabItem
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="AMC"/>
+
+                <android.support.design.widget.TabItem
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="AMD"/>
+
+                <android.support.design.widget.TabItem
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:text="BPMX"/>
+            </android.support.design.widget.TabLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -45,38 +106,16 @@
                 <View
                     android:id="@+id/header_background"
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
+                    android:layout_height="100dp"
                     android:background="@color/colorPrimary"/>
 
-                <LinearLayout
-                    android:id="@+id/datetime_header_layout"
+                <View
+                    android:id="@+id/background"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:layout_weight="0"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/date"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Today"
-                        android:layout_marginRight="@dimen/spacing_external"
-                        android:textSize="@dimen/large_header_text_size"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:id="@+id/time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="12:55 PM EST"
-                        android:gravity="center"
-                        android:layout_gravity="center"
-                        android:textSize="@dimen/small_header_text_size"
-                        android:textColor="@color/colorTextPrimary"/>
-
-                </LinearLayout>
+                    android:layout_height="0dp"
+                    android:layout_below="@+id/header_background"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/colorSecondary"/>
 
 
                 <LinearLayout
@@ -88,7 +127,6 @@
                     android:layout_marginRight="@dimen/spacing_external"
                     android:layout_marginBottom="@dimen/spacing_internal"
                     android:weightSum="2"
-                    android:layout_below="@+id/datetime_header_layout"
                     android:layout_above="@+id/interval_tabs"
                     android:orientation="vertical">
 

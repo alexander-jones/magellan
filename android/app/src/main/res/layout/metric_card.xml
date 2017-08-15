@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:text="$0.00"
             android:layout_marginRight="@dimen/spacing_external"
-            android:textSize="@dimen/large_header_text_size"
+            android:textSize="@dimen/small_header_text_size"
             android:textColor="@color/colorTextSecondary"
             android:textStyle="bold"/>
 
