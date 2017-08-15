@@ -32,7 +32,7 @@
             android:id="@+id/portfolio_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorAccent"
+            android:background="@color/colorSecondary"
             android:orientation="vertical"
             app:layout_anchor="@id/app_bar"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -53,7 +53,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="STOCK"
-                    android:textSize="30sp"
+                    android:textSize="@dimen/large_header_text_size"
+                    android:textStyle="bold"
                     android:gravity="center"
                     android:layout_centerHorizontal="true"
                     android:textColor="@color/colorTextPrimary"/>
@@ -63,7 +64,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Today"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/small_header_text_size"
                     android:gravity="center"
                     android:layout_centerHorizontal="true"
                     android:layout_below="@+id/stock"
@@ -74,18 +75,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="$0.00"
-                    android:textSize="30sp"
+                    android:textSize="@dimen/large_header_text_size"
+                    android:textColor="@color/colorTextPrimary"
+                    android:textStyle="bold"
                     android:gravity="center"
-                    android:layout_toLeftOf="@+id/stock"
-                    android:textColor="@color/colorTextPrimary"/>
+                    android:layout_toLeftOf="@+id/stock"/>
 
                 <TextView
                     android:id="@+id/price_change"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="+%0.00 (0.00%)"
                     android:gravity="center"
-                    android:textSize="15sp"
+                    android:text="+%0.00 (0.00%)"
+                    android:textSize="@dimen/small_header_text_size"
                     android:textColor="@color/colorTextPrimary"
                     android:layout_toLeftOf="@+id/stock"
                     android:layout_below="@+id/price"/>
@@ -95,7 +97,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="0.00K"
-                    android:textSize="30sp"
+                    android:textSize="@dimen/large_header_text_size"
+                    android:textStyle="bold"
                     android:gravity="center"
                     android:layout_toRightOf="@+id/stock"
                     android:textColor="@color/colorTextPrimary"/>
@@ -106,7 +109,7 @@
                     android:layout_height="wrap_content"
                     android:text="+0 (0.00%)"
                     android:gravity="center"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/small_header_text_size"
                     android:textColor="@color/colorTextPrimary"
                     android:layout_toRightOf="@+id/stock"
                     android:layout_below="@+id/volume"/>
@@ -130,25 +133,27 @@
                         android:layout_weight="1"
                         android:layout_marginBottom="@dimen/spacing_external"
                         android:orientation="vertical"
-                        android:background="@color/cardview_light_background">
+                        android:background="@color/colorSecondaryDark">
 
                         <com.github.mikephil.charting.charts.CombinedChart
                             android:id="@+id/price_chart"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
                             android:layout_weight="1"
-                            android:layout_margin="@dimen/spacing_internal"/>
+                            android:layout_marginLeft="@dimen/spacing_internal"
+                            android:layout_marginTop="@dimen/spacing_internal"/>
 
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/spacing_internal">
+                            android:layout_marginLeft="@dimen/spacing_internal"
+                            android:layout_marginBottom="@dimen/spacing_internal"
+                            android:layout_marginRight="@dimen/spacing_internal">
 
                             <android.support.v7.widget.RecyclerView
                                 android:id="@+id/price_layers"
                                 android:layout_width="wrap_content"
                                 android:layout_height="@dimen/layer_button_dimen"
-                                android:background="@color/cardview_light_background"
                                 android:layout_marginRight="@dimen/spacing_internal"
                                 android:layout_alignParentLeft="true"
                                 android:layout_toLeftOf="@+id/add_price_layer_button"
@@ -160,7 +165,7 @@
                                 android:layout_height="@dimen/layer_button_dimen"
                                 android:layout_alignParentRight="true"
                                 android:src="@drawable/ic_add_black_24dp"
-                                android:background="@color/cardview_light_background"/>
+                                android:background="@color/colorSecondaryDark"/>
                         </RelativeLayout>
                     </LinearLayout>
 
@@ -170,14 +175,15 @@
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:background="@color/cardview_light_background">>
+                        android:background="@color/colorSecondaryDark">>
 
                         <com.github.mikephil.charting.charts.CombinedChart
                             android:id="@+id/volume_chart"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
                             android:layout_weight="1"
-                            android:layout_margin="@dimen/spacing_internal"/>
+                            android:layout_marginLeft="@dimen/spacing_internal"
+                            android:layout_marginTop="@dimen/spacing_internal"/>
 
                         <RelativeLayout
                             android:layout_width="match_parent"
@@ -191,11 +197,10 @@
                                 android:id="@+id/volume_layers"
                                 android:layout_width="wrap_content"
                                 android:layout_height="@dimen/layer_button_dimen"
-                                android:background="@color/cardview_light_background"
                                 android:layout_marginRight="@dimen/spacing_internal"
                                 android:layout_alignParentLeft="true"
                                 android:layout_toLeftOf="@+id/add_volume_layer_button"
-                                android:orientation="horizontal"/>
+                                android:orientation="vertical"/>
 
                             <ImageButton
                                 android:id="@+id/add_volume_layer_button"
@@ -203,7 +208,7 @@
                                 android:layout_height="@dimen/layer_button_dimen"
                                 android:layout_alignParentRight="true"
                                 android:src="@drawable/ic_add_black_24dp"
-                                android:background="@color/cardview_light_background"/>
+                                android:background="@color/colorSecondaryDark"/>
                         </RelativeLayout>
                     </LinearLayout>
                 </LinearLayout>
@@ -221,49 +226,42 @@
                     app:tabIndicatorColor="@color/colorPrimary"
                     app:tabSelectedTextColor="@color/colorPrimary"
                     app:tabTextColor="@color/colorPrimaryDark"
-                    android:background="@color/cardview_light_background">
+                    android:background="@color/colorSecondaryDark">
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
-                        android:text="1D"
-                        android:background="@color/cardview_light_background"/>
+                        android:text="1D"/>
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
-                        android:text="1W"
-                        android:background="@color/cardview_light_background"/>
+                        android:text="1W"/>
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
-                        android:text="1M"
-                        android:background="@color/cardview_light_background"/>
+                        android:text="1M"/>
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
-                        android:text="3M"
-                        android:background="@color/cardview_light_background"/>
+                        android:text="3M"/>
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
-                        android:text="1Y"
-                        android:background="@color/cardview_light_background"/>
+                        android:text="1Y"/>
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
-                        android:text="5Y"
-                        android:background="@color/cardview_light_background"/>
+                        android:text="5Y"/>
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
-                        android:text="10Y"
-                        android:background="@color/cardview_light_background"/>
+                        android:text="10Y"/>
 
                 </android.support.design.widget.TabLayout>
             </RelativeLayout>

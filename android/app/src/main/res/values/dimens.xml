@@ -9,4 +9,6 @@
     <dimen name="layer_button_padding">5dp</dimen>
     <dimen name="spacing_internal">5dp</dimen>
     <dimen name="spacing_external">10dp</dimen>
+    <dimen name="large_header_text_size">20sp</dimen>
+    <dimen name="small_header_text_size">15sp</dimen>
 </resources>

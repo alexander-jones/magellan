@@ -33,14 +33,10 @@ public class Metric {
         }
 
 
-        int mTextColor;
-        int mColor;
         private List<String> mActiveLayerLabels;
         // Provide a suitable constructor (depends on the kind of dataset)
-        public LayerAdapter(List<String> labels, int color, int textColor) {
+        public LayerAdapter(List<String> labels) {
             mActiveLayerLabels = labels;
-            mColor = color;
-            mTextColor = textColor;
         }
 
         // Create new views (invoked by the layout manager)
@@ -50,8 +46,6 @@ public class Metric {
             // create a new view
             Button v = (Button) LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.overlay_button, parent, false);
-            v.setBackgroundColor(mColor);
-            v.setTextColor(mTextColor);
             ViewHolder vh = new ViewHolder(v);
             return vh;
         }

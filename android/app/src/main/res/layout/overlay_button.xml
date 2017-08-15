@@ -7,4 +7,5 @@
     android:layout_width="@dimen/layer_button_dimen"
     android:textSize="14dip"
     android:elevation="10dp"
-    android:background="@color/cardview_light_background"/>
+    android:background="@color/colorSecondary"
+    android:textColor="@color/colorPrimary"/>

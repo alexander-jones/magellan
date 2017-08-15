@@ -3,6 +3,7 @@ package com.magellan.magellan;
 import java.util.List;
 
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -20,6 +21,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.data.CombinedData;
@@ -111,38 +114,41 @@ public class StockAnalyzerActivity extends AppCompatActivity
 
         mPriceLayersContainer = (RecyclerView) findViewById(R.id.price_layers);
         mPriceLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        mPriceLayersContainer.setHasFixedSize(true);
+        mPriceLayersContainer.setBackground(new TextDrawable(this, "Stock Price Layers"));
 
-        List<String> testActiveLayerLabels = new ArrayList<String>();
-        testActiveLayerLabels.add("SP");
-        mPriceLayerAdapter = new Metric.LayerAdapter(testActiveLayerLabels, ContextCompat.getColor(this, R.color.colorSecondary), Color.WHITE);
+        List<String> testActivePriceLayerLabels = new ArrayList<String>();
+        testActivePriceLayerLabels.add("Can");
+        testActivePriceLayerLabels.add("Lin");
+        mPriceLayerAdapter = new Metric.LayerAdapter(testActivePriceLayerLabels);
         mPriceLayersContainer.setAdapter(mPriceLayerAdapter);
 
         mVolumeLayersContainer = (RecyclerView) findViewById(R.id.volume_layers);
-        mVolumeLayersContainer = (RecyclerView) findViewById(R.id.volume_layers);
         mVolumeLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        mVolumeLayersContainer.setHasFixedSize(true);
+        mVolumeLayersContainer.setBackground(new TextDrawable(this, "Volume Layers"));
 
         List<String> testActiveVolumeLayerLabels = new ArrayList<String>();
-        testActiveVolumeLayerLabels.add("Vol");
-        mVolumeLayerAdapter = new Metric.LayerAdapter(testActiveVolumeLayerLabels, ContextCompat.getColor(this, R.color.colorSecondary), Color.WHITE);
+        testActiveVolumeLayerLabels.add("Bar");
+        mVolumeLayerAdapter = new Metric.LayerAdapter(testActiveVolumeLayerLabels);
         mVolumeLayersContainer.setAdapter(mVolumeLayerAdapter);
 
-        float chart_margin_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_MARGIN, getResources().getDisplayMetrics());
+        float internal_spacing = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
         float chart_spacing_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_SPACING, getResources().getDisplayMetrics());
 
         mPriceChart = (CombinedChart) findViewById(R.id.price_chart);
         mPriceChartData = new CombinedData();
         initializeChart(mPriceChart);
-        mPriceChart.setViewPortOffsets(0,0,0,0);
+        mPriceChart.getAxisRight().setValueFormatter(new StockPriceMetric.ValueFormatter());
+        mPriceChart.setViewPortOffsets(0,0,150,internal_spacing);
 
         mVolumeChart = (CombinedChart) findViewById(R.id.volume_chart);
         mVolumeChartData = new CombinedData();
         initializeChart(mVolumeChart);
-        mVolumeChart.setViewPortOffsets(0,0,0,0);
+        mVolumeChart.getAxisRight().setValueFormatter(new VolumeMetric.ValueFormatter());
+        mVolumeChart.setViewPortOffsets(0,0,150 - (internal_spacing / 2.0f),internal_spacing);
 
-        mStockPriceLayers.add(new StockPriceMetric.BasicChartLayer(StockPriceMetric.ChartType.Line));
-        mVolumeLayers.add(new VolumeMetric.BasicChartLayer());
+        mStockPriceLayers.add(new StockPriceMetric.CandleChartLayer());
+        mStockPriceLayers.add(new StockPriceMetric.LineChartLayer());
+        mVolumeLayers.add(new VolumeMetric.BarChartLayer());
 
         for (Metric.IChartLayer layer : mStockPriceLayers)
             layer.init(this, mPriceChartData);
@@ -183,14 +189,13 @@ public class StockAnalyzerActivity extends AppCompatActivity
     // initialize default settins for any charts in this activity
     private void initializeChart(CombinedChart chart)
     {
-        chart.setNoDataText("");
         chart.setHighlightPerTapEnabled(false);
         chart.setHighlightPerDragEnabled(true);
         chart.setOnChartGestureListener(this);
         chart.setOnChartValueSelectedListener(this);
         chart.setDrawGridBackground(false);
         chart.setDrawMarkers(false);
-        chart.setDrawBorders(true);
+        chart.setDrawBorders(false);
         chart.getDescription().setText("");
         chart.disableScroll();
         chart.setPinchZoom(false);
@@ -202,16 +207,25 @@ public class StockAnalyzerActivity extends AppCompatActivity
         xAxis.setDrawLabels(false);
         xAxis.setDrawAxisLine(false);
         xAxis.setDrawGridLines(false);
+        xAxis.setSpaceMin(0.0f);
+        xAxis.setSpaceMax(0.0f);
 
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setDrawLabels(false);
         leftAxis.setDrawAxisLine(false);
         leftAxis.setDrawGridLines(false);
+        leftAxis.setSpaceBottom(0);
+        leftAxis.setSpaceTop(0);
 
         YAxis rightAxis =  chart.getAxisRight();
-        rightAxis.setDrawLabels(false);
+        rightAxis.setMinWidth(50);
+        rightAxis.setMaxWidth(50);
+        rightAxis.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+        rightAxis.setDrawLabels(true);
         rightAxis.setDrawAxisLine(false);
         rightAxis.setDrawGridLines(false);
+        rightAxis.setSpaceBottom(0);
+        rightAxis.setSpaceTop(0);
     }
 
     private void launchTaskForTab(int position)
@@ -219,13 +233,18 @@ public class StockAnalyzerActivity extends AppCompatActivity
         DateTime start = null;
         Stock.IntervalUnit intervalUnit = null;
         int interval = 1;
-        DateTime end = DateTime.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("EST")))
-                .withHourOfDay(16).withMinuteOfHour(0); // 4:00 pm is NYSE close
+        DateTime now = DateTime.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("EST")));
+        int hourOfDay = now.hourOfDay().get();
+        int minuteOfDay = now.minuteOfDay().get();
+
+        DateTime end =  now.withHourOfDay(16).withMinuteOfHour(0); // 4:00 pm is NYSE close
         int endDay = end.dayOfWeek().get();
         if (endDay == 6)
             end = end.minus(Duration.standardDays(1));
         else if (endDay == 7)
             end = end.minus(Duration.standardDays(2));
+        else if (endDay == 1 && (hourOfDay < 9 || ( hourOfDay == 9  && minuteOfDay < 40))) // make sure we have at least 2 quotes
+            end = end.minus(Duration.standardDays(3));
         start = end.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open
 
         QuotePeriod [] quotePeriods = QuotePeriod.values();
@@ -276,10 +295,18 @@ public class StockAnalyzerActivity extends AppCompatActivity
     {
         boolean oneValidHistory = false;
         Duration intervalDuration = mLastQuery.query.getIntervalAsDuration();
+
+        if (mPriceChartData.getLineData() != null)
+            mPriceChartData.getLineData().clearValues();
+        if (mPriceChartData.getCandleData() != null)
+            mPriceChartData.getCandleData().clearValues();
+        if (mVolumeChartData.getBarData() != null)
+            mVolumeChartData.getBarData().clearValues();
+
         for (int i = 0; i < stockHistories.size(); i++)
         {
             Stock.IQuoteCollection stockHistory = stockHistories.get(i);
-            if (stockHistory == null || stockHistory.size() == 0) {
+            if (stockHistory == null || stockHistory.size() <= 1) {
                 continue;
             }
             mLastQuery.results = stockHistory;
@@ -447,33 +474,17 @@ public class StockAnalyzerActivity extends AppCompatActivity
         updateHeaderText(mLastQuery.results.get(0), quote);
     }
 
-    private String priceDiffToString(float priceDiff)
+    private static String percentToString(float percent)
     {
-        if (priceDiff < 0.0)
-            return String.format("-$%.2f", Math.abs(priceDiff));
-        else
-            return String.format("+$%.2f", priceDiff);
-    }
-
-    private String volumeDiffToString(int volumeDiff)
-    {
-        String baseStr = volumeToString(volumeDiff);
-        if (volumeDiff >  0)
-            return "+" + baseStr;
-        return baseStr;
-    }
-
-    private String volumeToString(int volume)
-    {
-        float absVolume = Math.abs(volume);
+        float absVolume = Math.abs(percent);
         if (absVolume > 1000000000) // you never know amiright?
-            return String.format("%.2fB", (float)volume / 1000000000.0f);
-        else if (absVolume > 1000000)
-            return String.format("%.2fM", (float)volume / 1000000.0f);
+            return String.format("%.2fB%%", percent / 1000000000.0f);
+        else if (absVolume > 1000000)  // you never know amiright?
+            return String.format("%.2fM%%", percent / 1000000.0f);
         else if (absVolume > 1000)
-            return String.format("%.2fK", (float)volume / 1000.0f);
+            return String.format("%.2fK%%", percent / 1000.0f);
         else
-            return String.format("%d", volume);
+            return String.format("%.2f%%", percent);
     }
 
     private static DateTimeFormatter timeOfDayFormatter = DateTimeFormat.forPattern("h:mm a z").withZone(DateTimeZone.getDefault());
@@ -518,9 +529,9 @@ public class StockAnalyzerActivity extends AppCompatActivity
         }
         mDateText.setText(timeString);
         mPriceText.setText(String.format("$%.2f", endQuote.getClose()));
-        mPriceChangeText.setText(String.format("%s (%.2f%%)", priceDiffToString(priceDiff), priceDiffPercent));
-        mVolumeText.setText(volumeToString(endQuote.getVolume()));
-        mVolumeChangeText.setText(String.format("%s (%.2f%%)", volumeDiffToString(volumeDiff), volumeDiffPercent));
+        mPriceChangeText.setText(String.format("%s (%s)", StockPriceMetric.valueDiffToString(priceDiff), percentToString(priceDiffPercent)));
+        mVolumeText.setText(VolumeMetric.valueToString(endQuote.getVolume()));
+        mVolumeChangeText.setText(String.format("%s (%s)", VolumeMetric.valueDiffToString(volumeDiff), percentToString(volumeDiffPercent)));
     }
 
 }
