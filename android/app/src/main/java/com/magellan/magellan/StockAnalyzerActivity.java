@@ -243,8 +243,13 @@ public class StockAnalyzerActivity extends AppCompatActivity
             end = end.minus(Duration.standardDays(1));
         else if (endDay == 7)
             end = end.minus(Duration.standardDays(2));
-        else if (endDay == 1 && (hourOfDay < 9 || ( hourOfDay == 9  && minuteOfDay < 40))) // make sure we have at least 2 quotes
-            end = end.minus(Duration.standardDays(3));
+        else if (hourOfDay < 9 || ( hourOfDay == 9  && minuteOfDay < 40)) // make sure we have at least 2 quotes
+        {
+            if (endDay == 1)
+                end = end.minus(Duration.standardDays(3));
+            else
+                end = end.minus(Duration.standardDays(1));
+        }
         start = end.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open
 
         QuotePeriod [] quotePeriods = QuotePeriod.values();
@@ -475,11 +480,11 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private static String percentToString(float percent)
     {
         float absVolume = Math.abs(percent);
-        if (absVolume > 1000000000) // you never know amiright?
+        if (absVolume >= 1000000000) // you never know amiright?
             return String.format("%.2fB%%", percent / 1000000000.0f);
-        else if (absVolume > 1000000)  // you never know amiright?
+        else if (absVolume >= 1000000)  // you never know amiright?
             return String.format("%.2fM%%", percent / 1000000.0f);
-        else if (absVolume > 1000)
+        else if (absVolume >= 1000)
             return String.format("%.2fK%%", percent / 1000.0f);
         else
             return String.format("%.2f%%", percent);

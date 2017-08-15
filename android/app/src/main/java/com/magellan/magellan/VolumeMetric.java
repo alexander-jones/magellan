@@ -21,11 +21,11 @@ public class VolumeMetric {
     /*public static String valueToString(int volume)
     {
         float absVolume = Math.abs(volume);
-        if (absVolume > 1000000000) // you never know amiright?
+        if (absVolume >= 1000000000) // you never know amiright?
             return String.format("%.2fB", (float)volume / 1000000000.0f);
-        else if (absVolume > 1000000)
+        else if (absVolume >= 1000000)
             return String.format("%.2fM", (float)volume / 1000000.0f);
-        else if (absVolume > 1000)
+        else if (absVolume >= 1000)
             return String.format("%.2fK", (float)volume / 1000.0f);
         else
             return String.format("%d", volume);
@@ -34,11 +34,11 @@ public class VolumeMetric {
     public static String valueToString(int volume)
     {
         float absVolume = Math.abs(volume);
-        if (absVolume > 1000000000) // you never know amiright?
+        if (absVolume >= 1000000000) // you never know amiright?
             return String.format("%dfB", volume / 1000000000);
-        else if (absVolume > 1000000)
+        else if (absVolume >= 1000000)
             return String.format("%dM",  volume / 1000000);
-        else if (absVolume > 1000)
+        else if (absVolume >= 1000)
             return String.format("%dK",  volume / 1000);
         else
             return String.format("%d",  volume);
