@@ -134,15 +134,15 @@ public class StockPriceMetric {
 
             CandleDataSet candleSet = new CandleDataSet(priceValues, "");
             candleSet.setColor(Color.rgb(80, 80, 80));
-            candleSet.setShadowColor(ContextCompat.getColor(mContext, R.color.colorPrimaryDark));
             candleSet.setShadowWidth(0.7f);
             candleSet.setDecreasingPaintStyle(Paint.Style.FILL);
             candleSet.setDecreasingColor(ContextCompat.getColor(mContext, R.color.colorPriceDown));
             candleSet.setIncreasingColor(ContextCompat.getColor(mContext, R.color.colorPriceUp));
             candleSet.setHighLightColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
             candleSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimary));
+            candleSet.setShadowColor(ContextCompat.getColor(mContext, R.color.colorPrimaryDark));
+            candleSet.setNeutralColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
             candleSet.setIncreasingPaintStyle(Paint.Style.STROKE);
-            candleSet.setNeutralColor(Color.BLUE);
             candleSet.setDrawIcons(false);
             candleSet.setHighlightEnabled(true);
             candleSet.enableDashedHighlightLine(10f, 5f, 0f);

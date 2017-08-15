@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -63,13 +64,13 @@ public class StockAnalyzerActivity extends AppCompatActivity
     private static int CHART_SPACING = 5;
 
     private String mSymbol;
+    private TextView mDateText;
+    private TextView mTimeText;
 
     private TextView mPriceText;
     private TextView mPriceChangeText;
     private TextView mVolumeText;
     private TextView mVolumeChangeText;
-    private TextView mStockText;
-    private TextView mDateText;
     private RecyclerView mPriceLayersContainer;
     private Metric.LayerAdapter mPriceLayerAdapter;
     private RecyclerView mVolumeLayersContainer;
@@ -104,15 +105,14 @@ public class StockAnalyzerActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
 
-        mStockText = (TextView) findViewById(R.id.stock);
         mDateText = (TextView) findViewById(R.id.date);
-        mPriceText = (TextView) findViewById(R.id.price);
-        mPriceChangeText = (TextView) findViewById(R.id.price_change);
-        mVolumeText = (TextView) findViewById(R.id.volume);
-        mVolumeChangeText = (TextView) findViewById(R.id.volume_change);
-        mIntervalTabLayout = (TabLayout) findViewById(R.id.interval_tabs);
+        mTimeText = (TextView) findViewById(R.id.time);
 
-        mPriceLayersContainer = (RecyclerView) findViewById(R.id.price_layers);
+        View priceCard = findViewById(R.id.price_card);
+        mPriceText = (TextView) priceCard.findViewById(R.id.value);
+        mPriceChangeText = (TextView) priceCard.findViewById(R.id.value_change);
+
+        mPriceLayersContainer = (RecyclerView) priceCard.findViewById(R.id.layers);
         mPriceLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mPriceLayersContainer.setBackground(new TextDrawable(this, "Stock Price Layers"));
 
@@ -122,7 +122,29 @@ public class StockAnalyzerActivity extends AppCompatActivity
         mPriceLayerAdapter = new Metric.LayerAdapter(testActivePriceLayerLabels);
         mPriceLayersContainer.setAdapter(mPriceLayerAdapter);
 
-        mVolumeLayersContainer = (RecyclerView) findViewById(R.id.volume_layers);
+        float internal_spacing = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
+        float chart_spacing_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_SPACING, getResources().getDisplayMetrics());
+
+        mPriceChart = (CombinedChart) priceCard.findViewById(R.id.chart);
+        mPriceChartData = new CombinedData();
+        initializeChart(mPriceChart);
+        mPriceChart.getAxisRight().setValueFormatter(new StockPriceMetric.ValueFormatter());
+        mPriceChart.setViewPortOffsets(0,internal_spacing,150,internal_spacing);
+
+        mStockPriceLayers.add(new StockPriceMetric.CandleChartLayer());
+        mStockPriceLayers.add(new StockPriceMetric.LineChartLayer());
+        for (Metric.IChartLayer layer : mStockPriceLayers)
+            layer.init(this, mPriceChartData);
+
+
+
+
+        View volumeCard = findViewById(R.id.volume_card);
+        mVolumeText = (TextView) volumeCard.findViewById(R.id.value);
+        mVolumeChangeText = (TextView) volumeCard.findViewById(R.id.value_change);
+        mIntervalTabLayout = (TabLayout) findViewById(R.id.interval_tabs);
+
+        mVolumeLayersContainer = (RecyclerView) volumeCard.findViewById(R.id.layers);
         mVolumeLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mVolumeLayersContainer.setBackground(new TextDrawable(this, "Volume Layers"));
 
@@ -131,30 +153,18 @@ public class StockAnalyzerActivity extends AppCompatActivity
         mVolumeLayerAdapter = new Metric.LayerAdapter(testActiveVolumeLayerLabels);
         mVolumeLayersContainer.setAdapter(mVolumeLayerAdapter);
 
-        float internal_spacing = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
-        float chart_spacing_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_SPACING, getResources().getDisplayMetrics());
-
-        mPriceChart = (CombinedChart) findViewById(R.id.price_chart);
-        mPriceChartData = new CombinedData();
-        initializeChart(mPriceChart);
-        mPriceChart.getAxisRight().setValueFormatter(new StockPriceMetric.ValueFormatter());
-        mPriceChart.setViewPortOffsets(0,0,150,internal_spacing);
-
-        mVolumeChart = (CombinedChart) findViewById(R.id.volume_chart);
+        mVolumeChart = (CombinedChart) volumeCard.findViewById(R.id.chart);
         mVolumeChartData = new CombinedData();
         initializeChart(mVolumeChart);
         mVolumeChart.getAxisRight().setValueFormatter(new VolumeMetric.ValueFormatter());
-        mVolumeChart.setViewPortOffsets(0,0,150 - (internal_spacing / 2.0f),internal_spacing);
+        mVolumeChart.setViewPortOffsets(0,internal_spacing,150 - (internal_spacing / 2.0f),internal_spacing);
 
-        mStockPriceLayers.add(new StockPriceMetric.CandleChartLayer());
-        mStockPriceLayers.add(new StockPriceMetric.LineChartLayer());
         mVolumeLayers.add(new VolumeMetric.BarChartLayer());
-
-        for (Metric.IChartLayer layer : mStockPriceLayers)
-            layer.init(this, mPriceChartData);
 
         for (Metric.IChartLayer layer : mVolumeLayers)
             layer.init(this, mVolumeChartData);
+
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -166,7 +176,6 @@ public class StockAnalyzerActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         mSymbol = "AMC";
-        mStockText.setText(mSymbol);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
@@ -490,8 +499,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
             return String.format("%.2f%%", percent);
     }
 
-    private static DateTimeFormatter timeOfDayFormatter = DateTimeFormat.forPattern("h:mm a z").withZone(DateTimeZone.getDefault());
-    private static DateTimeFormatter dayOfYearFormatter = DateTimeFormat.forPattern("MMM d y");
+    private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("MMM d y");
+    private static DateTimeFormatter timeFormatter = DateTimeFormat.forPattern("h:mm a z").withZone(DateTimeZone.getDefault());
     private void updateHeaderText(Stock.IQuote startQuote, Stock.IQuote endQuote)
     {
         float priceDiff = endQuote.getClose() - startQuote.getClose();
@@ -501,36 +510,8 @@ public class StockAnalyzerActivity extends AppCompatActivity
         float volumeDiffPercent = ((float)volumeDiff / (float)startQuote.getVolume()) * 100.0f;
 
         DateTime endTime = endQuote.getTime();
-        String timeString;
-        switch (mLastQuery.quotePeriod)
-        {
-            case OneDay:
-                timeString = timeOfDayFormatter.print(endTime);
-                break;
-            case OneWeek:
-                timeString = timeOfDayFormatter.print(endTime);
-                break;
-            case OneMonth:
-                timeString = dayOfYearFormatter.print(endTime);
-                break;
-            case ThreeMonths:
-                timeString = dayOfYearFormatter.print(endTime);
-                break;
-            case OneYear:
-                timeString = dayOfYearFormatter.print(endTime);
-                break;
-            case FiveYears:
-                timeString = dayOfYearFormatter.print(endTime);
-                break;
-            case TenYears:
-                timeString = dayOfYearFormatter.print(endTime);
-                break;
-            default:
-                Log.e("Magellan", "Encountered Unknown Duration Tab Index");
-                timeString = "";
-                break;
-        }
-        mDateText.setText(timeString);
+        mDateText.setText(dateFormatter.print(endTime));
+        mTimeText.setText(timeFormatter.print(endTime));
         mPriceText.setText(String.format("$%.2f", endQuote.getClose()));
         mPriceChangeText.setText(String.format("%s (%s)", StockPriceMetric.valueDiffToString(priceDiff), percentToString(priceDiffPercent)));
         mVolumeText.setText(VolumeMetric.valueToString(endQuote.getVolume()));

@@ -10,7 +10,7 @@
     <color name="colorAccentSecondary">#ff8d28</color>
     <color name="colorAccentSecondaryDark">#7f4a81ff</color>
     <color name="colorTextPrimary">#1a2930</color>
-    <color name="colorTextSecondary">#0a1612</color>
+    <color name="colorTextSecondary">#f7ce3e</color>
     <color name="colorPriceUp">#01cd98</color>
     <color name="colorPriceDown">#ff3b3f</color>
 </resources>
