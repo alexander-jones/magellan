@@ -275,6 +275,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        android:background="@color/colorSecondary"
+        app:itemTextColor="@color/colorPrimary"
         app:headerLayout="@layout/nav_header_portfolio"
         app:menu="@menu/activity_portfolio_drawer" />
 
