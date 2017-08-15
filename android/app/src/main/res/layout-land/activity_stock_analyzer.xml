@@ -41,43 +41,33 @@
                 android:layout_height="150dp"
                 android:background="@color/colorPrimary"/>
 
-
-            <LinearLayout
-                android:id="@+id/datetime_header_layout"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_internal"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:layout_centerHorizontal="true"
+                android:text="Today"
+                android:layout_marginRight="@dimen/spacing_external"
+                android:textSize="@dimen/large_header_text_size"
+                android:textColor="@color/colorTextPrimary"
+                android:textStyle="bold"/>
 
-                <TextView
-                    android:id="@+id/date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Today"
-                    android:layout_marginRight="@dimen/spacing_external"
-                    android:textSize="@dimen/large_header_text_size"
-                    android:textColor="@color/colorTextPrimary"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:id="@+id/time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="12:55 PM EST"
-                    android:gravity="center"
-                    android:layout_gravity="center"
-                    android:textSize="@dimen/small_header_text_size"
-                    android:textColor="@color/colorTextPrimary"/>
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/date"
+                android:text="12:55 PM EST"
+                android:layout_centerHorizontal="true"
+                android:textSize="@dimen/small_header_text_size"
+                android:textColor="@color/colorTextPrimary"/>
 
             <android.support.design.widget.TabLayout
                 android:id="@+id/stock_tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/colorPrimary"
-                android:layout_below="@+id/datetime_header_layout"
+                android:layout_below="@+id/time"
                 android:layout_marginLeft="@dimen/spacing_external"
                 android:layout_marginRight="@dimen/spacing_external"
                 app:tabMaxWidth="0dp"
