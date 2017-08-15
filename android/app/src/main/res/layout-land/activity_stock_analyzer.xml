@@ -133,7 +133,8 @@
                         android:layout_marginBottom="@dimen/spacing_internal"
                         android:layout_marginRight="@dimen/spacing_internal"
                         android:background="@color/colorSecondaryDark"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:elevation="2dp">
 
                         <com.github.mikephil.charting.charts.CombinedChart
                             android:id="@+id/price_chart"
@@ -174,7 +175,8 @@
                         android:layout_marginBottom="@dimen/spacing_internal"
                         android:background="@color/colorSecondaryDark"
                         android:paddingBottom="@dimen/spacing_internal"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:elevation="2dp">
 
                         <com.github.mikephil.charting.charts.CombinedChart
                             android:id="@+id/volume_chart"
@@ -219,7 +221,8 @@
                     app:tabIndicatorColor="@color/colorPrimary"
                     app:tabSelectedTextColor="@color/colorPrimary"
                     app:tabTextColor="@color/colorPrimaryDark"
-                    android:background="@color/colorSecondaryDark">
+                    android:background="@color/colorSecondaryDark"
+                    android:elevation="2dp">
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"
