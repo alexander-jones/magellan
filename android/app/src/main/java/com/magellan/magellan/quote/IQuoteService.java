@@ -1,6 +1,8 @@
 package com.magellan.magellan.quote;
 
+import java.util.List;
+
 public interface IQuoteService
 {
-    IQuoteCollection execute(QuoteQuery query);
+    List<IQuote> execute(QuoteQuery query);
 }

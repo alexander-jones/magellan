@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface QuoteQueryListener
 {
-    public void onQuotesReceived(List<IQuoteCollection> mQuoteResults);
+    public void onQuotesReceived(List<List<IQuote>> mQuoteResults);
 }

@@ -5,11 +5,13 @@ import android.util.Log;
 import com.barchart.ondemand.BarchartOnDemandClient;
 import com.barchart.ondemand.api.HistoryRequest;
 import com.barchart.ondemand.api.responses.HistoryBar;
-import com.magellan.magellan.quote.IQuoteCollection;
+import com.magellan.magellan.quote.IQuote;
 import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.quote.QuoteQuery;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class BarChartQuoteService implements IQuoteService
@@ -20,7 +22,7 @@ public class BarChartQuoteService implements IQuoteService
         mClient = new BarchartOnDemandClient.Builder().apiKey("053b0a25336ff63cdaccec0316ed8b84").baseUrl("http://marketdata.websol.barchart.com/").build();
     }
 
-    public IQuoteCollection execute(QuoteQuery query)
+    public List<IQuote> execute(QuoteQuery query)
     {
         try {
             final HistoryRequest.Builder builder = new HistoryRequest.Builder();
@@ -55,10 +57,17 @@ public class BarChartQuoteService implements IQuoteService
 
             HistoryRequest built = builder.build();
             Map<String, Object> params = builder.build().parameters();
-            final Collection<HistoryBar> quotes = mClient.fetch(built).all();
-            if (quotes == null)
+            final Collection<HistoryBar> rawQuotes = mClient.fetch(built).all();
+            if (rawQuotes == null)
                 return null;
-            return new BarChartQuoteCollection(quotes);
+
+            HistoryBar [] tmp = new HistoryBar [rawQuotes.size()];
+            rawQuotes.toArray(tmp);
+
+            List<IQuote> quotes = new ArrayList<IQuote>(rawQuotes.size());
+            for (int i = 0; i < rawQuotes.size(); i++)
+                quotes.add(new BarChartQuote(tmp[i]));
+            return quotes;
         }
         catch (Exception e)
         {

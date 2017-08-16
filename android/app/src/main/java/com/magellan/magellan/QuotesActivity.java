@@ -39,7 +39,6 @@ import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.metric.volume.VolumeBarLayer;
 import com.magellan.magellan.metric.volume.VolumeMetric;
 import com.magellan.magellan.quote.IQuote;
-import com.magellan.magellan.quote.IQuoteCollection;
 import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.QuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
@@ -106,7 +105,7 @@ public class QuotesActivity extends AppCompatActivity
     private class QueryContext
     {
         QuoteQuery query;
-        IQuoteCollection results;
+        List<IQuote> results;
         QuotePeriod quotePeriod;
         boolean complete = false;
     }
@@ -329,7 +328,7 @@ public class QuotesActivity extends AppCompatActivity
         mQuoteTask.execute(mLastQuery.query);
     }
 
-    public void onQuotesReceived(List<IQuoteCollection> manyQuotes)
+    public void onQuotesReceived(List<List<IQuote>> manyQuotes)
     {
         boolean oneValidHquotes = false;
         Duration intervalDuration = mLastQuery.query.getIntervalAsDuration();
@@ -343,7 +342,7 @@ public class QuotesActivity extends AppCompatActivity
 
         for (int i = 0; i < manyQuotes.size(); i++)
         {
-            IQuoteCollection quotes = manyQuotes.get(i);
+            List<IQuote> quotes = manyQuotes.get(i);
             if (quotes == null || quotes.size() <= 1) {
                 continue;
             }

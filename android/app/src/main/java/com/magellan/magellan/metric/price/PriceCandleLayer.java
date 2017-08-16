@@ -14,9 +14,9 @@ import com.github.mikephil.charting.interfaces.datasets.ICandleDataSet;
 import com.magellan.magellan.R;
 import com.magellan.magellan.metric.IMetricLayer;
 import com.magellan.magellan.quote.IQuote;
-import com.magellan.magellan.quote.IQuoteCollection;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PriceCandleLayer implements IMetricLayer
 {
@@ -27,7 +27,7 @@ public class PriceCandleLayer implements IMetricLayer
         mContext = context;
     }
 
-    public void onDrawQuotes(IQuoteCollection quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData)
+    public void onDrawQuotes(List<IQuote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData)
     {
         IQuote initialQuote = quotes.get(0);
         IQuote finalQuote = quotes.get(quotes.size() - 1);
