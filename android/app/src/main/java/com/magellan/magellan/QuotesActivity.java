@@ -76,6 +76,8 @@ public class QuotesActivity extends AppCompatActivity
     private TextView mDateText;
     private TextView mTimeText;
 
+    private TabLayout mStockTabLayout;
+
     private TextView mPriceText;
     private TextView mPriceChangeText;
     private TextView mVolumeText;
@@ -84,6 +86,7 @@ public class QuotesActivity extends AppCompatActivity
     private MetricLayerButtonAdapter mPriceLayerAdapter;
     private RecyclerView mVolumeLayersContainer;
     private MetricLayerButtonAdapter mVolumeLayerAdapter;
+
     private TabLayout mIntervalTabLayout;
 
     private CombinedChart mPriceChart;
@@ -118,6 +121,7 @@ public class QuotesActivity extends AppCompatActivity
 
         mDateText = (TextView) findViewById(R.id.date);
         mTimeText = (TextView) findViewById(R.id.time);
+        mStockTabLayout = (TabLayout) findViewById(R.id.stock_tabs);
 
         View priceCard = findViewById(R.id.price_card);
         mPriceText = (TextView) priceCard.findViewById(R.id.value);
@@ -181,11 +185,29 @@ public class QuotesActivity extends AppCompatActivity
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
-        launchTaskForTab(mIntervalTabLayout.getSelectedTabPosition());
+
+        mSymbol = mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getText().toString();
+        launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
+
+        mStockTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                mSymbol = tab.getText().toString();
+                launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+
         mIntervalTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                launchTaskForTab(tab.getPosition());
+                ;
+                launchTaskForInterval(tab.getPosition());
             }
 
             @Override
@@ -196,7 +218,7 @@ public class QuotesActivity extends AppCompatActivity
         });
     }
 
-    
+
     // initialize default settins for any charts in this activity
     private void initializeChart(CombinedChart chart)
     {
@@ -239,7 +261,7 @@ public class QuotesActivity extends AppCompatActivity
         rightAxis.setSpaceTop(0);
     }
 
-    private void launchTaskForTab(int position)
+    private void launchTaskForInterval(int position)
     {
         DateTime start = null;
         QuoteQuery.IntervalUnit intervalUnit = null;
