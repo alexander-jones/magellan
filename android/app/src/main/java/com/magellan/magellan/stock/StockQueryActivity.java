@@ -72,7 +72,7 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
     {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finishWithResult("");
+                finishWithResult(null);
         }
         return true;
     }

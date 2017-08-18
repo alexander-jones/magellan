@@ -412,7 +412,7 @@ public class QuotesActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         String ticker = data.getStringExtra("stock");
-        if (ticker == null)
+        if (ticker == null || ticker.isEmpty())
             return;
 
         mSymbol = ticker;
