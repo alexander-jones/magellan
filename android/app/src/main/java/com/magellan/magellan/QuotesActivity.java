@@ -2,14 +2,18 @@ package com.magellan.magellan;
 
 import java.util.List;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.SearchView;
 import android.util.TypedValue;
 import android.util.Log;
 import android.os.Bundle;
+import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -40,9 +44,12 @@ import com.magellan.magellan.metric.volume.VolumeBarLayer;
 import com.magellan.magellan.metric.volume.VolumeMetric;
 import com.magellan.magellan.quote.IQuote;
 import com.magellan.magellan.quote.QuoteQuery;
-import com.magellan.magellan.quote.QuoteQueryListener;
+import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
-import com.magellan.magellan.quote.barchart.BarChartQuoteService;
+import com.magellan.magellan.service.barchart.BarChartService;
+import com.magellan.magellan.service.yahoo.YahooService;
+import com.magellan.magellan.stock.StockQueryActivity;
+import com.magellan.magellan.stock.StockQueryTask;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -55,7 +62,7 @@ import java.util.TimeZone;
 
 public class QuotesActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        OnChartGestureListener, OnChartValueSelectedListener, QuoteQueryListener {
+        OnChartGestureListener, OnChartValueSelectedListener, IQuoteQueryListener{
 
     private enum QuotePeriod
     {
@@ -76,6 +83,7 @@ public class QuotesActivity extends AppCompatActivity
     private TextView mTimeText;
 
     private TabLayout mStockTabLayout;
+    private SearchView mSearchView;
 
     private TextView mPriceText;
     private TextView mPriceChangeText;
@@ -94,13 +102,20 @@ public class QuotesActivity extends AppCompatActivity
     private CombinedChart mVolumeChart;
     private CombinedData mVolumeChartData;
 
+
+    private DrawerLayout mDrawerLayout;
+    ActionBarDrawerToggle mDrawerToggle;
+
     private QuoteQueryTask mQuoteTask;
     private QueryContext mLastQuery = new QueryContext();
 
     private List<IMetricLayer> mPriceLayers = new ArrayList<IMetricLayer>();
     private List<IMetricLayer> mVolumeLayers = new ArrayList<IMetricLayer>();
 
-    private BarChartQuoteService mQuoteService = new BarChartQuoteService();
+    private BarChartService mQuoteService = new BarChartService();
+
+    private StockQueryTask mStockTask;
+    private YahooService mStockService = new YahooService();
 
     private class QueryContext
     {
@@ -117,7 +132,6 @@ public class QuotesActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
-
         mDateText = (TextView) findViewById(R.id.date);
         mTimeText = (TextView) findViewById(R.id.time);
         mStockTabLayout = (TabLayout) findViewById(R.id.stock_tabs);
@@ -171,11 +185,10 @@ public class QuotesActivity extends AppCompatActivity
         mVolumeLayerAdapter = new MetricLayerButtonAdapter(volumeLayerLabels);
         mVolumeLayersContainer.setAdapter(mVolumeLayerAdapter);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle (this, mDrawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -216,7 +229,6 @@ public class QuotesActivity extends AppCompatActivity
             public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
-
 
     // initialize default settins for any charts in this activity
     private void initializeChart(CombinedChart chart)
@@ -377,36 +389,35 @@ public class QuotesActivity extends AppCompatActivity
         mLastQuery.complete = oneValidHquotes;
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.portfolio, menu);
-        return true;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.quotes, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    public boolean onOptionsItemSelected (MenuItem item)
+    {
+       switch (item.getItemId()) {
+           case R.id.search:
+               Intent intent = new Intent(this, StockQueryActivity.class);
+               startActivityForResult(intent, 1);
+               break;
+       }
+       return true;
+    }
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        String ticker = data.getStringExtra("stock");
+        if (ticker == null)
+            return;
 
-        return super.onOptionsItemSelected(item);
+        mSymbol = ticker;
+        mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).setText(mSymbol);
+        launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

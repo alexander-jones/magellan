@@ -7,11 +7,11 @@ import java.util.List;
 
 public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
 
-    private QuoteQueryListener mListener;
+    private IQuoteQueryListener mListener;
     private List<List<IQuote>> mQuoteCollections;
     private IQuoteService mQuoteService;
 
-    public QuoteQueryTask(IQuoteService quoteService, QuoteQueryListener listener)
+    public QuoteQueryTask(IQuoteService quoteService, IQuoteQueryListener listener)
     {
         super();
         mListener = listener;

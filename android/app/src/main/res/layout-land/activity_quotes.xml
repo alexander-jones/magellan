@@ -25,7 +25,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay" />
+                app:popupTheme="@style/AppTheme.PopupOverlay"
+                app:theme="@style/AppTheme.Toolbar"/>
 
         </android.support.design.widget.AppBarLayout>
 
@@ -193,6 +194,13 @@
         </RelativeLayout>
 
     </android.support.design.widget.CoordinatorLayout>
+
+    <ListView
+        android:id="@+id/search_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorSecondaryAlpha"
+        android:visibility="gone"/>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"
