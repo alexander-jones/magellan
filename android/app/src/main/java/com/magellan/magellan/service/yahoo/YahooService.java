@@ -50,6 +50,19 @@ public class YahooService implements IStockService{
                         ret = new ArrayList<IStock>();
                         for(int i=0; i < resultArray.length(); ++i) {
                             JSONObject result = resultArray.getJSONObject(i);
+                            if (!stockQuery.mRestrictToExchanges.isEmpty())
+                            {
+                                boolean storeValue = false;
+                                String exchange = result.getString("exchDisp");
+                                for(String str: stockQuery.mRestrictToExchanges) {
+                                    if(str.contentEquals(exchange)) {
+                                        storeValue = true;
+                                        break;
+                                    }
+                                }
+                                if (!storeValue)
+                                    continue;
+                            }
                             ret.add(new YahooStock(result.getString("symbol"), result.getString("name"),result.getString("exchDisp"),result.getString("typeDisp")));
                         }
                     } catch (JSONException e) {
