@@ -3,57 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorSecondaryDark">
+    android:padding="@dimen/spacing_dialog"
+    android:background="@color/colorSecondaryAlpha">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay"
-        app:elevation="0dp">
+        android:theme="@style/AppTheme.Overlay.AppBarOverlay"
+        app:elevation="@dimen/elevation">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:theme="@style/AppTheme.Toolbar" />
+            android:background="@color/colorSecondary"
+            app:popupTheme="@style/AppTheme.Overlay.PopupOverlay"
+            app:theme="@style/AppTheme.Overlay" />
 
     </android.support.design.widget.AppBarLayout>
-
-    <RelativeLayout
-        android:id="@+id/no_results"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="@dimen/spacing_external"
-        app:layout_anchor="@id/app_bar"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/ic_icon_transparent"/>
-
-        <TextView
-            android:text="Search for Equities across NYSE and NASDAQ."
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/large_header_text_size"
-            android:textColor="@color/colorPrimary"
-            android:layout_centerInParent="true"
-            android:gravity="center"/>
-
-    </RelativeLayout>
 
     <ListView
         android:id="@+id/search_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="@dimen/spacing_dialog"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="@dimen/spacing_internal"
+        android:divider="@color/colorSecondaryDark"
+        android:dividerHeight="1dp"
         app:layout_anchor="@id/app_bar"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:visibility="gone"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
 </android.support.design.widget.CoordinatorLayout>
