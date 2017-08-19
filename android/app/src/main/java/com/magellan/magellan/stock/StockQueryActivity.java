@@ -8,6 +8,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -52,8 +53,8 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
 
     @Override
     public void onBackPressed() {
+        finishWithResult(null);
         super.onBackPressed();
-        finish();
     }
 
     @Override
@@ -61,9 +62,11 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.stock_query, menu);
         MenuItem searchItem = menu.findItem(R.id.search);
-        searchItem.expandActionView();
+        MenuItemCompat.expandActionView(searchItem);
         mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         mSearchView.setOnQueryTextListener(this);
+        mSearchView.setIconified(false);
+
         return super.onCreateOptionsMenu(menu);
     }
 
