@@ -8,13 +8,10 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -30,11 +27,14 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
     private ListView mList;
     private StockQueryTask mTask;
     private StockAdapter mAdapter;
-    private List<IStock> mCurrentStocks = new ArrayList<IStock>();
+    private List<Stock> mCurrentStocks = new ArrayList<Stock>();
     private IStockService mService = new YahooService();
     private List<String> mSupportedExchanges = new ArrayList<String>();
     private Toolbar mToolbar;
-    SearchView mSearchView;
+    private SearchView mSearchView;
+
+    private String mSearchViewTextToSet = null;
+    private boolean mRemoveSearchViewFocus = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +52,46 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
 
         mSupportedExchanges.add("NYSE");
         mSupportedExchanges.add("NASDAQ");
+
+        onLoadInstanceState(savedInstanceState);
+    }
+
+
+    public void onLoadInstanceState(Bundle inState)
+    {
+        if (inState == null)
+            return;
+
+        mSearchViewTextToSet = inState.getString("SEARCH_TEXT", null);
+        mRemoveSearchViewFocus = !inState.getBoolean("SEARCH_FOCUS", false);
+
+        int numResults = inState.getInt("NUM_RESULTS" , 0);
+        for (int i =0; i < numResults; ++i){
+
+            String symbol = inState.getString("RESULT_" + Integer.toString(i) + "_SYMBOL", null);
+            String company = inState.getString("RESULT_" + Integer.toString(i) + "_COMPANY", null);
+            String exchange = inState.getString("RESULT_" + Integer.toString(i) + "_EXCHANGE", null);
+            String type = inState.getString("RESULT_" + Integer.toString(i) + "_TYPE", null);
+            mCurrentStocks.add(new Stock(symbol, company, exchange, type));
+        }
+
+        if (numResults > 0)
+            mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        outState.putBoolean("SEARCH_FOCUS", mSearchView.hasFocus());
+        outState.putString("SEARCH_TEXT", mSearchView.getQuery().toString());
+        outState.putInt("NUM_RESULTS", mCurrentStocks.size());
+        for (int i =0; i < mCurrentStocks.size(); ++i){
+            outState.putString("RESULT_" + Integer.toString(i) + "_SYMBOL", mCurrentStocks.get(i).getSymbol());
+            outState.putString("RESULT_" + Integer.toString(i) + "_COMPANY", mCurrentStocks.get(i).getCompany());
+            outState.putString("RESULT_" + Integer.toString(i) + "_EXCHANGE", mCurrentStocks.get(i).getExchange());
+            outState.putString("RESULT_" + Integer.toString(i) + "_TYPE", mCurrentStocks.get(i).getType());
+        }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -69,6 +109,12 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         mSearchView.setOnQueryTextListener(this);
         mSearchView.setIconified(false);
+        if (mSearchViewTextToSet != null) {
+            mSearchView.setQuery(mSearchViewTextToSet, false);
+            if (mRemoveSearchViewFocus)
+                mSearchView.clearFocus();
+            mSearchViewTextToSet = null;
+        }
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -107,7 +153,7 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
     }
 
     @Override
-    public void onStocksReceived(List<List<IStock>> stocks)
+    public void onStocksReceived(List<List<Stock>> stocks)
     {
         mCurrentStocks.clear();
         mCurrentStocks.addAll(stocks.get(0));

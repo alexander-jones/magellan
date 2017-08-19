@@ -8,7 +8,7 @@ import java.util.List;
 public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
 
     private IQuoteQueryListener mListener;
-    private List<List<IQuote>> mQuoteCollections;
+    private List<List<Quote>> mQuoteCollections;
     private IQuoteService mQuoteService;
 
     public QuoteQueryTask(IQuoteService quoteService, IQuoteQueryListener listener)
@@ -21,7 +21,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
     protected Long doInBackground(QuoteQuery... queries) {
         int count = queries.length;
         long result = 0;
-        mQuoteCollections = new ArrayList<List<IQuote>>();
+        mQuoteCollections = new ArrayList<List<Quote>>();
         for (int i = 0; i < count; i++) {
             QuoteQuery query = queries[i];
             mQuoteCollections.add(mQuoteService.execute(query));

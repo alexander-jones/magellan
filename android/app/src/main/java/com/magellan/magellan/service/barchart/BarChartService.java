@@ -5,9 +5,11 @@ import android.util.Log;
 import com.barchart.ondemand.BarchartOnDemandClient;
 import com.barchart.ondemand.api.HistoryRequest;
 import com.barchart.ondemand.api.responses.HistoryBar;
-import com.magellan.magellan.quote.IQuote;
+import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.quote.QuoteQuery;
+
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +24,7 @@ public class BarChartService implements IQuoteService
         mClient = new BarchartOnDemandClient.Builder().apiKey("053b0a25336ff63cdaccec0316ed8b84").baseUrl("http://marketdata.websol.barchart.com/").build();
     }
 
-    public List<IQuote> execute(QuoteQuery query)
+    public List<Quote> execute(QuoteQuery query)
     {
         try {
             final HistoryRequest.Builder builder = new HistoryRequest.Builder();
@@ -64,9 +66,9 @@ public class BarChartService implements IQuoteService
             HistoryBar [] tmp = new HistoryBar [rawQuotes.size()];
             rawQuotes.toArray(tmp);
 
-            List<IQuote> quotes = new ArrayList<IQuote>(rawQuotes.size());
+            List<Quote> quotes = new ArrayList<Quote>(rawQuotes.size());
             for (int i = 0; i < rawQuotes.size(); i++)
-                quotes.add(new BarChartQuote(tmp[i]));
+                quotes.add(new Quote(new DateTime(tmp[i].getTimestamp()), (float)tmp[i].getOpen(), (float)tmp[i].getClose(), (float)tmp[i].getLow(), (float)tmp[i].getHigh(), tmp[i].getVolume()));
             return quotes;
         }
         catch (Exception e)

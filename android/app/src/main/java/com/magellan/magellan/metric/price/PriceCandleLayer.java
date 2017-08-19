@@ -13,7 +13,7 @@ import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.interfaces.datasets.ICandleDataSet;
 import com.magellan.magellan.R;
 import com.magellan.magellan.metric.IMetricLayer;
-import com.magellan.magellan.quote.IQuote;
+import com.magellan.magellan.quote.Quote;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +27,10 @@ public class PriceCandleLayer implements IMetricLayer
         mContext = context;
     }
 
-    public void onDrawQuotes(List<IQuote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData)
+    public void onDrawQuotes(List<Quote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData)
     {
-        IQuote initialQuote = quotes.get(0);
-        IQuote finalQuote = quotes.get(quotes.size() - 1);
+        Quote initialQuote = quotes.get(0);
+        Quote finalQuote = quotes.get(quotes.size() - 1);
 
         ArrayList<CandleEntry> priceValues = new ArrayList<CandleEntry>();
 
@@ -38,7 +38,7 @@ public class PriceCandleLayer implements IMetricLayer
             priceValues.add(new CandleEntry(j, initialQuote.getHigh(), initialQuote.getLow(), initialQuote.getOpen(), initialQuote.getClose(), null));
 
         for (int j = missingStartSteps; j < quotes.size() + missingStartSteps; ++j) {
-            IQuote quote = quotes.get(j - missingStartSteps);
+            Quote quote = quotes.get(j - missingStartSteps);
             priceValues.add(new CandleEntry(j, quote.getHigh(), quote.getLow(), quote.getOpen(), quote.getClose(), quote));
         }
 

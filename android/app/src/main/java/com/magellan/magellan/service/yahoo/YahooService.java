@@ -2,7 +2,7 @@ package com.magellan.magellan.service.yahoo;
 
 import android.util.Log;
 
-import com.magellan.magellan.stock.IStock;
+import com.magellan.magellan.stock.Stock;
 import com.magellan.magellan.stock.IStockService;
 import com.magellan.magellan.stock.StockQuery;
 
@@ -22,11 +22,11 @@ import java.util.List;
 
 public class YahooService implements IStockService{
 
-    public List<IStock> execute(StockQuery stockQuery) {
+    public List<Stock> execute(StockQuery stockQuery) {
 
-        String url_select = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query=" + stockQuery.symbolTemplate + "&region=1&lang=en&callback=YAHOO.Finance.SymbolSuggest.ssCallback";
+        String url_select = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query=" + stockQuery.symbolTemplate + "&region=1&lang=en";
 
-        List<IStock> ret = null;
+        List<Stock> ret = null;
         try {
             URL url = new URL(url_select);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -44,10 +44,9 @@ public class YahooService implements IStockService{
                     inputStream.close();
                     try {
                         String response = sBuilder.toString();
-                        String jsonText = response.substring(response.indexOf('(') + 1,response.lastIndexOf(')'));
-                        JSONObject rootObject = new JSONObject(jsonText);
+                        JSONObject rootObject = new JSONObject(response);
                         JSONArray resultArray = rootObject.getJSONObject("ResultSet").getJSONArray("Result");
-                        ret = new ArrayList<IStock>();
+                        ret = new ArrayList<Stock>();
                         for(int i=0; i < resultArray.length(); ++i) {
                             JSONObject result = resultArray.getJSONObject(i);
 
@@ -71,7 +70,7 @@ public class YahooService implements IStockService{
                                     continue;
                             }
 
-                            ret.add(new YahooStock(result.getString("symbol"), result.getString("name"),result.getString("exchDisp"),result.getString("typeDisp")));
+                            ret.add(new Stock(result.getString("symbol"), result.getString("name"),result.getString("exchDisp"),result.getString("typeDisp")));
                         }
                     } catch (JSONException e) {
                         Log.e("Magellan", "Error parsing json from yahoo finance: " + e.toString());

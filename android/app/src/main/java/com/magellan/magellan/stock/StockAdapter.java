@@ -9,18 +9,16 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.magellan.magellan.R;
-import com.magellan.magellan.stock.IStock;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class StockAdapter extends ArrayAdapter<IStock>
+public class StockAdapter extends ArrayAdapter<Stock>
 {
-    private final List<IStock> mItems;
+    private final List<Stock> mItems;
     private final Context mContext;
     private final LayoutInflater mInflater;
 
-    public StockAdapter (Context context, List<IStock> items)
+    public StockAdapter (Context context, List<Stock> items)
     {
         super(context, R.layout.stock_row);
 
@@ -47,7 +45,7 @@ public class StockAdapter extends ArrayAdapter<IStock>
             holder = (ViewHolder)convertView.getTag();
         }
 
-        IStock stock = getItem(position);
+        Stock stock = getItem(position);
         holder.symbol.setText(stock.getSymbol());
         holder.company.setText(stock.getCompany());
         return convertView;
@@ -60,7 +58,7 @@ public class StockAdapter extends ArrayAdapter<IStock>
     }
 
     @Override
-    public IStock getItem(int position)
+    public Stock getItem(int position)
     {
         return mItems.get(position);
     }

@@ -11,7 +11,7 @@ import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.magellan.magellan.R;
 import com.magellan.magellan.metric.IMetricLayer;
-import com.magellan.magellan.quote.IQuote;
+import com.magellan.magellan.quote.Quote;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +34,9 @@ public class VolumeBarLayer implements IMetricLayer {
         mContext = context;
     }
 
-    public void onDrawQuotes(List<IQuote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData) {
-        IQuote initialQuote = quotes.get(0);
-        IQuote finalQuote = quotes.get(quotes.size() - 1);
+    public void onDrawQuotes(List<Quote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData) {
+        Quote initialQuote = quotes.get(0);
+        Quote finalQuote = quotes.get(quotes.size() - 1);
 
         ArrayList<IBarDataSet> volumeDataSets = new ArrayList<IBarDataSet>();
         ArrayList<BarEntry> volumeValues = new ArrayList<BarEntry>();
@@ -46,7 +46,7 @@ public class VolumeBarLayer implements IMetricLayer {
             volumeValues.add(new BarEntry(j, 0, null));
 
         for (int j = missingStartSteps; j < quotes.size() + missingStartSteps; ++j) {
-            IQuote quote = quotes.get(j - missingStartSteps);
+            Quote quote = quotes.get(j - missingStartSteps);
             volumeValues.add(new BarEntry(j, (float) quote.getVolume(), quote));
         }
 

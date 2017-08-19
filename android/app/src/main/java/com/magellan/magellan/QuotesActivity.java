@@ -5,7 +5,6 @@ import java.util.List;
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -42,7 +41,7 @@ import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.metric.volume.VolumeBarLayer;
 import com.magellan.magellan.metric.volume.VolumeMetric;
-import com.magellan.magellan.quote.IQuote;
+import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
@@ -120,7 +119,7 @@ public class QuotesActivity extends AppCompatActivity
     private class QueryContext
     {
         QuoteQuery query;
-        List<IQuote> results;
+        List<Quote> results;
         QuotePeriod quotePeriod;
         boolean complete = false;
     }
@@ -340,7 +339,7 @@ public class QuotesActivity extends AppCompatActivity
         mQuoteTask.execute(mLastQuery.query);
     }
 
-    public void onQuotesReceived(List<List<IQuote>> manyQuotes)
+    public void onQuotesReceived(List<List<Quote>> manyQuotes)
     {
         boolean oneValidHquotes = false;
         Duration intervalDuration = mLastQuery.query.getIntervalAsDuration();
@@ -354,14 +353,14 @@ public class QuotesActivity extends AppCompatActivity
 
         for (int i = 0; i < manyQuotes.size(); i++)
         {
-            List<IQuote> quotes = manyQuotes.get(i);
+            List<Quote> quotes = manyQuotes.get(i);
             if (quotes == null || quotes.size() <= 1) {
                 continue;
             }
             mLastQuery.results = quotes;
 
-            IQuote initialQuote = quotes.get(0);
-            IQuote finalQuote = quotes.get(quotes.size() -1);
+            Quote initialQuote = quotes.get(0);
+            Quote finalQuote = quotes.get(quotes.size() -1);
 
             Duration missingStartDuration = new Duration(mLastQuery.query.start, initialQuote.getTime());
             Duration missingEndDuration = new Duration(finalQuote.getTime(), mLastQuery.query.end);
@@ -502,13 +501,13 @@ public class QuotesActivity extends AppCompatActivity
         mPriceChart.highlightValue(null);
         mVolumeChart.highlightValue(null);
 
-        IQuote lastQuery = mLastQuery.results.get(mLastQuery.results.size() -1);
+        Quote lastQuery = mLastQuery.results.get(mLastQuery.results.size() -1);
         updateHeaderText(mLastQuery.results.get(0), lastQuery);
     }
 
     private void highlightQuote(Entry e)
     {
-        IQuote quote = (IQuote)e.getData();
+        Quote quote = (Quote)e.getData();
         if (quote == null)
             return;
 
@@ -534,7 +533,7 @@ public class QuotesActivity extends AppCompatActivity
 
     private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("MMM d y");
     private static DateTimeFormatter timeFormatter = DateTimeFormat.forPattern("h:mm a z").withZone(DateTimeZone.getDefault());
-    private void updateHeaderText(IQuote startQuote, IQuote endQuote)
+    private void updateHeaderText(Quote startQuote, Quote endQuote)
     {
         float priceDiff = endQuote.getClose() - startQuote.getClose();
         float priceDiffPercent = (priceDiff / startQuote.getClose()) * 100.0f;

@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface IQuoteService
 {
-    List<IQuote> execute(QuoteQuery query);
+    List<Quote> execute(QuoteQuery query);
 }

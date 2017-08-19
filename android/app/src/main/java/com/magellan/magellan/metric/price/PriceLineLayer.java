@@ -11,7 +11,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.magellan.magellan.R;
 import com.magellan.magellan.metric.IMetricLayer;
-import com.magellan.magellan.quote.IQuote;
+import com.magellan.magellan.quote.Quote;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +36,9 @@ public class PriceLineLayer implements IMetricLayer
         mContext = context;
     }
 
-    public void onDrawQuotes(List<IQuote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData) {
-        IQuote initialQuote = quotes.get(0);
-        IQuote finalQuote = quotes.get(quotes.size() - 1);
+    public void onDrawQuotes(List<Quote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData) {
+        Quote initialQuote = quotes.get(0);
+        Quote finalQuote = quotes.get(quotes.size() - 1);
         ArrayList<Entry> priceValues = new ArrayList<Entry>();
 
         float startingOpen = initialQuote.getOpen();
@@ -46,7 +46,7 @@ public class PriceLineLayer implements IMetricLayer
             priceValues.add(new Entry(j, startingOpen, null));
 
         for (int j = missingStartSteps; j < quotes.size() + missingStartSteps; ++j) {
-            IQuote quote = quotes.get(j - missingStartSteps);
+            Quote quote = quotes.get(j - missingStartSteps);
             priceValues.add(new Entry(j, (float) quote.getClose(), quote));
         }
 
