@@ -50,6 +50,13 @@ public class YahooService implements IStockService{
                         ret = new ArrayList<IStock>();
                         for(int i=0; i < resultArray.length(); ++i) {
                             JSONObject result = resultArray.getJSONObject(i);
+
+                            if (result.getString("symbol").contains(".")) // make sure this is domestic as international equities aren't yet supported via barchart integration yet.
+                                continue;
+
+                            if (!result.getString("type").contentEquals("S")) // make sure this is a stock as other types of equities aren't yet supported via barchart integration yet.
+                                continue;
+
                             if (!stockQuery.mRestrictToExchanges.isEmpty())
                             {
                                 boolean storeValue = false;
@@ -63,6 +70,7 @@ public class YahooService implements IStockService{
                                 if (!storeValue)
                                     continue;
                             }
+
                             ret.add(new YahooStock(result.getString("symbol"), result.getString("name"),result.getString("exchDisp"),result.getString("typeDisp")));
                         }
                     } catch (JSONException e) {
