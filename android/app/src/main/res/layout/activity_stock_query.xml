@@ -22,6 +22,29 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <RelativeLayout
+        android:id="@+id/no_results"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/spacing_external"
+        app:layout_anchor="@id/app_bar"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_icon_transparent"/>
+
+        <TextView
+            android:text="Search for Equities across NYSE and NASDAQ."
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/large_header_text_size"
+            android:textColor="@color/colorPrimary"
+            android:layout_centerInParent="true"
+            android:gravity="center"/>
+
+    </RelativeLayout>
+
     <ListView
         android:id="@+id/search_list_view"
         android:layout_width="match_parent"
@@ -30,6 +53,7 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="@dimen/spacing_internal"
         app:layout_anchor="@id/app_bar"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:visibility="gone"/>
 
 </android.support.design.widget.CoordinatorLayout>

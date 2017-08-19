@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import com.magellan.magellan.R;
 import com.magellan.magellan.service.yahoo.YahooService;
@@ -32,6 +33,7 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
     private IStockService mService = new YahooService();
     private List<String> mSupportedExchanges = new ArrayList<String>();
     private Toolbar mToolbar;
+    private RelativeLayout mBackdrop;
     SearchView mSearchView;
 
     @Override
@@ -47,6 +49,7 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        mBackdrop =(RelativeLayout) findViewById( R.id.no_results);
         mSupportedExchanges.add("NYSE");
         mSupportedExchanges.add("NASDAQ");
     }
@@ -109,6 +112,16 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         mCurrentStocks.clear();
         mCurrentStocks.addAll(stocks.get(0));
         mAdapter.notifyDataSetChanged();
+        if (stocks.isEmpty())
+        {
+            mList.setVisibility(View.GONE);
+            mBackdrop.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            mList.setVisibility(View.VISIBLE);
+            mBackdrop.setVisibility(View.GONE);
+        }
     }
 
     private void showKeyboard()
