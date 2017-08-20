@@ -16,6 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.magellan.magellan.ApplicationContext;
 import com.magellan.magellan.R;
 import com.magellan.magellan.service.yahoo.YahooService;
 
@@ -40,6 +41,7 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_query);
+        ApplicationContext.init(this);
 
         setTitle("");
         mList =(ListView) findViewById(R.id.search_list_view);
@@ -65,32 +67,18 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         mSearchViewTextToSet = inState.getString("SEARCH_TEXT", null);
         mRemoveSearchViewFocus = !inState.getBoolean("SEARCH_FOCUS", false);
 
-        int numResults = inState.getInt("NUM_RESULTS" , 0);
-        for (int i =0; i < numResults; ++i){
-
-            String symbol = inState.getString("RESULT_" + Integer.toString(i) + "_SYMBOL", null);
-            String company = inState.getString("RESULT_" + Integer.toString(i) + "_COMPANY", null);
-            String exchange = inState.getString("RESULT_" + Integer.toString(i) + "_EXCHANGE", null);
-            String type = inState.getString("RESULT_" + Integer.toString(i) + "_TYPE", null);
-            mCurrentStocks.add(new Stock(symbol, company, exchange, type));
-        }
-
-        if (numResults > 0)
+        List<Stock> stocks = Stock.loadFrom(inState);
+        if (stocks != null){
+            mCurrentStocks = stocks;
             mAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-
+        Stock.saveTo(outState, mCurrentStocks);
         outState.putBoolean("SEARCH_FOCUS", mSearchView.hasFocus());
         outState.putString("SEARCH_TEXT", mSearchView.getQuery().toString());
-        outState.putInt("NUM_RESULTS", mCurrentStocks.size());
-        for (int i =0; i < mCurrentStocks.size(); ++i){
-            outState.putString("RESULT_" + Integer.toString(i) + "_SYMBOL", mCurrentStocks.get(i).getSymbol());
-            outState.putString("RESULT_" + Integer.toString(i) + "_COMPANY", mCurrentStocks.get(i).getCompany());
-            outState.putString("RESULT_" + Integer.toString(i) + "_EXCHANGE", mCurrentStocks.get(i).getExchange());
-            outState.putString("RESULT_" + Integer.toString(i) + "_TYPE", mCurrentStocks.get(i).getType());
-        }
         super.onSaveInstanceState(outState);
     }
 
@@ -176,16 +164,19 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         }
     }
 
-    private void finishWithResult(CharSequence stock)
+    private void finishWithResult(Stock stock)
     {
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("stock", stock);
+        List<Stock> chosenStocks = new ArrayList<Stock>();
+        if (stock != null)
+            chosenStocks.add(stock);
+        Stock.saveTo(returnIntent, chosenStocks);
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
     }
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        finishWithResult(((StockAdapter.ViewHolder)view.getTag()).symbol.getText());
+        finishWithResult((Stock)((StockAdapter.ViewHolder)view.getTag()).addToWatchList.getTag());
     }
 }

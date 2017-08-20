@@ -47,6 +47,7 @@ import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
 import com.magellan.magellan.service.barchart.BarChartService;
 import com.magellan.magellan.service.yahoo.YahooService;
+import com.magellan.magellan.stock.Stock;
 import com.magellan.magellan.stock.StockQueryActivity;
 import com.magellan.magellan.stock.StockQueryTask;
 
@@ -77,12 +78,13 @@ public class QuotesActivity extends AppCompatActivity
     private static int CHART_MARGIN = 10;
     private static int CHART_SPACING = 5;
 
+    private int mWachListGeneration;
     private String mSymbol;
     private TextView mDateText;
     private TextView mTimeText;
 
     private TabLayout mStockTabLayout;
-    private SearchView mSearchView;
+    private List<Stock> mExtraStocks = new ArrayList<Stock>();
 
     private TextView mPriceText;
     private TextView mPriceChangeText;
@@ -113,9 +115,6 @@ public class QuotesActivity extends AppCompatActivity
 
     private BarChartService mQuoteService = new BarChartService();
 
-    private StockQueryTask mStockTask;
-    private YahooService mStockService = new YahooService();
-
     private class QueryContext
     {
         QuoteQuery query;
@@ -127,6 +126,8 @@ public class QuotesActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ApplicationContext.init(this);
+
         setContentView(R.layout.activity_quotes);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -192,17 +193,21 @@ public class QuotesActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mSymbol = "AMC";
-
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
 
-        mSymbol = mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getText().toString();
-        launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
+        int currentStock = onLoadInstanceState(savedInstanceState);
+        if (currentStock != -1)
+        {
+            mSymbol = mStockTabLayout.getTabAt(currentStock).getText().toString();
+            mStockTabLayout.getTabAt(currentStock).select();
+            launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
+        }
 
         mStockTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                ApplicationContext.setSelectedStock(tab.getPosition());
                 mSymbol = tab.getText().toString();
                 launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
             }
@@ -227,6 +232,34 @@ public class QuotesActivity extends AppCompatActivity
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
+    }
+
+    private int onLoadInstanceState(Bundle inState)
+    {
+        List<Stock> watchList = ApplicationContext.getWatchList();
+        for (Stock stock : watchList)
+            mStockTabLayout.addTab(createTabForStock(stock));
+        mWachListGeneration = ApplicationContext.getWatchListGeneration();
+
+        if (inState == null)
+            return ApplicationContext.getSelectedStock();
+
+        mExtraStocks = Stock.loadFrom(inState);
+        for (Stock stock : mExtraStocks)
+            mStockTabLayout.addTab(createTabForStock(stock));
+
+        int selectedStock = inState.getInt("SELECTED_STOCK", -1);
+        if (selectedStock == -1)
+            return ApplicationContext.getSelectedStock();
+
+        return selectedStock;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        Stock.saveTo(outState, mExtraStocks);
+        outState.putInt("SELECTED_STOCK",  mStockTabLayout.getSelectedTabPosition());
     }
 
     // initialize default settins for any charts in this activity
@@ -410,13 +443,55 @@ public class QuotesActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        String ticker = data.getStringExtra("stock");
-        if (ticker == null || ticker.isEmpty())
-            return;
 
-        mSymbol = ticker;
-        mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).setText(mSymbol);
-        launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
+        int tabToSelect = -1;
+        int newWatchListGen = ApplicationContext.getWatchListGeneration();
+        if (mWachListGeneration != newWatchListGen)
+        {
+            Stock selectedStock = (Stock)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
+            List<Stock> watchList = ApplicationContext.getWatchList();
+
+            mStockTabLayout.removeAllTabs();
+            int i;
+            for (i = 0; i < watchList.size(); ++i)
+            {
+                Stock stock = watchList.get(i);
+                TabLayout.Tab tab = createTabForStock(stock);
+                mStockTabLayout.addTab(tab);
+                if (stock.equals(selectedStock))
+                    tabToSelect = i;
+            }
+
+            for (Stock stock : mExtraStocks) {
+                if (stock.equals(selectedStock))
+                    tabToSelect = i;
+                mStockTabLayout.addTab(createTabForStock(stock));
+                ++i;
+            }
+
+            mWachListGeneration = newWatchListGen;
+        }
+
+        List<Stock> stocksChosen = Stock.loadFrom(data);
+        if (stocksChosen == null || stocksChosen.isEmpty())
+        {
+            if (tabToSelect != -1)
+                mStockTabLayout.getTabAt(tabToSelect).select();
+
+            return;
+        }
+
+        Stock stockChosen = stocksChosen.get(0);
+        int watchListIndex = ApplicationContext.getWatchListIndex(stockChosen);
+        if (watchListIndex == -1) // stock not in watch list but viewing temporarily
+        {
+            mExtraStocks.add(stockChosen);
+            TabLayout.Tab tab = createTabForStock(stockChosen);
+            mStockTabLayout.addTab(tab);
+            tab.select();
+        }
+        else if (mStockTabLayout.getSelectedTabPosition() != watchListIndex)
+            mStockTabLayout.getTabAt(watchListIndex).select();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -550,4 +625,12 @@ public class QuotesActivity extends AppCompatActivity
         mVolumeChangeText.setText(String.format("%s (%s)", VolumeMetric.valueDiffToString(volumeDiff), percentToString(volumeDiffPercent)));
     }
 
+
+    private TabLayout.Tab createTabForStock(Stock stock)
+    {
+        TabLayout.Tab tab = mStockTabLayout.newTab();
+        tab.setText(stock.getSymbol());
+        tab.setTag(stock);
+        return tab;
+    }
 }

@@ -81,21 +81,6 @@
                 app:tabIndicatorColor="@color/colorSecondary"
                 app:tabSelectedTextColor="@color/colorSecondary"
                 app:tabTextColor="@color/colorSecondary">
-
-                <android.support.design.widget.TabItem
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:text="AMC"/>
-
-                <android.support.design.widget.TabItem
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:text="AMD"/>
-
-                <android.support.design.widget.TabItem
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:text="BPMX"/>
             </android.support.design.widget.TabLayout>
 
             <LinearLayout
