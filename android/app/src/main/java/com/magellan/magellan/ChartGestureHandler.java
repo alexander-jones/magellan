@@ -3,7 +3,6 @@ package com.magellan.magellan;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.support.v4.view.GestureDetectorCompat;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -23,8 +22,6 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
     }
 
 
-    private MotionEvent mLastTouchEvent;
-    private float mScaleFactor = 1.0f;
     private boolean mZooming = false;
     private boolean mSelecting = false;
     private boolean mScrolling = false;
@@ -67,8 +64,6 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
                 mZooming = false;
             }
         }
-
-        mLastTouchEvent = event;
         return true;
     }
 
@@ -76,8 +71,6 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
     public boolean onScale(ScaleGestureDetector detector) {
         float curScaleFactor = detector.getScaleFactor();
 
-        mScaleFactor *= curScaleFactor;
-        mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f)); // Don't let the object get too small or too large.
         mChart.zoom(curScaleFactor, curScaleFactor, detector.getFocusX(), detector.getFocusY());
         mZooming = true;
         return true;
@@ -96,7 +89,7 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
     @Override
     public boolean onScroll(MotionEvent event1, MotionEvent event2, float dX, float dY) {
         mScrolling = true;
-        if (!mZooming && mScaleFactor > 1.0f)
+        if (!mZooming && mChart.getScaleX() > 1.0f)
         {
             ViewPortHandler vph = mChart.getViewPortHandler();
             Matrix translateMatrix = vph.getMatrixTouch();
