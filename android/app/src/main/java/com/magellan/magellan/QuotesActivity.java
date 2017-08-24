@@ -31,9 +31,6 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.listener.ChartTouchListener;
-import com.github.mikephil.charting.listener.OnChartGestureListener;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.magellan.magellan.metric.IMetricLayer;
 import com.magellan.magellan.metric.MetricLayerButtonAdapter;
 import com.magellan.magellan.metric.price.PriceCandleLayer;
@@ -46,10 +43,8 @@ import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
 import com.magellan.magellan.service.barchart.BarChartService;
-import com.magellan.magellan.service.yahoo.YahooService;
 import com.magellan.magellan.stock.Stock;
 import com.magellan.magellan.stock.StockQueryActivity;
-import com.magellan.magellan.stock.StockQueryTask;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -61,8 +56,8 @@ import java.util.ArrayList;
 import java.util.TimeZone;
 
 public class QuotesActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        OnChartGestureListener, OnChartValueSelectedListener, IQuoteQueryListener{
+        implements NavigationView.OnNavigationItemSelectedListener, IQuoteQueryListener,
+        ChartGestureHandler.OnHighlightListener{
 
     private enum QuotePeriod
     {
@@ -265,18 +260,12 @@ public class QuotesActivity extends AppCompatActivity
     // initialize default settins for any charts in this activity
     private void initializeChart(CombinedChart chart)
     {
-        chart.setHighlightPerTapEnabled(false);
-        chart.setHighlightPerDragEnabled(true);
-        chart.setOnChartGestureListener(this);
-        chart.setOnChartValueSelectedListener(this);
+        chart.setOnTouchListener(new ChartGestureHandler(this, chart, this));
+        chart.setTouchEnabled(false);
         chart.setDrawGridBackground(false);
         chart.setDrawMarkers(false);
         chart.setDrawBorders(false);
         chart.getDescription().setText("");
-        chart.disableScroll();
-        chart.setPinchZoom(false);
-        chart.setDoubleTapToZoomEnabled(false);
-        chart.setScaleEnabled(false);
         chart.getLegend().setEnabled(false);
 
         XAxis xAxis = chart.getXAxis();
@@ -518,70 +507,11 @@ public class QuotesActivity extends AppCompatActivity
     }
 
     @Override
-    public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-        if (!mLastQuery.complete)
-            return;
-
-        Entry entry = mPriceChart.getEntryByTouchPoint(me.getX(), me.getY()); // this is not the xth element but the x screen pos...
-        highlightQuote(entry);
-    }
-
-    @Override
-    public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-        onNothingSelected();
-    }
-
-    @Override
-    public void onChartLongPressed(MotionEvent me) {
-
-    }
-
-    @Override
-    public void onChartDoubleTapped(MotionEvent me) {
-
-    }
-
-    @Override
-    public void onChartSingleTapped(MotionEvent me) {
-    }
-
-    @Override
-    public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
-
-    }
-
-    @Override
-    public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
-
-    }
-
-    @Override
-    public void onChartTranslate(MotionEvent me, float dX, float dY) {
-
-    }
-
-    @Override
-    public void onValueSelected(Entry e, Highlight h) {
-        if (!mLastQuery.complete)
-            return;
-
-        highlightQuote(e);
-    }
-
-    @Override
-    public void onNothingSelected() {
-        if (!mLastQuery.complete)
-            return;
-
-        mPriceChart.highlightValue(null);
-        mVolumeChart.highlightValue(null);
-
-        Quote lastQuery = mLastQuery.results.get(mLastQuery.results.size() -1);
-        updateHeaderText(mLastQuery.results.get(0), lastQuery);
-    }
-
-    private void highlightQuote(Entry e)
+    public void OnEntryHighlighted(Entry e)
     {
+        if (!mLastQuery.complete)
+            return;
+
         Quote quote = (Quote)e.getData();
         if (quote == null)
             return;
@@ -591,6 +521,18 @@ public class QuotesActivity extends AppCompatActivity
         mPriceChart.highlightValue(h, false);
         mVolumeChart.highlightValue(h, false);
         updateHeaderText(mLastQuery.results.get(0), quote);
+    }
+
+    @Override
+    public void OnHighlightFinished() {
+        if (!mLastQuery.complete)
+            return;
+
+        mPriceChart.highlightValue(null);
+        mVolumeChart.highlightValue(null);
+
+        Quote lastQuery = mLastQuery.results.get(mLastQuery.results.size() -1);
+        updateHeaderText(mLastQuery.results.get(0), lastQuery);
     }
 
     private static String percentToString(float percent)
