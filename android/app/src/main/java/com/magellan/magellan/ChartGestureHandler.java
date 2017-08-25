@@ -21,7 +21,6 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
         void OnHighlightFinished();
     }
 
-
     private boolean mZooming = false;
     private boolean mSelecting = false;
     private boolean mScrolling = false;

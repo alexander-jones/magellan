@@ -1,6 +1,7 @@
 package com.magellan.magellan.metric.price;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.support.v4.content.ContextCompat;
 
@@ -41,18 +42,33 @@ public class PriceLineLayer implements IMetricLayer
         Quote finalQuote = quotes.get(quotes.size() - 1);
         ArrayList<Entry> priceValues = new ArrayList<Entry>();
 
-        float startingOpen = initialQuote.getOpen();
-        for (int j = 0; j < missingStartSteps; ++j)
-            priceValues.add(new Entry(j, startingOpen, null));
-
         for (int j = missingStartSteps; j < quotes.size() + missingStartSteps; ++j) {
             Quote quote = quotes.get(j - missingStartSteps);
             priceValues.add(new Entry(j, (float) quote.getClose(), quote));
         }
 
-        float finalClose = finalQuote.getClose();
-        for (int j = missingStartSteps + quotes.size(); j < quotes.size() + missingStartSteps + missingEndSteps; ++j)
-            priceValues.add(new Entry(j, finalClose, null));
+
+        LineDataSet missingDataSet = null;
+        if (missingStartSteps > 0 || missingEndSteps > 0)
+        {
+            ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
+            float startingOpen = initialQuote.getOpen();
+            for (int j = 0; j < missingStartSteps; ++j)
+                missingPriceValues.add(new Entry(j, startingOpen, null));
+
+            float finalClose = finalQuote.getClose();
+            for (int j = missingStartSteps + quotes.size(); j < quotes.size() + missingStartSteps + missingEndSteps; ++j)
+                missingPriceValues.add(new Entry(j, finalClose, null));
+
+            missingDataSet = new LineDataSet(missingPriceValues, "");
+            missingDataSet.setDrawIcons(false);
+            missingDataSet.setHighlightEnabled(false);
+            missingDataSet.setHighLightColor(Color.TRANSPARENT);
+            missingDataSet.setColor(Color.TRANSPARENT);
+            missingDataSet.setFillColor(Color.TRANSPARENT);
+            missingDataSet.setDrawCircles(false);
+            missingDataSet.setDrawValues(false);
+        }
 
         LineDataSet lineSet = new LineDataSet(priceValues, "");
         lineSet.setDrawIcons(false);
@@ -75,10 +91,15 @@ public class PriceLineLayer implements IMetricLayer
         if (data == null){
             ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
             priceDataSets.add(lineSet);
+            if (missingDataSet != null)
+                priceDataSets.add(missingDataSet);
             data = new LineData(priceDataSets);
         }
-        else
+        else {
             data.addDataSet(lineSet);
+            if (missingDataSet != null)
+                data.addDataSet(missingDataSet);
+        }
         chartData.setData(data);
     }
 }

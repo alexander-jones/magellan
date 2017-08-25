@@ -34,16 +34,35 @@ public class PriceCandleLayer implements IMetricLayer
 
         ArrayList<CandleEntry> priceValues = new ArrayList<CandleEntry>();
 
-        for (int j = 0; j < missingStartSteps; ++j)
-            priceValues.add(new CandleEntry(j, initialQuote.getHigh(), initialQuote.getLow(), initialQuote.getOpen(), initialQuote.getClose(), null));
-
         for (int j = missingStartSteps; j < quotes.size() + missingStartSteps; ++j) {
             Quote quote = quotes.get(j - missingStartSteps);
             priceValues.add(new CandleEntry(j, quote.getHigh(), quote.getLow(), quote.getOpen(), quote.getClose(), quote));
         }
 
-        for (int j = missingStartSteps + quotes.size(); j < quotes.size() + missingStartSteps + missingEndSteps; ++j)
-            priceValues.add(new CandleEntry(j, finalQuote.getHigh(), finalQuote.getLow(), finalQuote.getOpen(), finalQuote.getClose(), null));
+        CandleDataSet missingDataSet = null;
+        if (missingStartSteps > 0 || missingEndSteps > 0)
+        {
+            ArrayList<CandleEntry> missingPriceValues = new ArrayList<CandleEntry>();
+
+            for (int j = 0; j < missingStartSteps; ++j)
+                missingPriceValues.add(new CandleEntry(j, initialQuote.getHigh(), initialQuote.getLow(), initialQuote.getOpen(), initialQuote.getClose(), null));
+
+            for (int j = missingStartSteps + quotes.size(); j < quotes.size() + missingStartSteps + missingEndSteps; ++j)
+                missingPriceValues.add(new CandleEntry(j, finalQuote.getHigh(), finalQuote.getLow(), finalQuote.getOpen(), finalQuote.getClose(), null));
+
+            missingDataSet = new CandleDataSet(missingPriceValues, "");
+            missingDataSet.setDrawIcons(false);
+            missingDataSet.setHighlightEnabled(false);
+            missingDataSet.setHighLightColor(Color.TRANSPARENT);
+            missingDataSet.setColor(Color.TRANSPARENT);
+            missingDataSet.setDecreasingColor(Color.TRANSPARENT);
+            missingDataSet.setIncreasingColor(Color.TRANSPARENT);
+            missingDataSet.setHighLightColor(Color.TRANSPARENT);
+            missingDataSet.setColor(Color.TRANSPARENT);
+            missingDataSet.setShadowColor(Color.TRANSPARENT);
+            missingDataSet.setNeutralColor(Color.TRANSPARENT);
+            missingDataSet.setDrawValues(false);
+        }
 
         CandleDataSet candleSet = new CandleDataSet(priceValues, "");
         candleSet.setColor(Color.rgb(80, 80, 80));
@@ -69,9 +88,14 @@ public class PriceCandleLayer implements IMetricLayer
         if (data == null) {
             ArrayList<ICandleDataSet> priceDataSets = new ArrayList<ICandleDataSet>();
             priceDataSets.add(candleSet);
+            if (missingDataSet != null)
+                priceDataSets.add(missingDataSet);
             data = new CandleData(priceDataSets);
-        } else
+        } else {
             data.addDataSet(candleSet);
+            if (missingDataSet != null)
+                data.addDataSet(missingDataSet);
+        }
         chartData.setData(data);
     }
 
