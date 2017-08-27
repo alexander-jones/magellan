@@ -13,7 +13,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestureListener implements
-    GestureDetector.OnGestureListener, View.OnTouchListener {
+    GestureDetector.OnGestureListener, View.OnTouchListener, GestureDetector.OnDoubleTapListener{
 
     public interface OnHighlightListener
     {
@@ -21,7 +21,6 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
         void OnHighlightFinished();
     }
 
-    private boolean mZooming = false;
     private boolean mSelecting = false;
     private boolean mScrolling = false;
     private Context mContext;
@@ -35,6 +34,7 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
         mChart = chart;
         mChart.setOnTouchListener(this);
         mDetector = new GestureDetectorCompat(mContext,this);
+        mDetector.setOnDoubleTapListener(this);
         mScaleDetector = new ScaleGestureDetector(context, this);
         mListener = listener;
     }
@@ -44,10 +44,7 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
         mScaleDetector.onTouchEvent(event);
         if (!mDetector.onTouchEvent(event)) {
             //Manually handle the event.
-            if (event.getAction() == MotionEvent.ACTION_DOWN)
-            {
-            }
-            else if (event.getAction() == MotionEvent.ACTION_MOVE)
+            if (event.getAction() == MotionEvent.ACTION_MOVE)
             {
                 if (mSelecting)
                 {
@@ -60,7 +57,6 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
                 mListener.OnHighlightFinished();
                 mSelecting = false;
                 mScrolling = false;
-                mZooming = false;
             }
         }
         return true;
@@ -68,10 +64,7 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        float curScaleFactor = detector.getScaleFactor();
-
-        mChart.zoom(curScaleFactor, curScaleFactor, detector.getFocusX(), detector.getFocusY());
-        mZooming = true;
+        mChart.zoom(detector.getScaleFactor(), detector.getScaleFactor(), detector.getFocusX(), detector.getFocusY());
         return true;
     }
 
@@ -88,13 +81,35 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
     @Override
     public boolean onScroll(MotionEvent event1, MotionEvent event2, float dX, float dY) {
         mScrolling = true;
-        if (!mZooming && mChart.getScaleX() > 1.0f)
+        if (mChart.getScaleX() > 1.0f)
         {
             ViewPortHandler vph = mChart.getViewPortHandler();
             Matrix translateMatrix = vph.getMatrixTouch();
             translateMatrix.postTranslate(-dX, -dY);
             vph.refresh(translateMatrix, mChart, true);
         }
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent event) {
+
+        if (mChart.getScaleX() > 1.0f)
+            mChart.fitScreen();
+        else
+            mChart.zoom(5.0f, 5.0f, event.getX(), mChart.getHeight() - event.getY());
+
+        return false;
+    }
+
+    //region Unused Callbacks
+    @Override
+    public boolean onDoubleTapEvent(MotionEvent event) {
+        return false;
+    }
+
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent event) {
         return false;
     }
 
@@ -116,4 +131,5 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
     public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         return false;
     }
+    //endregion
 }
