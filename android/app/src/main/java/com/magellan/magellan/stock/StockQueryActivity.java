@@ -54,6 +54,7 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
 
         mSupportedExchanges.add("NYSE");
         mSupportedExchanges.add("NASDAQ");
+        mSupportedExchanges.add("OTC BB");
 
         onLoadInstanceState(savedInstanceState);
     }
