@@ -52,6 +52,7 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        mSupportedExchanges.add("NYSEArca");
         mSupportedExchanges.add("NYSE");
         mSupportedExchanges.add("NASDAQ");
         mSupportedExchanges.add("OTC BB");

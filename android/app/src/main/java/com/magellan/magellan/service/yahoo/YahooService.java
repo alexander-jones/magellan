@@ -53,7 +53,9 @@ public class YahooService implements IStockService{
                             if (result.getString("symbol").contains(".")) // make sure this is domestic as international equities aren't yet supported via barchart integration yet.
                                 continue;
 
-                            if (!result.getString("type").contentEquals("S")) // make sure this is a stock as other types of equities aren't yet supported via barchart integration yet.
+                            // For now, we just support stocks and ETFs
+                            String type = result.getString("type");
+                            if (!type.contentEquals("S") && !type.contentEquals("E"))
                                 continue;
 
                             if (!stockQuery.mRestrictToExchanges.isEmpty())
