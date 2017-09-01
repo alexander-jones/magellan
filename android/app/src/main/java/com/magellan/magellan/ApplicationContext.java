@@ -5,9 +5,15 @@ import android.content.SharedPreferences;
 
 import com.magellan.magellan.stock.Stock;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class ApplicationContext {
 
@@ -18,6 +24,44 @@ public class ApplicationContext {
     private static List<Stock> mWatchList = null;
     private static int mSelectedStock = 0;
     private static SharedPreferences mSharedPreferences;
+    private static DateTime mStartOfTradingDay = null;
+    private static DateTime mEndOfTradingDay = null;
+
+    public static DateTime getLastTradingDayCloseTime()
+    {
+        if (mEndOfTradingDay != null)
+            return mEndOfTradingDay;
+
+        DateTime now = DateTime.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("EST")));
+        int hourOfDay = now.hourOfDay().get();
+        int minuteOfDay = now.minuteOfDay().get();
+
+        mEndOfTradingDay =  now.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0); // 4:00 pm is NYSE close
+
+        int endDay = mEndOfTradingDay.dayOfWeek().get();
+        if (endDay == 6)
+            mEndOfTradingDay = mEndOfTradingDay.minus(Duration.standardDays(1));
+        else if (endDay == 7)
+            mEndOfTradingDay = mEndOfTradingDay.minus(Duration.standardDays(2));
+        else if (hourOfDay < 9 || ( hourOfDay == 9  && minuteOfDay < 40)) // make sure we have at least 2 quotes
+        {
+            if (endDay == 1)
+                mEndOfTradingDay = mEndOfTradingDay.minus(Duration.standardDays(3));
+            else
+                mEndOfTradingDay = mEndOfTradingDay.minus(Duration.standardDays(1));
+        }
+
+        return mEndOfTradingDay;
+    }
+
+    public static DateTime getLastTradingDayOpenTime()
+    {
+        if (mStartOfTradingDay != null)
+            return mStartOfTradingDay;
+
+        mStartOfTradingDay = getLastTradingDayCloseTime().minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open*/
+        return mStartOfTradingDay;
+    }
 
     public static void init(Context context)
     {

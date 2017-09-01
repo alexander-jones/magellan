@@ -57,17 +57,6 @@ public class QuotesActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, IQuoteQueryListener,
         ChartGestureHandler.OnHighlightListener{
 
-    private enum QuotePeriod
-    {
-        OneDay,
-        OneWeek,
-        OneMonth,
-        ThreeMonths,
-        OneYear,
-        FiveYears,
-        TenYears
-    }
-
     private static int CHART_MARGIN = 10;
     private static int CHART_SPACING = 5;
 
@@ -101,7 +90,7 @@ public class QuotesActivity extends AppCompatActivity
     ActionBarDrawerToggle mDrawerToggle;
 
     private QuoteQueryTask mQuoteTask;
-    private QueryContext mLastQuery = new QueryContext();
+    private QueryContext mLastQueryContext = new QueryContext();
 
     private List<IMetricLayer> mPriceLayers = new ArrayList<IMetricLayer>();
     private List<IMetricLayer> mVolumeLayers = new ArrayList<IMetricLayer>();
@@ -112,7 +101,6 @@ public class QuotesActivity extends AppCompatActivity
     {
         QuoteQuery query;
         List<Quote> results;
-        QuotePeriod quotePeriod;
         boolean complete = false;
     }
 
@@ -293,76 +281,50 @@ public class QuotesActivity extends AppCompatActivity
 
     private void launchTaskForInterval(int position)
     {
-        DateTime start = null;
-        QuoteQuery.IntervalUnit intervalUnit = null;
-        int interval = 1;
-        DateTime now = DateTime.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("EST")));
-        int hourOfDay = now.hourOfDay().get();
-        int minuteOfDay = now.minuteOfDay().get();
-
-        DateTime end =  now.withHourOfDay(16).withMinuteOfHour(0); // 4:00 pm is NYSE close
-        int endDay = end.dayOfWeek().get();
-        if (endDay == 6)
-            end = end.minus(Duration.standardDays(1));
-        else if (endDay == 7)
-            end = end.minus(Duration.standardDays(2));
-        else if (hourOfDay < 9 || ( hourOfDay == 9  && minuteOfDay < 40)) // make sure we have at least 2 quotes
-        {
-            if (endDay == 1)
-                end = end.minus(Duration.standardDays(3));
-            else
-                end = end.minus(Duration.standardDays(1));
-        }
-        start = end.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open
-
-        QuotePeriod [] quotePeriods = QuotePeriod.values();
+        QuoteQuery.Period [] quotePeriods = QuoteQuery.Period.values();
         if (position <0 || position > quotePeriods.length)
             Log.e("Magellan", "Encountered Unknown Duration Tab Index");
 
-        mLastQuery.complete = false;
-        mLastQuery.quotePeriod = quotePeriods[position];
-        switch (mLastQuery.quotePeriod)
+        QuoteQuery.Period period = quotePeriods[position];
+
+        int interval = 1;
+        QuoteQuery.IntervalUnit intervalUnit = QuoteQuery.IntervalUnit.Minute;
+        mLastQueryContext.complete = false;
+        switch (period)
         {
             case OneDay:
                 interval = 5;
-                intervalUnit = QuoteQuery.IntervalUnit.Minute;
                 break;
             case OneWeek:
                 interval = 10;
                 intervalUnit = QuoteQuery.IntervalUnit.Minute;
-                start = start.minusWeeks(1);
                 break;
             case OneMonth:
                 intervalUnit = QuoteQuery.IntervalUnit.Day;
-                start = start.minusMonths(1);
                 break;
             case ThreeMonths:
                 intervalUnit = QuoteQuery.IntervalUnit.Day;
-                start = start.minusMonths(3);
                 break;
             case OneYear:
                 intervalUnit = QuoteQuery.IntervalUnit.Week;
-                start = start.minusYears(1);
                 break;
             case FiveYears:
                 intervalUnit = QuoteQuery.IntervalUnit.Week;
-                start = start.minusYears(5);
                 break;
             case TenYears:
                 intervalUnit = QuoteQuery.IntervalUnit.Month;
-                start = start.minusYears(10);
                 break;
         }
-        mLastQuery.query = new QuoteQuery(mSymbol, start, end, intervalUnit, interval);
-        mLastQuery.results = null;
+        mLastQueryContext.query = new QuoteQuery(mSymbol, period, intervalUnit, interval);
+        mLastQueryContext.results = null;
         mQuoteTask = new QuoteQueryTask(mQuoteService, this);
-        mQuoteTask.execute(mLastQuery.query);
+        mQuoteTask.execute(mLastQueryContext.query);
     }
 
     public void onQuotesReceived(List<List<Quote>> manyQuotes)
     {
-        boolean oneValidHquotes = false;
-        Duration intervalDuration = mLastQuery.query.getIntervalAsDuration();
+        boolean oneValidQuote = false;
+        Duration intervalDuration = mLastQueryContext.query.getIntervalAsDuration();
 
         if (mPriceChartData.getLineData() != null)
             mPriceChartData.getLineData().clearValues();
@@ -377,13 +339,13 @@ public class QuotesActivity extends AppCompatActivity
             if (quotes == null || quotes.size() <= 1) {
                 continue;
             }
-            mLastQuery.results = quotes;
+            mLastQueryContext.results = quotes;
 
             Quote initialQuote = quotes.get(0);
             Quote finalQuote = quotes.get(quotes.size() -1);
 
-            Duration missingStartDuration = new Duration(mLastQuery.query.start, initialQuote.getTime());
-            Duration missingEndDuration = new Duration(finalQuote.getTime(), mLastQuery.query.end);
+            Duration missingStartDuration = new Duration(mLastQueryContext.query.getStart(), initialQuote.getTime());
+            Duration missingEndDuration = new Duration(finalQuote.getTime(), mLastQueryContext.query.getEnd());
 
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
@@ -394,8 +356,8 @@ public class QuotesActivity extends AppCompatActivity
             for (IMetricLayer layer : mVolumeLayers)
                 layer.onDrawQuotes(quotes,  missingStartSteps, missingEndSteps, mVolumeChartData);
 
-            updateHeaderText(mLastQuery.results.get(0), mLastQuery.results.get(mLastQuery.results.size() -1));
-            oneValidHquotes = true;
+            updateHeaderText(mLastQueryContext.results.get(0), mLastQueryContext.results.get(mLastQueryContext.results.size() -1));
+            oneValidQuote = true;
         }
 
         mPriceChart.setData(mPriceChartData);
@@ -405,7 +367,7 @@ public class QuotesActivity extends AppCompatActivity
         mVolumeChart.setData(mVolumeChartData);
         mVolumeChart.notifyDataSetChanged();
         mVolumeChart.fitScreen();
-        mLastQuery.complete = oneValidHquotes;
+        mLastQueryContext.complete = oneValidQuote;
     }
 
 
@@ -507,7 +469,7 @@ public class QuotesActivity extends AppCompatActivity
     @Override
     public void OnEntryHighlighted(Entry e)
     {
-        if (!mLastQuery.complete)
+        if (!mLastQueryContext.complete)
             return;
 
         Quote quote = (Quote)e.getData();
@@ -518,19 +480,19 @@ public class QuotesActivity extends AppCompatActivity
         h.setDataIndex(0);
         mPriceChart.highlightValue(h, false);
         mVolumeChart.highlightValue(h, false);
-        updateHeaderText(mLastQuery.results.get(0), quote);
+        updateHeaderText(mLastQueryContext.results.get(0), quote);
     }
 
     @Override
     public void OnHighlightFinished() {
-        if (!mLastQuery.complete)
+        if (!mLastQueryContext.complete)
             return;
 
         mPriceChart.highlightValue(null);
         mVolumeChart.highlightValue(null);
 
-        Quote lastQuery = mLastQuery.results.get(mLastQuery.results.size() -1);
-        updateHeaderText(mLastQuery.results.get(0), lastQuery);
+        Quote lastQuery = mLastQueryContext.results.get(mLastQueryContext.results.size() -1);
+        updateHeaderText(mLastQueryContext.results.get(0), lastQuery);
     }
 
     private static String percentToString(float percent)

@@ -51,11 +51,8 @@ public class BarChartService implements IQuoteService
                 }
             }
 
-            if (query.start != null)
-                builder.start(query.start);
-
-            if (query.end != null)
-                builder.end(query.end);
+            builder.start(query.getStart());
+            builder.end(query.getEnd());
 
             HistoryRequest built = builder.build();
             Map<String, Object> params = builder.build().parameters();
