@@ -21,6 +21,7 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
         void OnHighlightFinished();
     }
 
+    private static final float DOUBLE_TAB_ZOOM_LEVEL = 3.0f;
     private boolean mSelecting = false;
     private boolean mScrolling = false;
     private Context mContext;
@@ -97,7 +98,7 @@ public class ChartGestureHandler extends ScaleGestureDetector.SimpleOnScaleGestu
         if (mChart.getScaleX() > 1.0f)
             mChart.fitScreen();
         else
-            mChart.zoom(5.0f, 5.0f, event.getX(), mChart.getHeight() - event.getY());
+            mChart.zoom(DOUBLE_TAB_ZOOM_LEVEL, DOUBLE_TAB_ZOOM_LEVEL, event.getX(), mChart.getHeight() - event.getY());
 
         return false;
     }
