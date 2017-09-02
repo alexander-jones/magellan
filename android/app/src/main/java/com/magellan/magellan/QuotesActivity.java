@@ -319,7 +319,7 @@ public class QuotesActivity extends AppCompatActivity
         }
         mLastQueryContext.query = new QuoteQuery(mSymbol, period, intervalUnit, interval);
         mLastQueryContext.results = null;
-        mQuoteTask = new QuoteQueryTask(mQuoteService, this);
+        mQuoteTask = new QuoteQueryTask(this, mQuoteService, this);
         mQuoteTask.execute(mLastQueryContext.query);
     }
 

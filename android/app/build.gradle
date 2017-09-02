@@ -17,12 +17,27 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+
+    }
 }
 
 dependencies {
     compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'joda-time:joda-time:2.9.2'
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
+    compile 'com.github.RuedigerMoeller:fast-serialization:v2.52'
     compile 'com.github.bumptech.glide:okhttp-integration:1.4.0@aar'
     compile 'com.squareup.okhttp:okhttp:2.7.5'
     compile 'com.github.barchart:barchart-ondemand-client-java:barchart-ondemand-client-2.0.3'
