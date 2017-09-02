@@ -24,6 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.data.CombinedData;
@@ -92,6 +93,8 @@ public class QuotesActivity extends AppCompatActivity
     private DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
 
+    private ProgressBar mPriceLoadProgress;
+    private ProgressBar mVolumeLoadProgress;
     private QuoteQueryTask mQuoteTask;
     private QueryContext mLastQueryContext = new QueryContext();
     private Quote mPeriodQuote;
@@ -131,7 +134,7 @@ public class QuotesActivity extends AppCompatActivity
         float internal_spacing = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
 
         mPriceChart = (CombinedChart) priceCard.findViewById(R.id.chart);
-
+        mPriceLoadProgress = (ProgressBar) priceCard.findViewById(R.id.progress);
         mPriceChartData = new CombinedData();
         initializeChart(mPriceChart);
         YAxis priceAxisRight = mPriceChart.getAxisRight();
@@ -156,6 +159,7 @@ public class QuotesActivity extends AppCompatActivity
         mVolumeLayersContainer.setLayoutManager(new LinearLayoutManager(this, isPortrait ? LinearLayoutManager.HORIZONTAL : LinearLayoutManager.VERTICAL, false));
 
         mVolumeChart = (CombinedChart) volumeCard.findViewById(R.id.chart);
+        mVolumeLoadProgress = (ProgressBar) volumeCard.findViewById(R.id.progress);
         mVolumeChartData = new CombinedData();
         initializeChart(mVolumeChart);
         YAxis volAxisRight = mVolumeChart.getAxisRight();
@@ -234,6 +238,10 @@ public class QuotesActivity extends AppCompatActivity
         for (Stock stock : mExtraStocks)
             mStockTabLayout.addTab(createTabForStock(stock));
 
+        int selectedInterval = inState.getInt("SELECTED_INTERVAL", -1);
+        if (selectedInterval != -1)
+            mIntervalTabLayout.getTabAt(selectedInterval).select();
+
         int selectedStock = inState.getInt("SELECTED_STOCK", -1);
         if (selectedStock == -1)
             return ApplicationContext.getSelectedStock();
@@ -246,11 +254,13 @@ public class QuotesActivity extends AppCompatActivity
     {
         Stock.saveTo(outState, mExtraStocks);
         outState.putInt("SELECTED_STOCK",  mStockTabLayout.getSelectedTabPosition());
+        outState.putInt("SELECTED_INTERVAL", mIntervalTabLayout.getSelectedTabPosition());
     }
 
     // initialize default settins for any charts in this activity
     private void initializeChart(CombinedChart chart)
     {
+        chart.setNoDataText("");
         chart.setOnTouchListener(new ChartGestureHandler(this, chart, this));
         chart.setTouchEnabled(false);
         chart.setDrawGridBackground(false);
@@ -287,8 +297,13 @@ public class QuotesActivity extends AppCompatActivity
     {
         QuoteQuery.Period [] quotePeriods = QuoteQuery.Period.values();
         if (position <0 || position > quotePeriods.length)
+        {
             Log.e("Magellan", "Encountered Unknown Duration Tab Index");
+            return;
+        }
 
+        mPriceLoadProgress.setVisibility(View.VISIBLE);
+        mVolumeLoadProgress.setVisibility(View.VISIBLE);
         QuoteQuery.Period period = quotePeriods[position];
 
         int interval = 1;
@@ -378,6 +393,9 @@ public class QuotesActivity extends AppCompatActivity
             updateHeaderText(mPeriodQuote);
             oneValidQuote = true;
         }
+
+        mPriceLoadProgress.setVisibility(View.GONE);
+        mVolumeLoadProgress.setVisibility(View.GONE);
 
         mPriceChart.setData(mPriceChartData);
         mPriceChart.notifyDataSetChanged();
