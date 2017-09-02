@@ -71,9 +71,7 @@ public class QuotesActivity extends AppCompatActivity
     private List<Stock> mExtraStocks = new ArrayList<Stock>();
 
     private TextView mPriceText;
-    private TextView mPriceChangeText;
     private TextView mVolumeText;
-    private TextView mVolumeChangeText;
     private RecyclerView mPriceLayersContainer;
     private MetricLayerButtonAdapter mPriceLayerAdapter;
     private RecyclerView mVolumeLayersContainer;
@@ -93,6 +91,7 @@ public class QuotesActivity extends AppCompatActivity
 
     private QuoteQueryTask mQuoteTask;
     private QueryContext mLastQueryContext = new QueryContext();
+    private Quote mPeriodQuote;
 
     private List<IMetricLayer> mPriceLayers = new ArrayList<IMetricLayer>();
     private List<IMetricLayer> mVolumeLayers = new ArrayList<IMetricLayer>();
@@ -121,7 +120,6 @@ public class QuotesActivity extends AppCompatActivity
 
         View priceCard = findViewById(R.id.price_card);
         mPriceText = (TextView) priceCard.findViewById(R.id.value);
-        mPriceChangeText = (TextView) priceCard.findViewById(R.id.value_change);
 
         mPriceLayersContainer = (RecyclerView) priceCard.findViewById(R.id.layers);
         mPriceLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -147,7 +145,6 @@ public class QuotesActivity extends AppCompatActivity
 
         View volumeCard = findViewById(R.id.volume_card);
         mVolumeText = (TextView) volumeCard.findViewById(R.id.value);
-        mVolumeChangeText = (TextView) volumeCard.findViewById(R.id.value_change);
         mIntervalTabLayout = (TabLayout) findViewById(R.id.interval_tabs);
 
         mVolumeLayersContainer = (RecyclerView) volumeCard.findViewById(R.id.layers);
@@ -335,6 +332,7 @@ public class QuotesActivity extends AppCompatActivity
         if (mVolumeChartData.getBarData() != null)
             mVolumeChartData.getBarData().clearValues();
 
+
         for (int i = 0; i < manyQuotes.size(); i++)
         {
             List<Quote> quotes = manyQuotes.get(i);
@@ -352,13 +350,27 @@ public class QuotesActivity extends AppCompatActivity
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
 
+            long totalVolume = 0;
+            float lowestPrice = Float.MAX_VALUE;
+            float highestPrice = -Float.MAX_VALUE;
+            for (Quote q : quotes)
+            {
+                totalVolume += q.getVolume();
+                if (lowestPrice > q.getLow())
+                    lowestPrice = q.getLow();
+
+                if (highestPrice < q.getHigh())
+                    highestPrice = q.getHigh();
+            }
+            mPeriodQuote = new Quote(null,initialQuote.getOpen(), finalQuote.getClose(), lowestPrice, highestPrice, totalVolume);
+
             for (IMetricLayer layer : mPriceLayers)
                 layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, mPriceChartData);
 
             for (IMetricLayer layer : mVolumeLayers)
                 layer.onDrawQuotes(quotes,  missingStartSteps, missingEndSteps, mVolumeChartData);
 
-            updateHeaderText(mLastQueryContext.results.get(0), mLastQueryContext.results.get(mLastQueryContext.results.size() -1));
+            updateHeaderText(mPeriodQuote);
             oneValidQuote = true;
         }
 
@@ -482,7 +494,7 @@ public class QuotesActivity extends AppCompatActivity
         h.setDataIndex(0);
         mPriceChart.highlightValue(h, false);
         mVolumeChart.highlightValue(h, false);
-        updateHeaderText(mLastQueryContext.results.get(0), quote);
+        updateHeaderText(quote);
     }
 
     @Override
@@ -493,8 +505,7 @@ public class QuotesActivity extends AppCompatActivity
         mPriceChart.highlightValue(null);
         mVolumeChart.highlightValue(null);
 
-        Quote lastQuery = mLastQueryContext.results.get(mLastQueryContext.results.size() -1);
-        updateHeaderText(mLastQueryContext.results.get(0), lastQuery);
+        updateHeaderText(mPeriodQuote);
     }
 
     private static String percentToString(float percent)
@@ -512,21 +523,14 @@ public class QuotesActivity extends AppCompatActivity
 
     private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("MMM d y");
     private static DateTimeFormatter timeFormatter = DateTimeFormat.forPattern("h:mm a z").withZone(DateTimeZone.getDefault());
-    private void updateHeaderText(Quote startQuote, Quote endQuote)
+
+    private void updateHeaderText(Quote quote)
     {
-        float priceDiff = endQuote.getClose() - startQuote.getClose();
-        float priceDiffPercent = (priceDiff / startQuote.getClose()) * 100.0f;
-
-        int volumeDiff = endQuote.getVolume() - startQuote.getVolume();
-        float volumeDiffPercent = ((float)volumeDiff / (float)startQuote.getVolume()) * 100.0f;
-
-        DateTime endTime = endQuote.getTime();
+        DateTime endTime = quote.getTime();
         mDateText.setText(dateFormatter.print(endTime));
         mTimeText.setText(timeFormatter.print(endTime));
-        mPriceText.setText(PriceMetric.valueToString(endQuote.getClose()));
-        mPriceChangeText.setText(String.format("%s (%s)", PriceMetric.valueDiffToString(priceDiff), percentToString(priceDiffPercent)));
-        mVolumeText.setText(VolumeMetric.valueToString(endQuote.getVolume()));
-        mVolumeChangeText.setText(String.format("%s (%s)", VolumeMetric.valueDiffToString(volumeDiff), percentToString(volumeDiffPercent)));
+        mPriceText.setText(String.format("H: %s  L: %s  O: %s  C: %s",PriceMetric.valueToString(quote.getHigh()), PriceMetric.valueToString(quote.getLow()), PriceMetric.valueToString(quote.getOpen()), PriceMetric.valueToString(quote.getClose())));
+        mVolumeText.setText(VolumeMetric.valueToString(quote.getVolume()));
     }
 
 

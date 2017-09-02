@@ -20,11 +20,11 @@ public class Quote implements Serializable
     private float mClose;
     private float mLow;
     private float mHigh;
-    private int mVolume;
+    private long mVolume;
 
     static FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 
-    public Quote(DateTime time, float open, float close, float low, float high, int volume)
+    public Quote(DateTime time, float open, float close, float low, float high, long volume)
     {
         mTime = time;
         mClose = close;
@@ -39,7 +39,7 @@ public class Quote implements Serializable
     public float getOpen() { return mOpen;}
     public float getLow() { return mLow;}
     public float getHigh() { return mHigh;}
-    public int getVolume() { return mVolume;}
+    public long getVolume() { return mVolume;}
 
     public static void saveTo(File outState, List<Quote> quotes)
     {

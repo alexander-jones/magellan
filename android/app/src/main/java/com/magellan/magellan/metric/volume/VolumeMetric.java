@@ -5,14 +5,13 @@ import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 public class VolumeMetric {
 
-    public static String valueToString(int volume)
+    public static String valueToString(long volume)
     {
-        float absVolume = Math.abs(volume);
-        if (absVolume >= 1000000000) // you never know amiright?
-            return String.format("%.2fB", (float)volume / 1000000000.0f);
-        else if (absVolume >= 1000000)
+        if (volume >= 1000000000) // you never know amiright?
+            return String.format("%.2fB", (double)volume / 1000000000.0f);
+        else if (volume >= 1000000)
             return String.format("%.2fM", (float)volume / 1000000.0f);
-        else if (absVolume >= 1000)
+        else if (volume >= 1000)
             return String.format("%.2fK", (float)volume / 1000.0f);
         else
             return String.format("%d", volume);
