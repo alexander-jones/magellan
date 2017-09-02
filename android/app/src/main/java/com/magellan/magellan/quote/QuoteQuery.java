@@ -92,4 +92,61 @@ public class QuoteQuery
         }
     }
 
+    static final int MINUTES_IN_HOUR = 60;
+    static final int MINUTES_IN_DAY = 1440;
+    static final int MINUTES_IN_WEEK = MINUTES_IN_DAY * 7;
+    static final int MINUTES_IN_MONTH = 43800;
+    static final int MINUTES_IN_THREE_MONTHS = MINUTES_IN_MONTH * 3;
+    static final int MINUTES_IN_YEAR= MINUTES_IN_MONTH * 12;
+    static final int MINUTES_IN_FIVE_YEARS= MINUTES_IN_YEAR * 5;
+    static final int MINUTES_IN_TEN_YEARS= MINUTES_IN_FIVE_YEARS * 2;
+
+    public int getExpectedQuoteCount()
+    {
+        int intervalMinutes;
+        switch (intervalUnit)
+        {
+            case Minute:
+                intervalMinutes = 1;
+                break;
+            case Hour:
+                intervalMinutes = MINUTES_IN_HOUR;
+                break;
+            case Day:
+                intervalMinutes = MINUTES_IN_DAY;
+                break;
+            case Week:
+                intervalMinutes = MINUTES_IN_WEEK;
+                break;
+            case Month:
+                intervalMinutes = MINUTES_IN_MONTH;
+                break;
+            default:
+                Log.e("Magellan", "getIntervalAsDuration(): intervalUnit is corrupt");
+                return 0;
+        }
+
+        intervalMinutes *= interval;
+
+        switch (period)
+        {
+            case OneDay:
+                return MINUTES_IN_DAY / intervalMinutes;
+            case OneWeek:
+                return MINUTES_IN_WEEK / intervalMinutes;
+            case OneMonth:
+                return MINUTES_IN_MONTH / intervalMinutes;
+            case ThreeMonths:
+                return MINUTES_IN_THREE_MONTHS / intervalMinutes;
+            case OneYear:
+                return MINUTES_IN_YEAR / intervalMinutes;
+            case FiveYears:
+                return MINUTES_IN_FIVE_YEARS / intervalMinutes;
+            case TenYears:
+                return MINUTES_IN_TEN_YEARS / intervalMinutes;
+            default:
+                Log.e("Magellan", "getStart(): period is corrupt");
+                return 0;
+        }
+    }
 }

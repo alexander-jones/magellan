@@ -36,10 +36,12 @@ import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.metric.volume.VolumeBarLayer;
 import com.magellan.magellan.metric.volume.VolumeMetric;
+import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
+import com.magellan.magellan.service.alphavantage.AlphaVantageService;
 import com.magellan.magellan.service.barchart.BarChartService;
 import com.magellan.magellan.stock.Stock;
 import com.magellan.magellan.stock.StockQueryActivity;
@@ -95,7 +97,7 @@ public class QuotesActivity extends AppCompatActivity
     private List<IMetricLayer> mPriceLayers = new ArrayList<IMetricLayer>();
     private List<IMetricLayer> mVolumeLayers = new ArrayList<IMetricLayer>();
 
-    private BarChartService mQuoteService = new BarChartService();
+    private IQuoteService mQuoteService = new AlphaVantageService();
 
     private class QueryContext
     {
