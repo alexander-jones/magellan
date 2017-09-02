@@ -29,31 +29,28 @@
             android:background="@color/colorSecondaryDark"/>
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="@dimen/spacing_internal"
         android:layout_marginBottom="@dimen/spacing_internal"
-        android:layout_marginRight="@dimen/spacing_internal"
-        android:weightSum="1"
-        android:orientation="vertical">
+        android:layout_marginRight="@dimen/spacing_internal">
+
+        <com.github.mikephil.charting.charts.CombinedChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"/>
 
         <TextView
             android:id="@+id/value"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
             android:gravity="center"
             android:text="$0.00"
             android:textSize="@dimen/small_header_text_size"
             android:textColor="@color/colorTextSecondary"/>
 
-        <com.github.mikephil.charting.charts.CombinedChart
-            android:id="@+id/chart"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="@dimen/spacing_internal"/>
-
-    </LinearLayout>
+    </RelativeLayout>
 </LinearLayout>
