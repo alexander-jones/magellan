@@ -5,9 +5,14 @@ import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 public class PriceMetric {
 
+    public static String valueToString(float price, int decimalDigits)
+    {
+        return String.format("$%." + Integer.toString(decimalDigits) + "f", price);
+    }
+
     public static String valueToString(float price)
     {
-        return String.format("$%.2f", price);
+        return valueToString(price, 2);
     }
 
     public static String valueDiffToString(float priceDiff)

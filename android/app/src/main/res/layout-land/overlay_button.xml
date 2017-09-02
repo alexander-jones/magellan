@@ -2,7 +2,7 @@
 <Button xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="@dimen/button_height"
     android:layout_width="@dimen/button_height"
-    android:layout_marginRight="@dimen/spacing_internal"
+    android:layout_marginBottom="@dimen/spacing_internal"
     android:textSize="14dip"
     android:elevation="10dp"
     android:background="@color/colorSecondary"

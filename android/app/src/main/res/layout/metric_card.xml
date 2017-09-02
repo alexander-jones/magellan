@@ -15,8 +15,7 @@
         android:gravity="center"
         android:text="$0.00"
         android:textSize="@dimen/small_header_text_size"
-        android:textColor="@color/colorTextSecondary"
-        android:textStyle="bold"/>
+        android:textColor="@color/colorTextSecondary"/>
 
     <com.github.mikephil.charting.charts.CombinedChart
         android:id="@+id/chart"
@@ -37,7 +36,7 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/layers"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/layer_button_dimen"
+            android:layout_height="@dimen/button_height"
             android:layout_marginRight="@dimen/spacing_internal"
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/add_layer"
@@ -45,8 +44,8 @@
 
         <ImageButton
             android:id="@+id/add_layer"
-            android:layout_width="@dimen/layer_button_dimen"
-            android:layout_height="@dimen/layer_button_dimen"
+            android:layout_width="@dimen/button_height"
+            android:layout_height="@dimen/button_height"
             android:layout_alignParentRight="true"
             android:src="@drawable/ic_add_24dp"
             android:background="@color/colorSecondaryDark"/>

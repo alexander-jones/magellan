@@ -35,7 +35,7 @@ import java.util.List;
 public class AlphaVantageService implements IQuoteService {
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forID("America/New_York"));
-    private static final DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+    private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
     public List<Quote> execute(QuoteQuery query) {
 
         boolean intervalDurationExact;

@@ -43,32 +43,42 @@
                 android:background="@color/colorPrimary"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/date"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/header"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:layout_gravity="center"
-                    android:text="Today"
-                    android:layout_marginRight="@dimen/spacing_external"
-                    android:textSize="@dimen/large_header_text_size"
-                    android:textColor="@color/colorTextPrimary"
-                    android:textStyle="bold"/>
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="12:55 PM EST"
-                    android:gravity="center"
-                    android:layout_gravity="center"
-                    android:textSize="@dimen/small_header_text_size"
-                    android:textColor="@color/colorTextPrimary"/>
+                    <TextView
+                        android:id="@+id/date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="@dimen/spacing_internal"
+                        android:gravity="center_vertical"
+                        android:text="Today"
+                        android:textSize="@dimen/large_header_text_size"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/time"
+                        android:layout_alignBaseline="@+id/date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:text="12:55 PM EST"
+                        android:textSize="@dimen/small_header_text_size"
+                        android:textColor="@color/colorTextPrimary"/>
+                </LinearLayout>
 
                 <android.support.design.widget.TabLayout
                     android:id="@+id/stock_tabs"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="@dimen/button_height"
                     android:background="@color/colorPrimary"
                     android:layout_marginLeft="@dimen/spacing_external"
                     android:layout_marginRight="@dimen/spacing_external"
@@ -108,7 +118,7 @@
                         android:layout_marginLeft="@dimen/spacing_external"
                         android:layout_marginRight="@dimen/spacing_external"
                         android:layout_marginBottom="@dimen/spacing_internal"
-                        android:weightSum="2"
+                        android:weightSum="9"
                         android:layout_above="@+id/interval_tabs"
                         android:orientation="vertical">
 
@@ -116,20 +126,20 @@
                             android:id="@+id/price_card"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
-                            android:layout_weight="1"
+                            android:layout_weight="5"
                             android:layout_marginBottom="@dimen/spacing_internal"/>
 
                         <include layout="@layout/metric_card"
                             android:id="@+id/volume_card"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="4"/>
                     </LinearLayout>
 
                     <android.support.design.widget.TabLayout
                         android:id="@+id/interval_tabs"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/button_height"
                         android:layout_marginLeft="@dimen/spacing_external"
                         android:layout_marginRight="@dimen/spacing_external"
                         android:layout_marginBottom="@dimen/spacing_external"

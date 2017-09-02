@@ -3,11 +3,14 @@ package com.magellan.magellan;
 import java.util.List;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
+import android.text.Html;
 import android.util.TypedValue;
 import android.util.Log;
 import android.os.Bundle;
@@ -121,9 +124,9 @@ public class QuotesActivity extends AppCompatActivity
         View priceCard = findViewById(R.id.price_card);
         mPriceText = (TextView) priceCard.findViewById(R.id.value);
 
+        boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
         mPriceLayersContainer = (RecyclerView) priceCard.findViewById(R.id.layers);
-        mPriceLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        mPriceLayersContainer.setBackground(new TextDrawable(this, "Price Layers"));
+        mPriceLayersContainer.setLayoutManager(new LinearLayoutManager(this, isPortrait ? LinearLayoutManager.HORIZONTAL : LinearLayoutManager.VERTICAL, false));
 
         float internal_spacing = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
         float chart_spacing_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_SPACING, getResources().getDisplayMetrics());
@@ -148,13 +151,12 @@ public class QuotesActivity extends AppCompatActivity
         mIntervalTabLayout = (TabLayout) findViewById(R.id.interval_tabs);
 
         mVolumeLayersContainer = (RecyclerView) volumeCard.findViewById(R.id.layers);
-        mVolumeLayersContainer.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        mVolumeLayersContainer.setBackground(new TextDrawable(this, "Volume Layers"));
+        mVolumeLayersContainer.setLayoutManager(new LinearLayoutManager(this, isPortrait ? LinearLayoutManager.HORIZONTAL : LinearLayoutManager.VERTICAL, false));
 
         mVolumeChart = (CombinedChart) volumeCard.findViewById(R.id.chart);
         mVolumeChartData = new CombinedData();
         initializeChart(mVolumeChart);
-        mVolumeChart.getAxisRight().setValueFormatter(new VolumeMetric.AxisValueFormatter());
+        mVolumeChart.getAxisRight().setValueFormatter(new VolumeMetric.AxisValueFormatter(0));
         mVolumeChart.setViewPortOffsets(0,internal_spacing,150 - (internal_spacing / 2.0f),internal_spacing);
 
         mVolumeLayers.add(new VolumeBarLayer(this));
@@ -529,8 +531,8 @@ public class QuotesActivity extends AppCompatActivity
         DateTime endTime = quote.getTime();
         mDateText.setText(dateFormatter.print(endTime));
         mTimeText.setText(timeFormatter.print(endTime));
-        mPriceText.setText(String.format("H: %s  L: %s  O: %s  C: %s",PriceMetric.valueToString(quote.getHigh()), PriceMetric.valueToString(quote.getLow()), PriceMetric.valueToString(quote.getOpen()), PriceMetric.valueToString(quote.getClose())));
-        mVolumeText.setText(VolumeMetric.valueToString(quote.getVolume()));
+        mPriceText.setText(Html.fromHtml(String.format("<b>H</b> %s  <b>L</b> %s  <b>O</b> %s  <b>C</b> %s",PriceMetric.valueToString(quote.getHigh()), PriceMetric.valueToString(quote.getLow()), PriceMetric.valueToString(quote.getOpen()), PriceMetric.valueToString(quote.getClose()))));
+        mVolumeText.setText(Html.fromHtml("<b>" + VolumeMetric.valueToString(quote.getVolume())+ "</b>"));
     }
 
 
