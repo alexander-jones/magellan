@@ -126,14 +126,14 @@
                             android:id="@+id/price_card"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
-                            android:layout_weight="5"
+                            android:layout_weight="6"
                             android:layout_marginBottom="@dimen/spacing_internal"/>
 
                         <include layout="@layout/metric_card"
                             android:id="@+id/volume_card"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
-                            android:layout_weight="4"/>
+                            android:layout_weight="3"/>
                     </LinearLayout>
 
                     <android.support.design.widget.TabLayout

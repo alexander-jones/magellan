@@ -7,6 +7,8 @@ public class PriceMetric {
 
     public static String valueToString(float price, int decimalDigits)
     {
+        if (price >= 1000) // you never know amiright?
+            return String.format("$%." + Integer.toString(decimalDigits) + "fK", price / 1000.0f);
         return String.format("$%." + Integer.toString(decimalDigits) + "f", price);
     }
 

@@ -129,13 +129,15 @@ public class QuotesActivity extends AppCompatActivity
         mPriceLayersContainer.setLayoutManager(new LinearLayoutManager(this, isPortrait ? LinearLayoutManager.HORIZONTAL : LinearLayoutManager.VERTICAL, false));
 
         float internal_spacing = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
-        float chart_spacing_px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, CHART_SPACING, getResources().getDisplayMetrics());
 
         mPriceChart = (CombinedChart) priceCard.findViewById(R.id.chart);
+
         mPriceChartData = new CombinedData();
         initializeChart(mPriceChart);
-        mPriceChart.getAxisRight().setValueFormatter(new PriceMetric.AxisValueFormatter());
-        mPriceChart.setViewPortOffsets(0,internal_spacing,150,internal_spacing);
+        YAxis priceAxisRight = mPriceChart.getAxisRight();
+        priceAxisRight.setValueFormatter(new PriceMetric.AxisValueFormatter());
+        priceAxisRight.setLabelCount(isPortrait ? 9 : 6, true);
+        mPriceChart.setViewPortOffsets(0,internal_spacing,(priceAxisRight.getTextSize() * 4) + internal_spacing,internal_spacing);
 
         mPriceLayers.add(new PriceCandleLayer(this));
         mPriceLayers.add(new PriceLineLayer(this));
@@ -156,8 +158,10 @@ public class QuotesActivity extends AppCompatActivity
         mVolumeChart = (CombinedChart) volumeCard.findViewById(R.id.chart);
         mVolumeChartData = new CombinedData();
         initializeChart(mVolumeChart);
-        mVolumeChart.getAxisRight().setValueFormatter(new VolumeMetric.AxisValueFormatter(0));
-        mVolumeChart.setViewPortOffsets(0,internal_spacing,150 - (internal_spacing / 2.0f),internal_spacing);
+        YAxis volAxisRight = mVolumeChart.getAxisRight();
+        volAxisRight.setValueFormatter(new VolumeMetric.AxisValueFormatter(2));
+        volAxisRight.setLabelCount(isPortrait ? 7 : 3, true);
+        mVolumeChart.setViewPortOffsets(0,internal_spacing,(volAxisRight.getTextSize() * 4) + internal_spacing,internal_spacing);
 
         mVolumeLayers.add(new VolumeBarLayer(this));
 
@@ -270,9 +274,8 @@ public class QuotesActivity extends AppCompatActivity
         leftAxis.setSpaceTop(0);
 
         YAxis rightAxis =  chart.getAxisRight();
-        rightAxis.setMinWidth(50);
-        rightAxis.setMaxWidth(50);
         rightAxis.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
+        rightAxis.setGridColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         rightAxis.setDrawLabels(true);
         rightAxis.setDrawAxisLine(false);
         rightAxis.setDrawGridLines(false);

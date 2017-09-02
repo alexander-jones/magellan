@@ -22,7 +22,7 @@
 
         <ImageButton
             android:id="@+id/add_layer"
-            android:layout_width="@dimen/button_height"
+            android:layout_width="@dimen/button_width"
             android:layout_height="@dimen/button_height"
             android:layout_alignParentBottom="true"
             android:src="@drawable/ic_add_24dp"
@@ -33,7 +33,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="@dimen/spacing_internal"
-        android:layout_marginBottom="@dimen/spacing_internal"
         android:layout_marginRight="@dimen/spacing_internal">
 
         <com.github.mikephil.charting.charts.CombinedChart
