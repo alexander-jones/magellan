@@ -35,7 +35,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
         mQuoteCollections = new ArrayList<List<Quote>>();
         for (int i = 0; i < count; i++) {
             QuoteQuery query = queries[i];
-            String queryCacheFilename = query.symbol + "_" + query.period.toString() + "_" + query.intervalUnit.toString() + "_" + Integer.toString(query.interval) + "_" + dateTimeFormatter.print(query.getEnd());
+            String queryCacheFilename = query.symbol + "_" + query.period.toString() + "_" + query.interval.toString() + "_" + dateTimeFormatter.print(query.getEnd());
 
             List<Quote> quotes = null;
             File cachedFile = new File(mCacheDir, queryCacheFilename);

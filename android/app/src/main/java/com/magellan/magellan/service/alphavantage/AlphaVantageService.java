@@ -38,65 +38,60 @@ public class AlphaVantageService implements IQuoteService {
     private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
     public List<Quote> execute(QuoteQuery query) {
 
-        boolean intervalDurationExact;
-        String function = null;
+        String function;
         String interval = null;
         String output_size = null;
         DateTimeFormatter formatter = dateFormatter;
-        switch (query.intervalUnit) {
-            case Minute:
-                function = "TIME_SERIES_INTRADAY";
-                formatter = dateTimeFormatter;
-                // don't pull more than we need to
-                if (query.interval < 5)
-                {
-                    interval = "1min";
-                    intervalDurationExact = query.interval == 1;
-                }
-                else if (query.interval < 15)
-                {
-                    interval = "5min";
-                    intervalDurationExact = query.interval == 5;
-                }
-                else if (query.interval < 30)
-                {
-                    interval = "15min";
-                    intervalDurationExact = query.interval == 15;
-                }
-                else if (query.interval < 60)
-                {
-                    interval = "30min";
-                    intervalDurationExact = query.interval == 30;
-                }
-                else
-                {
-                    interval = "60min";
-                    intervalDurationExact = query.interval == 60;
-                }
 
-                if (query.getExpectedQuoteCount() > 100)
-                    output_size = "full";
-                else
-                    output_size = "compact";
+        switch (query.interval)
+        {
+            case OneMinute:
+                function = "TIME_SERIES_INTRADAY";
+                interval = "1min";
+                output_size = "full";
+                formatter = dateTimeFormatter;
                 break;
-            case Day:
-                if (query.getExpectedQuoteCount() > 100)
+            case FiveMinutes:
+                function = "TIME_SERIES_INTRADAY";
+                interval = "5min";
+                if (query.period.ordinal() > QuoteQuery.Period.OneDay.ordinal())
                     output_size = "full";
-                else
-                    output_size = "compact";
+                formatter = dateTimeFormatter;
+                break;
+            case FifteenMinutes:
+                function = "TIME_SERIES_INTRADAY";
+                interval = "15min";
+                if (query.period.ordinal() > QuoteQuery.Period.OneDay.ordinal())
+                    output_size = "full";
+                formatter = dateTimeFormatter;
+                break;
+            case ThirtyMinutes:
+                function = "TIME_SERIES_INTRADAY";
+                interval = "30min";
+                if (query.period.ordinal() > QuoteQuery.Period.OneWeek.ordinal())
+                    output_size = "full";
+                formatter = dateTimeFormatter;
+                break;
+            case OneHour:
+                function = "TIME_SERIES_INTRADAY";
+                interval = "60min";
+                if (query.period.ordinal() > QuoteQuery.Period.OneWeek.ordinal())
+                    output_size = "full";
+                formatter = dateTimeFormatter;
+                break;
+            case OneDay:
                 function = "TIME_SERIES_DAILY";
-                intervalDurationExact = query.interval == 1;
+                if (query.period.ordinal() > QuoteQuery.Period.ThreeMonths.ordinal())
+                    output_size = "full";
                 break;
-            case Week:
+            case OneWeek:
                 function = "TIME_SERIES_WEEKLY";
-                intervalDurationExact = query.interval == 1;
                 break;
-            case Month:
+            case OneMonth:
                 function = "TIME_SERIES_MONTHLY";
-                intervalDurationExact = query.interval == 1;
                 break;
             default:
-                Log.e("Magellan", "Unhandled interval type!");
+                Log.e("Magellan", "getIntervalAsDuration(): intervalUnit is corrupt");
                 return null;
         }
 
@@ -121,20 +116,12 @@ public class AlphaVantageService implements IQuoteService {
                     bReader.readLine(); // skip header
                     ret = new ArrayList<Quote>();
 
-                    long queryIntDurationMins = query.getIntervalAsDuration().getStandardMinutes();
                     DateTime lastDate = null;
                     while ((line = bReader.readLine()) != null) {
                         String [] parts = line.split(",");
                         DateTime date = DateTime.parse(parts[0], formatter);
                         if (date.isBefore(queryStart) && !date.isEqual(queryStart))
                             break;
-
-                        if (!intervalDurationExact && lastDate != null)
-                        {
-                            Duration dur = new Duration(date, lastDate);
-                            if (dur.getStandardMinutes() / queryIntDurationMins == 0)
-                                continue;
-                        }
 
                         float open = Float.parseFloat(parts[1]);
                         float high = Float.parseFloat(parts[2]);
@@ -143,7 +130,6 @@ public class AlphaVantageService implements IQuoteService {
                         int volume = Integer.parseInt(parts[5]);
 
                         ret.add(new Quote(date, open, close, low, high, volume));
-                        lastDate = date;
                     }
 
                     inputStream.close();

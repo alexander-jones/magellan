@@ -10,6 +10,7 @@ import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.quote.QuoteQuery;
 
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,27 +29,35 @@ public class BarChartService implements IQuoteService
     {
         try {
             final HistoryRequest.Builder builder = new HistoryRequest.Builder();
-            builder.symbol(query.symbol).interval(query.interval);
-            if (query.intervalUnit == null)
-                builder.type(HistoryRequest.HistoryRequestType.MINUTES);
-            else {
-                switch (query.intervalUnit) {
-                    case Minute:
-                        builder.type(HistoryRequest.HistoryRequestType.MINUTES);
-                        break;
-                    case Day:
-                        builder.type(HistoryRequest.HistoryRequestType.DAILY);
-                        break;
-                    case Week:
-                        builder.type(HistoryRequest.HistoryRequestType.WEEKLY);
-                        break;
-                    case Month:
-                        builder.type(HistoryRequest.HistoryRequestType.MONTHLY);
-                        break;
-                    default:
-                        Log.e("Magellan", "Unhandled interval type!");
-                        break;
-                }
+            builder.symbol(query.symbol);
+            switch (query.interval) {
+                case OneMinute:
+                    builder.type(HistoryRequest.HistoryRequestType.MINUTES).interval(1);
+                    break;
+                case FiveMinutes:
+                    builder.type(HistoryRequest.HistoryRequestType.MINUTES).interval(5);
+                    break;
+                case FifteenMinutes:
+                    builder.type(HistoryRequest.HistoryRequestType.MINUTES).interval(15);
+                    break;
+                case ThirtyMinutes:
+                    builder.type(HistoryRequest.HistoryRequestType.MINUTES).interval(30);
+                    break;
+                case OneHour:
+                    builder.type(HistoryRequest.HistoryRequestType.MINUTES).interval(60);
+                    break;
+                case OneDay:
+                    builder.type(HistoryRequest.HistoryRequestType.DAILY);
+                    break;
+                case OneWeek:
+                    builder.type(HistoryRequest.HistoryRequestType.WEEKLY);
+                    break;
+                case OneMonth:
+                    builder.type(HistoryRequest.HistoryRequestType.MONTHLY);
+                    break;
+                default:
+                    Log.e("Magellan", "getIntervalAsDuration(): intervalUnit is corrupt");
+                    return null;
             }
 
             builder.start(query.getStart());

@@ -306,35 +306,33 @@ public class QuotesActivity extends AppCompatActivity
         mVolumeLoadProgress.setVisibility(View.VISIBLE);
         QuoteQuery.Period period = quotePeriods[position];
 
-        int interval = 1;
-        QuoteQuery.IntervalUnit intervalUnit = QuoteQuery.IntervalUnit.Minute;
+        QuoteQuery.Interval interval = QuoteQuery.Interval.FiveMinutes;
         mLastQueryContext.complete = false;
         switch (period)
         {
             case OneDay:
-                interval = 5;
+                interval = QuoteQuery.Interval.FiveMinutes;
                 break;
             case OneWeek:
-                interval = 10;
-                intervalUnit = QuoteQuery.IntervalUnit.Minute;
+                interval = QuoteQuery.Interval.FifteenMinutes;
                 break;
             case OneMonth:
-                intervalUnit = QuoteQuery.IntervalUnit.Day;
+                interval = QuoteQuery.Interval.ThirtyMinutes;
                 break;
             case ThreeMonths:
-                intervalUnit = QuoteQuery.IntervalUnit.Day;
+                interval = QuoteQuery.Interval.OneDay;
                 break;
             case OneYear:
-                intervalUnit = QuoteQuery.IntervalUnit.Week;
+                interval = QuoteQuery.Interval.OneDay;
                 break;
             case FiveYears:
-                intervalUnit = QuoteQuery.IntervalUnit.Week;
+                interval = QuoteQuery.Interval.OneWeek;
                 break;
             case TenYears:
-                intervalUnit = QuoteQuery.IntervalUnit.Month;
+                interval = QuoteQuery.Interval.OneMonth;
                 break;
         }
-        mLastQueryContext.query = new QuoteQuery(mSymbol, period, intervalUnit, interval);
+        mLastQueryContext.query = new QuoteQuery(mSymbol, period, interval);
         mLastQueryContext.results = null;
         mQuoteTask = new QuoteQueryTask(this, mQuoteService, this);
         mQuoteTask.execute(mLastQueryContext.query);
