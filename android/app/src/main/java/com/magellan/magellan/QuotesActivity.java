@@ -7,11 +7,9 @@ import android.content.res.Configuration;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.Html;
-import android.util.TypedValue;
 import android.util.Log;
 import android.os.Bundle;
 import android.view.MenuInflater;
@@ -46,7 +44,6 @@ import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
 import com.magellan.magellan.service.alphavantage.AlphaVantageService;
-import com.magellan.magellan.service.barchart.BarChartService;
 import com.magellan.magellan.stock.Stock;
 import com.magellan.magellan.stock.StockQueryActivity;
 
@@ -57,14 +54,10 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
-import java.util.TimeZone;
 
 public class QuotesActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, IQuoteQueryListener,
         ChartGestureHandler.OnHighlightListener{
-
-    private static int CHART_MARGIN = 10;
-    private static int CHART_SPACING = 5;
 
     private int mWachListGeneration;
     private String mSymbol;
@@ -88,7 +81,6 @@ public class QuotesActivity extends AppCompatActivity
 
     private CombinedChart mVolumeChart;
     private CombinedData mVolumeChartData;
-
 
     private DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
@@ -119,7 +111,8 @@ public class QuotesActivity extends AppCompatActivity
         setContentView(R.layout.activity_quotes);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(true);
         mDateText = (TextView) findViewById(R.id.date);
         mTimeText = (TextView) findViewById(R.id.time);
         mStockTabLayout = (TabLayout) findViewById(R.id.stock_tabs);
@@ -131,7 +124,7 @@ public class QuotesActivity extends AppCompatActivity
         mPriceLayersContainer = (RecyclerView) priceCard.findViewById(R.id.layers);
         mPriceLayersContainer.setLayoutManager(new LinearLayoutManager(this, isPortrait ? LinearLayoutManager.HORIZONTAL : LinearLayoutManager.VERTICAL, false));
 
-        float internal_spacing = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
+        float internal_spacing = getResources().getDimension(R.dimen.spacing_internal);
 
         mPriceChart = (CombinedChart) priceCard.findViewById(R.id.chart);
         mPriceLoadProgress = (ProgressBar) priceCard.findViewById(R.id.progress);
@@ -140,7 +133,7 @@ public class QuotesActivity extends AppCompatActivity
         YAxis priceAxisRight = mPriceChart.getAxisRight();
         priceAxisRight.setValueFormatter(new PriceMetric.AxisValueFormatter());
         priceAxisRight.setLabelCount(isPortrait ? 9 : 6, true);
-        mPriceChart.setViewPortOffsets(0,internal_spacing,(priceAxisRight.getTextSize() * 4) + internal_spacing,internal_spacing);
+        mPriceChart.setViewPortOffsets(0, internal_spacing, (priceAxisRight.getTextSize() * 4) + internal_spacing, internal_spacing);
 
         mPriceLayers.add(new PriceCandleLayer(this));
         mPriceLayers.add(new PriceLineLayer(this));
@@ -165,7 +158,7 @@ public class QuotesActivity extends AppCompatActivity
         YAxis volAxisRight = mVolumeChart.getAxisRight();
         volAxisRight.setValueFormatter(new VolumeMetric.AxisValueFormatter(2));
         volAxisRight.setLabelCount(isPortrait ? 7 : 3, true);
-        mVolumeChart.setViewPortOffsets(0,internal_spacing,(volAxisRight.getTextSize() * 4) + internal_spacing,internal_spacing);
+        mVolumeChart.setViewPortOffsets(0, internal_spacing,(volAxisRight.getTextSize() * 4) + internal_spacing, internal_spacing);
 
         mVolumeLayers.add(new VolumeBarLayer(this));
 
@@ -183,7 +176,6 @@ public class QuotesActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
 
         int currentStock = onLoadInstanceState(savedInstanceState);
@@ -380,6 +372,12 @@ public class QuotesActivity extends AppCompatActivity
                 if (highestPrice < q.getHigh())
                     highestPrice = q.getHigh();
             }
+
+            float priceRange = highestPrice - lowestPrice;
+            float rangeOffset = priceRange * 0.4f;
+            YAxis rightAxis = mPriceChart.getAxisRight();
+            rightAxis.setAxisMaximum(highestPrice - rangeOffset);
+            rightAxis.setAxisMinimum(lowestPrice + rangeOffset);
             mPeriodQuote = new Quote(null,initialQuote.getOpen(), finalQuote.getClose(), lowestPrice, highestPrice, totalVolume);
 
             for (IMetricLayer layer : mPriceLayers)

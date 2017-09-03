@@ -26,6 +26,7 @@
                 android:background="?attr/colorPrimary"
                 app:popupTheme="@style/AppTheme.PopupOverlay"
                 app:theme="@style/AppTheme.Toolbar" >
+
                 <LinearLayout
                     android:id="@+id/header"
                     android:layout_width="match_parent"

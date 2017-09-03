@@ -17,8 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_above="@+id/layers_container"
-        android:layout_marginLeft="@dimen/spacing_internal"
-        android:layout_marginTop="@dimen/spacing_internal"/>
+        android:layout_marginLeft="@dimen/spacing_internal"/>
 
     <TextView
         android:id="@+id/value"
