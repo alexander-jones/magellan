@@ -69,7 +69,7 @@ public class ApplicationContext {
         NewYearsDay(0, 1),
         MartinLutherKingDay(0, 15),
         WashingtonsBirthday(1, 19),
-        GoodFriday(3, 30),
+        GoodFriday(2, 30),
         MemorialDay(4, 28),
         IndependenceDay(6,4),
         LaborDay(8,3),
@@ -80,6 +80,25 @@ public class ApplicationContext {
         StockMarketHolidays2018(int month, int day)
         {
             date = new GregorianCalendar(2018, month, day).getTime();
+        }
+    }
+
+    public static enum StockMarketHolidays2019
+    {
+        NewYearsDay(0, 1),
+        MartinLutherKingDay(0, 21),
+        WashingtonsBirthday(1, 18),
+        GoodFriday(3, 19),
+        MemorialDay(4, 27),
+        IndependenceDay(6,4),
+        LaborDay(8,2),
+        ThanskgivingDay(10, 28),
+        Christmas(11, 25);
+
+        public final Date date;
+        StockMarketHolidays2019(int month, int day)
+        {
+            date = new GregorianCalendar(2019, month, day).getTime();
         }
     }
 
@@ -148,6 +167,18 @@ public class ApplicationContext {
             else if (year == 2018)
             {
                 for (StockMarketHolidays2018 holiday : StockMarketHolidays2018.values())
+                {
+                    if (holiday.date.compareTo(currentTradingDate) == 0)
+                    {
+                        dateTimeCopy =  dateTimeCopy.minusDays(1);
+                        checkIfTradingDay = true;
+                        break;
+                    }
+                }
+            }
+            else if (year == 2019)
+            {
+                for (StockMarketHolidays2019 holiday : StockMarketHolidays2019.values())
                 {
                     if (holiday.date.compareTo(currentTradingDate) == 0)
                     {
@@ -246,6 +277,7 @@ public class ApplicationContext {
         if (stock < 0 || stock >= mWatchList.size())
             return false;
 
+        ++mWatchListGeneration;
         mWatchList.remove(stock);
         saveWatchList();
         return true;
@@ -261,12 +293,19 @@ public class ApplicationContext {
         return true;
     }
 
-    public static boolean addToWatchList(Stock stock)
+    public static boolean isStockInWatchList(Stock stock)
     {
         for (Stock s : mWatchList){
             if (stock.equals(s))
-                return false;
+                return true;
         }
+        return false;
+    }
+
+    public static boolean addToWatchList(Stock stock)
+    {
+        if (getWatchListIndex(stock) != -1)
+            return false;
 
         ++mWatchListGeneration;
         mWatchList.add(stock);

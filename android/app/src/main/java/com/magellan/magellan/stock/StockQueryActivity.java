@@ -181,6 +181,6 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        finishWithResult((Stock)((StockAdapter.ViewHolder)view.getTag()).addToWatchList.getTag());
+        finishWithResult((Stock)((StockAdapter.ViewHolder)view.getTag()).changeWatchListStatus.getTag());
     }
 }

@@ -30,7 +30,7 @@
         android:text="$0.00"
         android:textSize="@dimen/small_header_text_size"
         android:textColor="@color/colorTextSecondary"
-        android:background="@color/colorSecondaryAlpha"/>
+        android:background="@color/colorSecondaryDarkAlpha"/>
 
     <RelativeLayout
         android:id="@+id/layers_container"

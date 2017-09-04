@@ -280,7 +280,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         {
             Intent intent = new Intent(this, QuotesActivity.class);
             Stock.saveTo(intent, stocksChosen);
-            startActivity(intent);
+            startActivityForResult(intent, 1);
         }
     }
 
@@ -326,7 +326,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     public void onClick(View view) {
         Intent intent = new Intent(this, QuotesActivity.class);
         intent.putExtra("WATCHLIST_ITEM", mWatchListItems.indexOf(view.getTag()));
-        startActivity(intent);
+        startActivityForResult(intent, 1);
     }
 
     private void lanchTaskForStock(Stock stock)

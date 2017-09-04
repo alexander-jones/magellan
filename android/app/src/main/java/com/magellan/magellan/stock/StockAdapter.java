@@ -40,8 +40,8 @@ public class StockAdapter extends ArrayAdapter<Stock> implements View.OnClickLis
             holder = new ViewHolder();
             holder.symbol = (TextView)convertView.findViewById(R.id.symbol);
             holder.company = (TextView) convertView.findViewById(R.id.company);
-            holder.addToWatchList = (ImageButton)convertView.findViewById(R.id.add_to_watchlist);
-            holder.addToWatchList.setOnClickListener(this);
+            holder.changeWatchListStatus = (ImageButton)convertView.findViewById(R.id.change_watchlist_status);
+            holder.changeWatchListStatus.setOnClickListener(this);
             convertView.setTag(holder);
         }
         else
@@ -49,12 +49,12 @@ public class StockAdapter extends ArrayAdapter<Stock> implements View.OnClickLis
             holder = (ViewHolder)convertView.getTag();
         }
 
-        holder.addToWatchList.setTag(stock);
+        holder.changeWatchListStatus.setTag(stock);
 
         if (ApplicationContext.getWatchListIndex(stock) == -1)
-            holder.addToWatchList.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_add_24dp));
+            holder.changeWatchListStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_add_24dp));
         else
-            holder.addToWatchList.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_remove_24dp));
+            holder.changeWatchListStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_remove_24dp));
 
         holder.symbol.setText(stock.getSymbol());
         holder.company.setText(stock.getCompany());
@@ -95,7 +95,7 @@ public class StockAdapter extends ArrayAdapter<Stock> implements View.OnClickLis
     {
         TextView    symbol;
         TextView    company;
-        ImageButton addToWatchList;
+        ImageButton changeWatchListStatus;
     }
 
     @Override

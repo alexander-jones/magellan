@@ -2,10 +2,9 @@ package com.magellan.magellan;
 
 import java.util.List;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
@@ -29,10 +28,8 @@ import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.magellan.magellan.metric.ILineDataSetStyler;
 import com.magellan.magellan.metric.IMetricLayer;
 import com.magellan.magellan.metric.MetricLayerButtonAdapter;
@@ -41,16 +38,12 @@ import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.metric.volume.VolumeBarLayer;
 import com.magellan.magellan.metric.volume.VolumeMetric;
-import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
-import com.magellan.magellan.service.alphavantage.AlphaVantageService;
 import com.magellan.magellan.stock.Stock;
-import com.magellan.magellan.stock.StockQueryActivity;
 
-import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
@@ -101,6 +94,7 @@ public class QuotesActivity extends AppCompatActivity
     private MetricLayerButtonAdapter mPriceLayerAdapter;
     private RecyclerView mVolumeLayersContainer;
     private MetricLayerButtonAdapter mVolumeLayerAdapter;
+    private MenuItem mChangeWatchListStatus;
 
     private TabLayout mIntervalTabLayout;
 
@@ -204,6 +198,7 @@ public class QuotesActivity extends AppCompatActivity
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 mSymbol = tab.getText().toString();
+                updateChangeWatchListStatus();
                 launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
             }
 
@@ -283,6 +278,7 @@ public class QuotesActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
+        setResult(Activity.RESULT_OK, new Intent());
         finish();
         super.onBackPressed();
     }
@@ -292,6 +288,8 @@ public class QuotesActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.quotes, menu);
+        mChangeWatchListStatus = menu.findItem(R.id.change_watchlist_status);
+        updateChangeWatchListStatus();
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -300,7 +298,22 @@ public class QuotesActivity extends AppCompatActivity
     {
         switch (item.getItemId()) {
             case android.R.id.home:
+                setResult(Activity.RESULT_OK, new Intent());
                 finish();
+                break;
+            case R.id.change_watchlist_status:
+                Stock stock = (Stock)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
+                int watchListIndex = ApplicationContext.getWatchListIndex(stock);
+                if (watchListIndex == -1)
+                {
+                    ApplicationContext.addToWatchList(stock);
+                    mChangeWatchListStatus.setIcon(R.drawable.ic_remove_secondary_24dp);
+                }
+                else
+                {
+                    ApplicationContext.removeFromWatchList(watchListIndex);
+                    mChangeWatchListStatus.setIcon(R.drawable.ic_add_secondary_24dp);
+                }
                 break;
             case R.id.settings:
                 // TODO implement settings activity / fragment and launch here
@@ -343,6 +356,16 @@ public class QuotesActivity extends AppCompatActivity
         rightAxis.setDrawGridLines(false);
         rightAxis.setSpaceBottom(0);
         rightAxis.setSpaceTop(0);
+    }
+
+    private void updateChangeWatchListStatus()
+    {
+        Stock stock = (Stock)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
+        int watchListIndex = ApplicationContext.getWatchListIndex(stock);
+        if (watchListIndex == -1)
+            mChangeWatchListStatus.setIcon(R.drawable.ic_add_secondary_24dp);
+        else
+            mChangeWatchListStatus.setIcon(R.drawable.ic_remove_secondary_24dp);
     }
 
     private void launchTaskForInterval(int position)
