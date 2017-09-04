@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorSecondaryDark"
+    android:focusable="true"
+    android:clickable="true">
+
+    <TextView
+        android:id="@+id/symbol"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_internal"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:text="QQQQ"
+        android:textSize="@dimen/large_header_text_size"
+        android:textColor="@color/colorPrimary"
+        android:textStyle="bold"/>
+
+    <com.github.mikephil.charting.charts.CombinedChart
+        android:id="@+id/chart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="@dimen/spacing_internal"
+        android:layout_marginBottom="@dimen/spacing_internal"
+        app:layout_widthPercent="50%"/>
+
+    <LinearLayout
+        android:id="@+id/metric_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_internal"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_internal"
+            android:layout_gravity="end"
+            android:gravity="end"
+            android:text="$1.24"
+            android:textSize="@dimen/small_header_text_size"
+            android:textColor="@color/colorPriceUp"/>
+
+        <TextView
+            android:id="@+id/volume"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:gravity="end"
+            android:text="1.2K"
+            android:textSize="@dimen/small_header_text_size"
+            android:textColor="@color/colorPrimary"/>
+    </LinearLayout>
+</android.support.percent.PercentRelativeLayout>

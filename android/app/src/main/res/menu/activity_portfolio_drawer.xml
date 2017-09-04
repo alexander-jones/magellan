@@ -3,14 +3,10 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/quotes"
-            android:icon="@drawable/ic_quotes_24dp"
-            android:title="Quotes"
+            android:id="@+id/portfolio"
+            android:icon="@drawable/ic_portfolio_24dp"
+            android:title="Portfolio"
             android:checked="true" />
-        <item
-            android:id="@+id/earnings"
-            android:icon="@drawable/ic_earnings_24dp"
-            android:title="Earnings" />
         <item
             android:id="@+id/notifications"
             android:icon="@drawable/ic_notifications_24dp"
@@ -19,9 +15,5 @@
             android:id="@+id/contribute"
             android:icon="@drawable/ic_contribute_24dp"
             android:title="Contribute" />
-        <item
-            android:id="@+id/donate"
-            android:icon="@drawable/ic_donate_24dp"
-            android:title="Donate" />
     </group>
 </menu>

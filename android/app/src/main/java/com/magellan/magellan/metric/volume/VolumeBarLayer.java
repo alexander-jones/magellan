@@ -41,16 +41,16 @@ public class VolumeBarLayer implements IMetricLayer {
         ArrayList<IBarDataSet> volumeDataSets = new ArrayList<IBarDataSet>();
         ArrayList<BarEntry> volumeValues = new ArrayList<BarEntry>();
 
-        float startingOpen = initialQuote.getOpen();
+        float startingOpen = initialQuote.open;
         for (int j = 0; j < missingStartSteps; ++j)
             volumeValues.add(new BarEntry(j, 0, null));
 
         for (int j = missingStartSteps; j < quotes.size() + missingStartSteps; ++j) {
             Quote quote = quotes.get(j - missingStartSteps);
-            volumeValues.add(new BarEntry(j, (float) quote.getVolume(), quote));
+            volumeValues.add(new BarEntry(j, (float) quote.volume, quote));
         }
 
-        float finalClose = finalQuote.getClose();
+        float finalClose = finalQuote.close;
         for (int j = missingStartSteps + quotes.size(); j < quotes.size() + missingStartSteps + missingEndSteps; ++j)
             volumeValues.add(new BarEntry(j, 0, null));
 

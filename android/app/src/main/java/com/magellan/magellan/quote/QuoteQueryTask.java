@@ -17,6 +17,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
 
     private IQuoteQueryListener mListener;
     private List<List<Quote>> mQuoteCollections;
+    private List<QuoteQuery> mQueries;
     private IQuoteService mQuoteService;
     private File mCacheDir;
 
@@ -33,6 +34,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
         int count = queries.length;
         long result = 0;
         mQuoteCollections = new ArrayList<List<Quote>>();
+        mQueries = new ArrayList<QuoteQuery>();
         for (int i = 0; i < count; i++) {
             QuoteQuery query = queries[i];
             File endpointDir = new File(mCacheDir, dateTimeFormatter.print(query.getEnd()));
@@ -50,6 +52,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
                 quotes = mQuoteService.execute(query);
                 if (quotes != null)
                 {
+                    mQueries.add(query);
                     mQuoteCollections.add(quotes);
                     try {
                         cachedFile.createNewFile();
@@ -62,7 +65,10 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
                 }
             }
             else
+            {
+                mQueries.add(query);
                 mQuoteCollections.add(quotes);
+            }
 
             publishProgress((int) ((i / (float) count) * 100));
 
@@ -77,6 +83,6 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
 
     protected void onPostExecute(Long result) {
 
-        mListener.onQuotesReceived(mQuoteCollections);
+        mListener.onQuotesReceived(mQueries, mQuoteCollections);
     }
 }

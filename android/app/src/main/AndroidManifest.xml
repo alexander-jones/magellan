@@ -12,12 +12,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".stock.StockQueryActivity"
-            android:theme="@style/AppTheme.Overlay"
-            android:windowSoftInputMode="adjustResize"/>
-
-        <activity
-            android:name=".QuotesActivity"
+            android:name=".PortfolioActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustNothing">
             <intent-filter>
@@ -25,6 +20,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".QuotesActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustNothing"/>
+
+        <activity
+            android:name=".stock.StockQueryActivity"
+            android:theme="@style/AppTheme.Overlay"
+            android:windowSoftInputMode="adjustResize"/>
     </application>
 
 </manifest>

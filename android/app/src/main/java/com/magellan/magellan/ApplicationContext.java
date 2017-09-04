@@ -3,6 +3,11 @@ package com.magellan.magellan;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.github.mikephil.charting.charts.CombinedChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.magellan.magellan.quote.IQuoteService;
+import com.magellan.magellan.service.alphavantage.AlphaVantageService;
 import com.magellan.magellan.stock.Stock;
 
 import org.joda.time.DateTime;
@@ -22,10 +27,49 @@ public class ApplicationContext {
     private static Context mContext;
     private static int mWatchListGeneration = 0;
     private static List<Stock> mWatchList = null;
-    private static int mSelectedStock = 0;
     private static SharedPreferences mSharedPreferences;
     private static DateTime mStartOfTradingDay = null;
     private static DateTime mEndOfTradingDay = null;
+    private static IQuoteService mQuoteService = new AlphaVantageService();
+
+    public static IQuoteService getQuoteService()
+    {
+        return mQuoteService;
+    }
+
+    // initialize default settins for any charts in this activity
+    public static void initializeSimpleChart(CombinedChart chart)
+    {
+        chart.setNoDataText("");
+        chart.setTouchEnabled(false);
+        chart.setDrawGridBackground(false);
+        chart.setDrawMarkers(false);
+        chart.setDrawBorders(false);
+        chart.getDescription().setText("");
+        chart.getLegend().setEnabled(false);
+        chart.setViewPortOffsets(10, 10, 10, 10);
+
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setDrawLabels(false);
+        xAxis.setDrawAxisLine(false);
+        xAxis.setDrawGridLines(false);
+        xAxis.setSpaceMin(0.0f);
+        xAxis.setSpaceMax(0.0f);
+
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.setDrawLabels(false);
+        leftAxis.setDrawAxisLine(false);
+        leftAxis.setDrawGridLines(false);
+        leftAxis.setSpaceBottom(0);
+        leftAxis.setSpaceTop(0);
+
+        YAxis rightAxis = chart.getAxisRight();
+        rightAxis.setDrawLabels(false);
+        rightAxis.setDrawAxisLine(false);
+        rightAxis.setDrawGridLines(false);
+        rightAxis.setSpaceBottom(0);
+        rightAxis.setSpaceTop(0);
+    }
 
     public static DateTime getLastTradingDayCloseTime()
     {
@@ -71,31 +115,10 @@ public class ApplicationContext {
         mWatchListGeneration = mSharedPreferences.getInt("GENERATION", 0);
         if (mWatchList == null){
             mWatchList = new ArrayList<Stock>();
-            mSelectedStock = -1;
         }
-        else
-            mSelectedStock = mSharedPreferences.getInt("SELECTED_STOCK", 0);
     }
 
     public static int getWatchListGeneration() { return mWatchListGeneration;}
-    public static boolean setSelectedStock(int stock)
-    {
-        if (stock < 0 || stock >= mWatchList.size())
-            return false;
-
-        ++mWatchListGeneration;
-        mSelectedStock = stock;
-        SharedPreferences.Editor sp = mSharedPreferences.edit();
-        sp.putInt("GENERATION", mWatchListGeneration);
-        sp.putInt("SELECTED_STOCK", mSelectedStock);
-        sp.commit();
-        return true;
-    }
-
-    public static int getSelectedStock()
-    {
-        return mSelectedStock;
-    }
 
     public static int getWatchListIndex(Stock stock)
     {
@@ -110,27 +133,27 @@ public class ApplicationContext {
         return index;
     }
 
+    public static boolean moveItemInWatchlist(int from, int to)
+    {
+        if (from < 0 || from >= mWatchList.size())
+            return false;
+
+        if (to < 0 || to >= mWatchList.size())
+            return false;
+
+        ++mWatchListGeneration;
+        mWatchList.add(to, mWatchList.remove(from));
+        saveWatchList();
+        return true;
+    }
+
     public static boolean removeFromWatchList(int stock)
     {
         if (stock < 0 || stock >= mWatchList.size())
             return false;
 
-        ++mWatchListGeneration;
         mWatchList.remove(stock);
-        SharedPreferences.Editor sp = mSharedPreferences.edit();
-        sp.putInt("GENERATION", mWatchListGeneration);
-        Stock.saveTo(sp, mWatchList);
-        if (mSelectedStock >= stock)
-        {
-            if (mWatchList.size() == 0)
-                mSelectedStock = -1;
-            else if (stock > 0)
-                --mSelectedStock;
-            else
-                mSelectedStock = 0;
-            sp.putInt("SELECTED_STOCK", mSelectedStock);
-        }
-        sp.commit();
+        saveWatchList();
         return true;
     }
 
@@ -153,10 +176,7 @@ public class ApplicationContext {
 
         ++mWatchListGeneration;
         mWatchList.add(stock);
-        SharedPreferences.Editor sp = mSharedPreferences.edit();
-        sp.putInt("GENERATION", mWatchListGeneration);
-        Stock.saveTo(sp, mWatchList);
-        sp.commit();
+        saveWatchList();
         return true;
     }
 
@@ -165,4 +185,11 @@ public class ApplicationContext {
         return Collections.unmodifiableList(mWatchList);
     }
 
+    private static void saveWatchList()
+    {
+        SharedPreferences.Editor sp = mSharedPreferences.edit();
+        sp.putInt("GENERATION", mWatchListGeneration);
+        Stock.saveTo(sp, mWatchList);
+        sp.commit();
+    }
 }

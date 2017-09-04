@@ -169,10 +169,12 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
     private void finishWithResult(Stock stock)
     {
         Intent returnIntent = new Intent();
-        List<Stock> chosenStocks = new ArrayList<Stock>();
         if (stock != null)
+        {
+            List<Stock> chosenStocks = new ArrayList<Stock>();
             chosenStocks.add(stock);
-        Stock.saveTo(returnIntent, chosenStocks);
+            Stock.saveTo(returnIntent, chosenStocks);
+        }
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
     }

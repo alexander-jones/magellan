@@ -77,18 +77,16 @@
 
                 <android.support.design.widget.TabLayout
                     android:id="@+id/stock_tabs"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="@dimen/button_height"
-                    android:background="@color/colorPrimary"
+                    android:layout_gravity="center_horizontal"
                     android:layout_marginLeft="@dimen/spacing_external"
                     android:layout_marginRight="@dimen/spacing_external"
-                    app:tabMaxWidth="0dp"
-                    app:tabGravity="fill"
-                    app:tabMode="fixed"
+                    android:background="@color/colorPrimary"
+                    app:tabMode="scrollable"
                     app:tabIndicatorColor="@color/colorSecondary"
                     app:tabSelectedTextColor="@color/colorSecondary"
-                    app:tabTextColor="@color/colorSecondary">
-                </android.support.design.widget.TabLayout>
+                    app:tabTextColor="@color/colorSecondary"/>
 
                 <RelativeLayout
                     android:layout_width="match_parent"

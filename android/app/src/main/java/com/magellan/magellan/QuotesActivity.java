@@ -13,10 +13,6 @@ import android.text.Html;
 import android.util.Log;
 import android.os.Bundle;
 import android.view.MenuInflater;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -56,10 +52,9 @@ import org.joda.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class QuotesActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, IQuoteQueryListener,
-        ChartGestureHandler.OnHighlightListener{
+        implements IQuoteQueryListener, ChartGestureHandler.OnHighlightListener{
 
-    private int mWachListGeneration;
+    private boolean mUseWatchlist;
     private String mSymbol;
     private TextView mDateText;
     private TextView mTimeText;
@@ -82,9 +77,6 @@ public class QuotesActivity extends AppCompatActivity
     private CombinedChart mVolumeChart;
     private CombinedData mVolumeChartData;
 
-    private DrawerLayout mDrawerLayout;
-    ActionBarDrawerToggle mDrawerToggle;
-
     private ProgressBar mPriceLoadProgress;
     private ProgressBar mVolumeLoadProgress;
     private QuoteQueryTask mQuoteTask;
@@ -94,7 +86,6 @@ public class QuotesActivity extends AppCompatActivity
     private List<IMetricLayer> mPriceLayers = new ArrayList<IMetricLayer>();
     private List<IMetricLayer> mVolumeLayers = new ArrayList<IMetricLayer>();
 
-    private IQuoteService mQuoteService = new AlphaVantageService();
 
     private class QueryContext
     {
@@ -112,7 +103,9 @@ public class QuotesActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
         mDateText = (TextView) findViewById(R.id.date);
         mTimeText = (TextView) findViewById(R.id.time);
         mStockTabLayout = (TabLayout) findViewById(R.id.stock_tabs);
@@ -166,16 +159,6 @@ public class QuotesActivity extends AppCompatActivity
         mVolumeLayerAdapter = new MetricLayerButtonAdapter(volumeLayerLabels);
         mVolumeLayersContainer.setAdapter(mVolumeLayerAdapter);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle (this, mDrawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-        mDrawerToggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        actionBar.setDisplayShowTitleEnabled(false);
-
         int currentStock = onLoadInstanceState(savedInstanceState);
         if (currentStock != -1)
         {
@@ -187,7 +170,6 @@ public class QuotesActivity extends AppCompatActivity
         mStockTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                ApplicationContext.setSelectedStock(tab.getPosition());
                 mSymbol = tab.getText().toString();
                 launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
             }
@@ -216,27 +198,37 @@ public class QuotesActivity extends AppCompatActivity
 
     private int onLoadInstanceState(Bundle inState)
     {
-        List<Stock> watchList = ApplicationContext.getWatchList();
-        for (Stock stock : watchList)
-            mStockTabLayout.addTab(createTabForStock(stock));
-        mWachListGeneration = ApplicationContext.getWatchListGeneration();
-
+        int selection;
+        List<Stock> stocks;
         if (inState == null)
-            return ApplicationContext.getSelectedStock();
+        {
+            Intent intent = getIntent();
+            selection = intent.getIntExtra("WATCHLIST_ITEM", -1);
+            mUseWatchlist = selection != -1;
+            if (mUseWatchlist)
+                stocks = ApplicationContext.getWatchList();
+            else
+            {
+                stocks = Stock.loadFrom(intent);
+                selection = 0;
+            }
+        }
+        else
+        {
+            selection = inState.getInt("SELECTED_STOCK");
+            mUseWatchlist = inState.getBoolean("USE_WATCHLIST", false);
+            mIntervalTabLayout.getTabAt(inState.getInt("SELECTED_INTERVAL")).select();
 
-        mExtraStocks = Stock.loadFrom(inState);
-        for (Stock stock : mExtraStocks)
+            if (mUseWatchlist)
+                stocks = ApplicationContext.getWatchList();
+            else
+                stocks = Stock.loadFrom(inState);
+        }
+
+        for (Stock stock : stocks)
             mStockTabLayout.addTab(createTabForStock(stock));
 
-        int selectedInterval = inState.getInt("SELECTED_INTERVAL", -1);
-        if (selectedInterval != -1)
-            mIntervalTabLayout.getTabAt(selectedInterval).select();
-
-        int selectedStock = inState.getInt("SELECTED_STOCK", -1);
-        if (selectedStock == -1)
-            return ApplicationContext.getSelectedStock();
-
-        return selectedStock;
+        return selection;
     }
 
     @Override
@@ -245,6 +237,43 @@ public class QuotesActivity extends AppCompatActivity
         Stock.saveTo(outState, mExtraStocks);
         outState.putInt("SELECTED_STOCK",  mStockTabLayout.getSelectedTabPosition());
         outState.putInt("SELECTED_INTERVAL", mIntervalTabLayout.getSelectedTabPosition());
+        outState.putBoolean("USE_WATCHLIST", mUseWatchlist);
+        if (!mUseWatchlist)
+        {
+            List<Stock> stocks = new ArrayList<Stock>();
+            for (int i =0; i < mStockTabLayout.getTabCount(); ++i)
+                stocks.add((Stock)mStockTabLayout.getTabAt(i).getTag());
+
+            Stock.saveTo(outState, stocks);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+        super.onBackPressed();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.quotes, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected (MenuItem item)
+    {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                break;
+            case R.id.settings:
+                // TODO implement settings activity / fragment and launch here
+                break;
+        }
+        return true;
     }
 
     // initialize default settins for any charts in this activity
@@ -324,11 +353,12 @@ public class QuotesActivity extends AppCompatActivity
         }
         mLastQueryContext.query = new QuoteQuery(mSymbol, period, interval);
         mLastQueryContext.results = null;
-        mQuoteTask = new QuoteQueryTask(this, mQuoteService, this);
+        mQuoteTask = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
         mQuoteTask.execute(mLastQueryContext.query);
     }
 
-    public void onQuotesReceived(List<List<Quote>> manyQuotes)
+    @Override
+    public void onQuotesReceived(List<QuoteQuery> queries, List<List<Quote>> manyQuotes)
     {
         boolean oneValidQuote = false;
         Duration intervalDuration = mLastQueryContext.query.getIntervalAsDuration();
@@ -352,8 +382,8 @@ public class QuotesActivity extends AppCompatActivity
             Quote initialQuote = quotes.get(0);
             Quote finalQuote = quotes.get(quotes.size() -1);
 
-            Duration missingStartDuration = new Duration(mLastQueryContext.query.getStart(), initialQuote.getTime());
-            Duration missingEndDuration = new Duration(finalQuote.getTime(), mLastQueryContext.query.getEnd());
+            Duration missingStartDuration = new Duration(mLastQueryContext.query.getStart(), initialQuote.time);
+            Duration missingEndDuration = new Duration(finalQuote.time, mLastQueryContext.query.getEnd());
 
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
@@ -363,20 +393,14 @@ public class QuotesActivity extends AppCompatActivity
             float highestPrice = -Float.MAX_VALUE;
             for (Quote q : quotes)
             {
-                totalVolume += q.getVolume();
-                if (lowestPrice > q.getLow())
-                    lowestPrice = q.getLow();
+                totalVolume += q.volume;
+                if (lowestPrice > q.low)
+                    lowestPrice = q.low;
 
-                if (highestPrice < q.getHigh())
-                    highestPrice = q.getHigh();
+                if (highestPrice < q.high)
+                    highestPrice = q.high;
             }
-
-            float priceRange = highestPrice - lowestPrice;
-            float rangeOffset = priceRange * 0.4f;
-            YAxis rightAxis = mPriceChart.getAxisRight();
-            rightAxis.setAxisMaximum(highestPrice - rangeOffset);
-            rightAxis.setAxisMinimum(lowestPrice + rangeOffset);
-            mPeriodQuote = new Quote(null,initialQuote.getOpen(), finalQuote.getClose(), lowestPrice, highestPrice, totalVolume);
+            mPeriodQuote = new Quote(null,initialQuote.open, finalQuote.close, lowestPrice, highestPrice, totalVolume);
 
             for (IMetricLayer layer : mPriceLayers)
                 layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, mPriceChartData);
@@ -401,101 +425,6 @@ public class QuotesActivity extends AppCompatActivity
         mLastQueryContext.complete = oneValidQuote;
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.quotes, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected (MenuItem item)
-    {
-       switch (item.getItemId()) {
-           case R.id.search:
-               Intent intent = new Intent(this, StockQueryActivity.class);
-               startActivityForResult(intent, 1);
-               break;
-       }
-       return true;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        int tabToSelect = -1;
-        int newWatchListGen = ApplicationContext.getWatchListGeneration();
-        if (mWachListGeneration != newWatchListGen)
-        {
-            Stock selectedStock = (Stock)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
-            List<Stock> watchList = ApplicationContext.getWatchList();
-
-            mStockTabLayout.removeAllTabs();
-            int i;
-            for (i = 0; i < watchList.size(); ++i)
-            {
-                Stock stock = watchList.get(i);
-                TabLayout.Tab tab = createTabForStock(stock);
-                mStockTabLayout.addTab(tab);
-                if (stock.equals(selectedStock))
-                    tabToSelect = i;
-            }
-
-            for (Stock stock : mExtraStocks) {
-                if (stock.equals(selectedStock))
-                    tabToSelect = i;
-                mStockTabLayout.addTab(createTabForStock(stock));
-                ++i;
-            }
-
-            mWachListGeneration = newWatchListGen;
-        }
-
-        List<Stock> stocksChosen = Stock.loadFrom(data);
-        if (stocksChosen == null || stocksChosen.isEmpty())
-        {
-            if (tabToSelect != -1)
-                mStockTabLayout.getTabAt(tabToSelect).select();
-
-            return;
-        }
-
-        Stock stockChosen = stocksChosen.get(0);
-        int watchListIndex = ApplicationContext.getWatchListIndex(stockChosen);
-        if (watchListIndex == -1) // stock not in watch list but viewing temporarily
-        {
-            mExtraStocks.add(stockChosen);
-            TabLayout.Tab tab = createTabForStock(stockChosen);
-            mStockTabLayout.addTab(tab);
-            tab.select();
-        }
-        else if (mStockTabLayout.getSelectedTabPosition() != watchListIndex)
-            mStockTabLayout.getTabAt(watchListIndex).select();
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.quotes) {
-            // Handle the camera action
-        } else if (id == R.id.earnings) {
-
-        } else if (id == R.id.notifications) {
-
-        } else if (id == R.id.contribute) {
-
-        } else if (id == R.id.donate) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
 
     @Override
     public void OnEntryHighlighted(Entry e)
@@ -543,11 +472,10 @@ public class QuotesActivity extends AppCompatActivity
 
     private void updateHeaderText(Quote quote)
     {
-        DateTime endTime = quote.getTime();
-        mDateText.setText(dateFormatter.print(endTime));
-        mTimeText.setText(timeFormatter.print(endTime));
-        mPriceText.setText(Html.fromHtml(String.format("<b>H</b> %s  <b>L</b> %s  <b>O</b> %s  <b>C</b> %s",PriceMetric.valueToString(quote.getHigh()), PriceMetric.valueToString(quote.getLow()), PriceMetric.valueToString(quote.getOpen()), PriceMetric.valueToString(quote.getClose()))));
-        mVolumeText.setText(Html.fromHtml("<b>" + VolumeMetric.valueToString(quote.getVolume())+ "</b>"));
+        mDateText.setText(dateFormatter.print(quote.time));
+        mTimeText.setText(timeFormatter.print(quote.time));
+        mPriceText.setText(Html.fromHtml(String.format("<b>H</b> %s  <b>L</b> %s  <b>O</b> %s  <b>C</b> %s",PriceMetric.valueToString(quote.high), PriceMetric.valueToString(quote.low), PriceMetric.valueToString(quote.open), PriceMetric.valueToString(quote.close))));
+        mVolumeText.setText(Html.fromHtml("<b>" + VolumeMetric.valueToString(quote.volume)+ "</b>"));
     }
 
 

@@ -36,7 +36,7 @@ public class PriceCandleLayer implements IMetricLayer
 
         for (int j = missingStartSteps; j < quotes.size() + missingStartSteps; ++j) {
             Quote quote = quotes.get(j - missingStartSteps);
-            priceValues.add(new CandleEntry(j, quote.getHigh(), quote.getLow(), quote.getOpen(), quote.getClose(), quote));
+            priceValues.add(new CandleEntry(j, quote.high, quote.low, quote.open, quote.close, quote));
         }
 
         CandleDataSet missingDataSet = null;
@@ -45,10 +45,10 @@ public class PriceCandleLayer implements IMetricLayer
             ArrayList<CandleEntry> missingPriceValues = new ArrayList<CandleEntry>();
 
             for (int j = 0; j < missingStartSteps; ++j)
-                missingPriceValues.add(new CandleEntry(j, initialQuote.getHigh(), initialQuote.getLow(), initialQuote.getOpen(), initialQuote.getClose(), null));
+                missingPriceValues.add(new CandleEntry(j, initialQuote.high, initialQuote.low, initialQuote.open, initialQuote.close, null));
 
             for (int j = missingStartSteps + quotes.size(); j < quotes.size() + missingStartSteps + missingEndSteps; ++j)
-                missingPriceValues.add(new CandleEntry(j, finalQuote.getHigh(), finalQuote.getLow(), finalQuote.getOpen(), finalQuote.getClose(), null));
+                missingPriceValues.add(new CandleEntry(j, finalQuote.high, finalQuote.low, finalQuote.open, finalQuote.close, null));
 
             missingDataSet = new CandleDataSet(missingPriceValues, "");
             missingDataSet.setDrawIcons(false);

@@ -44,7 +44,7 @@ public class PriceLineLayer implements IMetricLayer
 
         for (int j = missingStartSteps; j < quotes.size() + missingStartSteps; ++j) {
             Quote quote = quotes.get(j - missingStartSteps);
-            priceValues.add(new Entry(j, (float) quote.getClose(), quote));
+            priceValues.add(new Entry(j, (float) quote.close, quote));
         }
 
 
@@ -52,11 +52,11 @@ public class PriceLineLayer implements IMetricLayer
         if (missingStartSteps > 0 || missingEndSteps > 0)
         {
             ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
-            float startingOpen = initialQuote.getOpen();
+            float startingOpen = initialQuote.open;
             for (int j = 0; j < missingStartSteps; ++j)
                 missingPriceValues.add(new Entry(j, startingOpen, null));
 
-            float finalClose = finalQuote.getClose();
+            float finalClose = finalQuote.close;
             for (int j = missingStartSteps + quotes.size(); j < quotes.size() + missingStartSteps + missingEndSteps; ++j)
                 missingPriceValues.add(new Entry(j, finalClose, null));
 
