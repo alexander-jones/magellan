@@ -48,7 +48,7 @@ public class QuoteQuery
         switch (period)
         {
             case OneDay:
-                return ApplicationContext.getLastTradingDayOpenTime();
+                return ApplicationContext.getOpenTimeForCloseTime(getEnd());
             case OneWeek:
                 return getEnd().minusWeeks(1);
             case OneMonth:
