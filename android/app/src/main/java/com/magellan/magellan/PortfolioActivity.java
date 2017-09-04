@@ -1,7 +1,10 @@
 package com.magellan.magellan;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -22,8 +25,12 @@ import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.data.CombinedData;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
-import com.magellan.magellan.metric.WatchlistStockAdapter;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.magellan.magellan.WatchlistStockAdapter;
+import com.magellan.magellan.metric.ILineDataSetStyler;
 import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.metric.volume.VolumeMetric;
@@ -43,6 +50,29 @@ import java.util.List;
 
 public class PortfolioActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, IQuoteQueryListener {
 
+
+    public class LineDataSetStyler implements ILineDataSetStyler {
+
+        @Override
+        public void onApply(LineDataSet lineSet) {
+            lineSet.setDrawCircles(false);
+            lineSet.setDrawValues(false);
+            lineSet.setDrawFilled(false);
+            lineSet.setDrawIcons(false);
+            lineSet.setHighlightEnabled(false);
+            lineSet.disableDashedLine();
+            lineSet.setHighLightColor(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPrimary));
+            lineSet.setColor(ContextCompat.getColor(PortfolioActivity.this, R.color.colorAccentPrimary));
+            lineSet.setFillColor(ContextCompat.getColor(PortfolioActivity.this, R.color.colorAccentPrimary));
+            lineSet.setLineWidth(1f);
+            lineSet.setFormLineWidth(1f);
+            lineSet.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
+            lineSet.setFormSize(15.f);
+        }
+    }
+
+    private LineDataSetStyler mLineDataStyler = new LineDataSetStyler();
+
     private int mWachListGeneration;
     private DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
@@ -59,7 +89,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     {
         public ChartContext(List<Quote> qs)
         {
-            layer = new PriceLineLayer(PortfolioActivity.this);
+            layer = new PriceLineLayer(mLineDataStyler);
             data = new CombinedData();
             quotes = qs;
         }
@@ -183,12 +213,30 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
             chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.data);
 
-            vh.price.setText(PriceMetric.valueToString(finalQuote.close));
+            // enable for center line
+             /*float startingOpen = initialQuote.open;
+            ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
+            missingPriceValues.add(new Entry(0, startingOpen, null));
+            missingPriceValues.add(new Entry(quotes.size(), startingOpen, null));
+
+            LineDataSet lineSet = new LineDataSet(missingPriceValues, "");
+            lineSet.setDrawIcons(false);
+            lineSet.setHighlightEnabled(false);
+            lineSet.enableDashedLine(10f, 10f, 0f);
+            lineSet.setColor(Color.WHITE);
+            lineSet.setFillColor(Color.WHITE);
+            lineSet.setLineWidth(1f);
+            lineSet.setDrawCircles(false);
+            lineSet.setDrawValues(false);
+
+            LineData data = chartCtx.data.getLineData();
+            data.addDataSet(lineSet);*/
+
+            vh.value.setText(PriceMetric.valueToString(finalQuote.close));
             if (finalQuote.close > initialQuote.open)
-                vh.price.setTextColor(ContextCompat.getColor(this, R.color.colorPriceUp));
+                vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceUp));
             else
-                vh.price.setTextColor(ContextCompat.getColor(this, R.color.colorPriceDown));
-            vh.volume.setText(VolumeMetric.valueToString(finalQuote.volume));
+                vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceDown));
             vh.chart.setData(chartCtx.data);
             vh.chart.notifyDataSetChanged();
             vh.chart.fitScreen();

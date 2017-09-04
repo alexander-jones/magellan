@@ -11,6 +11,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.magellan.magellan.R;
+import com.magellan.magellan.metric.ILineDataSetStyler;
 import com.magellan.magellan.metric.IMetricLayer;
 import com.magellan.magellan.quote.Quote;
 
@@ -19,8 +20,8 @@ import java.util.List;
 
 public class PriceLineLayer implements IMetricLayer
 {
-    private Context mContext;
     private CombinedData mPriceChartData;
+    private ILineDataSetStyler mStyler;
 
     public String getName()
     {
@@ -32,9 +33,9 @@ public class PriceLineLayer implements IMetricLayer
         return "LIN";
     }
 
-    public PriceLineLayer(Context context)
+    public PriceLineLayer(ILineDataSetStyler styler)
     {
-        mContext = context;
+        mStyler = styler;
     }
 
     public void onDrawQuotes(List<Quote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData) {
@@ -71,21 +72,7 @@ public class PriceLineLayer implements IMetricLayer
         }
 
         LineDataSet lineSet = new LineDataSet(priceValues, "");
-        lineSet.setDrawIcons(false);
-        lineSet.setHighlightEnabled(true);
-        lineSet.disableDashedLine();
-        lineSet.enableDashedHighlightLine(10f, 5f, 0f);
-        lineSet.setHighLightColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
-        lineSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimary));
-        lineSet.setFillColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimary));
-        lineSet.setLineWidth(1f);
-        lineSet.setValueTextSize(9f);
-        lineSet.setDrawFilled(true);
-        lineSet.setFormLineWidth(1f);
-        lineSet.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
-        lineSet.setFormSize(15.f);
-        lineSet.setDrawCircles(false);
-        lineSet.setDrawValues(false);
+        mStyler.onApply(lineSet);
 
         LineData data = chartData.getLineData();
         if (data == null){

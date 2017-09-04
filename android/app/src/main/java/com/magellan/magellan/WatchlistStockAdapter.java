@@ -1,4 +1,4 @@
-package com.magellan.magellan.metric;
+package com.magellan.magellan;
 
 
 import android.content.Context;
@@ -26,15 +26,14 @@ public class WatchlistStockAdapter extends RecyclerView.Adapter<WatchlistStockAd
     public static class ViewHolder extends RecyclerView.ViewHolder{
         public View rootView;
         public TextView symbol;
-        public TextView price;
+        public TextView value;
         public TextView volume;
         public CombinedChart chart;
 
         public ViewHolder(View v, AdapterView.OnClickListener listener) {
             super(v);
             symbol = (TextView)v.findViewById(R.id.symbol);
-            price =(TextView) v.findViewById(R.id.price);
-            volume = (TextView)v.findViewById(R.id.volume);
+            value =(TextView) v.findViewById(R.id.value);
             chart = (CombinedChart)v.findViewById(R.id.chart);
             rootView = v;
             v.setOnClickListener(listener);

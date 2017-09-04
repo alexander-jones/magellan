@@ -2,8 +2,11 @@ package com.magellan.magellan;
 
 import java.util.List;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -26,7 +29,11 @@ import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.magellan.magellan.metric.ILineDataSetStyler;
 import com.magellan.magellan.metric.IMetricLayer;
 import com.magellan.magellan.metric.MetricLayerButtonAdapter;
 import com.magellan.magellan.metric.price.PriceCandleLayer;
@@ -53,6 +60,32 @@ import java.util.ArrayList;
 
 public class QuotesActivity extends AppCompatActivity
         implements IQuoteQueryListener, ChartGestureHandler.OnHighlightListener{
+
+
+    public class LineDataSetStyler implements ILineDataSetStyler {
+
+        @Override
+        public void onApply(LineDataSet lineSet)
+        {
+            lineSet.setDrawIcons(false);
+            lineSet.setHighlightEnabled(true);
+            lineSet.disableDashedLine();
+            lineSet.enableDashedHighlightLine(10f, 5f, 0f);
+            lineSet.setHighLightColor(ContextCompat.getColor(QuotesActivity.this, R.color.colorPrimary));
+            lineSet.setColor(ContextCompat.getColor(QuotesActivity.this, R.color.colorAccentPrimary));
+            lineSet.setFillColor(ContextCompat.getColor(QuotesActivity.this, R.color.colorAccentPrimary));
+            lineSet.setLineWidth(1f);
+            lineSet.setValueTextSize(9f);
+            lineSet.setDrawFilled(true);
+            lineSet.setFormLineWidth(1f);
+            lineSet.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
+            lineSet.setFormSize(15.f);
+            lineSet.setDrawCircles(false);
+            lineSet.setDrawValues(false);
+        }
+    }
+
+    private LineDataSetStyler mLineDataStyler = new LineDataSetStyler();
 
     private boolean mUseWatchlist;
     private String mSymbol;
@@ -128,7 +161,7 @@ public class QuotesActivity extends AppCompatActivity
         mPriceChart.setViewPortOffsets(0, internal_spacing, (priceAxisRight.getTextSize() * 4) + internal_spacing, internal_spacing);
 
         mPriceLayers.add(new PriceCandleLayer(this));
-        mPriceLayers.add(new PriceLineLayer(this));
+        mPriceLayers.add(new PriceLineLayer(mLineDataStyler));
 
         List<String> priceLayerLabels = new ArrayList<String>();
         for (IMetricLayer layer : mPriceLayers)
@@ -407,6 +440,34 @@ public class QuotesActivity extends AppCompatActivity
 
             for (IMetricLayer layer : mVolumeLayers)
                 layer.onDrawQuotes(quotes,  missingStartSteps, missingEndSteps, mVolumeChartData);
+
+            // enable for center line
+            /*float startingOpen = initialQuote.open;
+            ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
+            missingPriceValues.add(new Entry(0, startingOpen, null));
+            missingPriceValues.add(new Entry(quotes.size(), startingOpen, null));
+
+            // enable for center line
+            LineDataSet lineSet = new LineDataSet(missingPriceValues, "");
+            lineSet.setDrawIcons(false);
+            lineSet.setHighlightEnabled(false);
+            lineSet.enableDashedLine(10f, 10f, 0f);
+            lineSet.setColor(Color.WHITE);
+            lineSet.setFillColor(Color.WHITE);
+            lineSet.setLineWidth(1f);
+            lineSet.setDrawCircles(false);
+            lineSet.setDrawValues(false);
+
+            LineData data = mPriceChartData.getLineData();
+            if (data == null){
+                ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
+                priceDataSets.add(lineSet);
+                data = new LineData(priceDataSets);
+                mPriceChartData.setData(data);
+            }
+            else {
+                data.addDataSet(lineSet);
+            }*/
 
             updateHeaderText(mPeriodQuote);
             oneValidQuote = true;

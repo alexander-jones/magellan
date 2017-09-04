@@ -56,24 +56,11 @@
                         android:layout_height="100dp"
                         android:background="@color/colorPrimary"/>
 
-                    <TextView
-                        android:id="@+id/portfolio_title"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentTop="true"
-                        android:layout_gravity="center_horizontal"
-                        android:gravity="center_horizontal"
-                        android:text="My Portfolio"
-                        android:textSize="@dimen/largest_header_text_size"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textStyle="bold"/>
-
                     <LinearLayout
                         android:id="@+id/date_header"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/spacing_external"
-                        android:layout_below="@+id/portfolio_title"
                         android:layout_centerHorizontal="true"
                         android:gravity="center_horizontal"
                         android:orientation="horizontal">

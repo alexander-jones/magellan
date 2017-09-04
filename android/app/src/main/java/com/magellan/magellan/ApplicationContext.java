@@ -2,10 +2,14 @@ package com.magellan.magellan;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.DashPathEffect;
+import android.support.v4.content.ContextCompat;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.service.alphavantage.AlphaVantageService;
 import com.magellan.magellan.stock.Stock;
