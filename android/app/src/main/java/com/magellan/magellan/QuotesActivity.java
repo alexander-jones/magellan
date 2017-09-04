@@ -80,7 +80,6 @@ public class QuotesActivity extends AppCompatActivity
 
     private LineDataSetStyler mLineDataStyler = new LineDataSetStyler();
 
-    private boolean mUseWatchlist;
     private String mSymbol;
     private TextView mDateText;
     private TextView mTimeText;
@@ -228,12 +227,13 @@ public class QuotesActivity extends AppCompatActivity
     {
         int selection;
         List<Stock> stocks;
+        boolean useWatchlist;
         if (inState == null)
         {
             Intent intent = getIntent();
             selection = intent.getIntExtra("WATCHLIST_ITEM", -1);
-            mUseWatchlist = selection != -1;
-            if (mUseWatchlist)
+            useWatchlist = selection != -1;
+            if (useWatchlist)
                 stocks = ApplicationContext.getWatchList();
             else
             {
@@ -244,13 +244,9 @@ public class QuotesActivity extends AppCompatActivity
         else
         {
             selection = inState.getInt("SELECTED_STOCK");
-            mUseWatchlist = inState.getBoolean("USE_WATCHLIST", false);
+            useWatchlist = inState.getBoolean("USE_WATCHLIST", false);
             mIntervalTabLayout.getTabAt(inState.getInt("SELECTED_INTERVAL")).select();
-
-            if (mUseWatchlist)
-                stocks = ApplicationContext.getWatchList();
-            else
-                stocks = Stock.loadFrom(inState);
+            stocks = Stock.loadFrom(inState);
         }
 
         for (Stock stock : stocks)
@@ -265,15 +261,11 @@ public class QuotesActivity extends AppCompatActivity
         Stock.saveTo(outState, mExtraStocks);
         outState.putInt("SELECTED_STOCK",  mStockTabLayout.getSelectedTabPosition());
         outState.putInt("SELECTED_INTERVAL", mIntervalTabLayout.getSelectedTabPosition());
-        outState.putBoolean("USE_WATCHLIST", mUseWatchlist);
-        if (!mUseWatchlist)
-        {
-            List<Stock> stocks = new ArrayList<Stock>();
-            for (int i =0; i < mStockTabLayout.getTabCount(); ++i)
-                stocks.add((Stock)mStockTabLayout.getTabAt(i).getTag());
+        List<Stock> stocks = new ArrayList<Stock>();
+        for (int i =0; i < mStockTabLayout.getTabCount(); ++i)
+            stocks.add((Stock)mStockTabLayout.getTabAt(i).getTag());
 
-            Stock.saveTo(outState, stocks);
-        }
+        Stock.saveTo(outState, stocks);
     }
 
     @Override
