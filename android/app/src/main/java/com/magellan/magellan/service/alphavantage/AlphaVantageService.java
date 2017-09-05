@@ -35,8 +35,8 @@ import java.util.List;
 
 public class AlphaVantageService implements IQuoteService {
 
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(ApplicationContext.TRADING_TIME_ZONE);
-    private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(ApplicationContext.getTradingTimeZone());
+    private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(ApplicationContext.getTradingTimeZone());
     public List<Quote> execute(QuoteQuery query) {
 
         String function;
@@ -113,14 +113,14 @@ public class AlphaVantageService implements IQuoteService {
                     BufferedReader bReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"), 67108864);
 
                     String line = null;
-                    DateTime queryStart = query.getStart();
+                    DateTime queryStart = query.start;
                     bReader.readLine(); // skip header
                     ret = new ArrayList<Quote>();
 
                     DateTime lastDate = null;
                     while ((line = bReader.readLine()) != null) {
                         String [] parts = line.split(",");
-                        DateTime date = DateTime.parse(parts[0], formatter);
+                        DateTime date = formatter.parseDateTime(parts[0]);
                         if (date.isBefore(queryStart) && !date.isEqual(queryStart))
                             break;
 

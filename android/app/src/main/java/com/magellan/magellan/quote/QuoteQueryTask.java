@@ -23,7 +23,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
     private IQuoteService mQuoteService;
     private File mCacheDir;
 
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd_HH:mm").withZone(ApplicationContext.TRADING_TIME_ZONE);
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd_HH:mm").withZone(ApplicationContext.getTradingTimeZone());
     public QuoteQueryTask(Context context, IQuoteService quoteService, IQuoteQueryListener listener)
     {
         super();
@@ -39,7 +39,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
         mQueries = new ArrayList<QuoteQuery>();
         for (int i = 0; i < count; i++) {
             QuoteQuery query = queries[i];
-            File endpointDir = new File(mCacheDir, dateTimeFormatter.print(query.getEnd()));
+            File endpointDir = new File(mCacheDir, dateTimeFormatter.print(query.end));
             if (!endpointDir.exists())
                 endpointDir.mkdir();
 

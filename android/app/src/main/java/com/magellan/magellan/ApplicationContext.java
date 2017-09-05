@@ -43,8 +43,8 @@ public class ApplicationContext {
     {
         return mQuoteService;
     }
-    public static DateTimeZone TRADING_TIME_ZONE = DateTimeZone.forTimeZone(TimeZone.getTimeZone("EST"));
-    public static final GregorianChronology GREGORIAN_CHRONO = GregorianChronology.getInstance(TRADING_TIME_ZONE);
+    public static DateTimeZone getTradingTimeZone() { return DateTimeZone.forID("America/New_York"); }
+    public static final GregorianChronology getChronology() {return  GregorianChronology.getInstance(getTradingTimeZone());}
 
     public static enum StockMarketHolidays2017
     {
@@ -61,7 +61,7 @@ public class ApplicationContext {
         private final DateTime date;
         StockMarketHolidays2017(int month, int day)
         {
-            date = new DateTime(2017, month, day, 0, 0, 0, 0, GREGORIAN_CHRONO);
+            date = new DateTime(2017, month, day, 0, 0, 0, 0, getChronology());
         }
     }
 
@@ -80,7 +80,7 @@ public class ApplicationContext {
         public final DateTime date;
         StockMarketHolidays2018(int month, int day)
         {
-            date = new DateTime(2018, month, day, 0, 0, 0, 0, GREGORIAN_CHRONO);
+            date = new DateTime(2018, month, day, 0, 0, 0, 0, getChronology());
         }
     }
 
@@ -99,7 +99,7 @@ public class ApplicationContext {
         public final DateTime date;
         StockMarketHolidays2019(int month, int day)
         {
-            date = new DateTime(2019, month, day, 0, 0, 0, 0, GREGORIAN_CHRONO);
+            date = new DateTime(2019, month, day, 0, 0, 0, 0, getChronology());
         }
     }
 
@@ -139,7 +139,7 @@ public class ApplicationContext {
 
     public static DateTime getLastTradingDayCloseTime()
     {
-        DateTime ret = DateTime.now(TRADING_TIME_ZONE);
+        DateTime ret = DateTime.now(getChronology());
         boolean correctedForEndOfDay = false;
         boolean checkIfTradingDay = true;
         while (checkIfTradingDay)
@@ -223,6 +223,66 @@ public class ApplicationContext {
     public static DateTime getOpenTimeForCloseTime(DateTime closeTime)
     {
         return closeTime.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open*/
+    }
+
+    public static DateTime getCloseTimeOneTradingWeekFromClose(DateTime closeTime)
+    {
+        DateTime ret = closeTime.minusDays(1);
+        int tradingDaysPassed = 1;
+        while (tradingDaysPassed <  6)
+        {
+            boolean isTradingDay = true;
+            int endDay = ret.dayOfWeek().get();
+            if (endDay == 6)
+            {
+                ret = ret.minus(Duration.standardDays(1));
+                isTradingDay = false;
+            }
+            else if (endDay == 7)
+            {
+                ret = ret.minus(Duration.standardDays(2));
+                isTradingDay = false;
+            }
+            else
+            {
+                DateTime currentTradingDate = ret.withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
+
+                int year = ret.year().get();
+                if (year == 2017) {
+                    for (StockMarketHolidays2017 holiday : StockMarketHolidays2017.values()) {
+                        if (holiday.date.isEqual(currentTradingDate)) {
+                            ret = getDayEndOfClose(ret.minusDays(1));
+                            isTradingDay = false;
+                            break;
+                        }
+                    }
+                } else if (year == 2018) {
+                    for (StockMarketHolidays2018 holiday : StockMarketHolidays2018.values()) {
+                        if (holiday.date.isEqual(currentTradingDate)) {
+                            ret = getDayEndOfClose(ret.minusDays(1));
+                            isTradingDay = false;
+                            break;
+                        }
+                    }
+                } else if (year == 2019) {
+                    for (StockMarketHolidays2019 holiday : StockMarketHolidays2019.values()) {
+                        if (holiday.date.isEqual(currentTradingDate)) {
+                            ret = getDayEndOfClose(ret.minusDays(1));
+                            isTradingDay = false;
+                            break;
+                        }
+                    }
+                } else
+                    Log.e("Magellan", "ERROR: Holiday / Blacklist days not handed for year " + Integer.toString(year));
+            }
+
+            if (isTradingDay)
+            {
+                ret = ret.minusDays(1);
+                ++tradingDaysPassed;
+            }
+        }
+        return ret;
     }
 
     public static void init(Context context)

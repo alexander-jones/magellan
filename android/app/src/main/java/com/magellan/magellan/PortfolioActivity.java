@@ -205,8 +205,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             Quote initialQuote = quotes.get(0);
             Quote finalQuote = quotes.get(quotes.size() -1);
 
-            Duration missingStartDuration = new Duration(query.getStart(), initialQuote.time);
-            Duration missingEndDuration = new Duration(finalQuote.time, query.getEnd());
+            Duration missingStartDuration = new Duration(query.start, initialQuote.time);
+            Duration missingEndDuration = new Duration(finalQuote.time, query.end);
 
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());

@@ -35,43 +35,46 @@ public class QuoteQuery
     public String symbol;
     public Period period;
     public Interval interval;
+    public DateTime start;
+    public DateTime end;
 
     public QuoteQuery(String sym, Period p, Interval i)
     {
         symbol = sym;
         period = p;
         interval = i;
-    }
 
-    public DateTime getStart()
-    {
+        end = ApplicationContext.getLastTradingDayCloseTime();
         switch (period)
         {
             case OneDay:
-                return ApplicationContext.getOpenTimeForCloseTime(getEnd());
+                start = ApplicationContext.getOpenTimeForCloseTime(end);
+                return; // dont recompute open time
             case OneWeek:
-                return getEnd().minusWeeks(1);
+                start = end.minusWeeks(1); //ApplicationContext.getCloseTimeOneTradingWeekFromClose(end);
+                break;
             case OneMonth:
-                return getEnd().minusMonths(1);
+                start = end.minusMonths(1);
+                break;
             case ThreeMonths:
-                return getEnd().minusMonths(3);
+                start = end.minusMonths(3);
+                break;
             case OneYear:
-                return getEnd().minusYears(1);
+                start = end.minusYears(1);
+                break;
             case FiveYears:
-                return getEnd().minusYears(5);
+                start = end.minusYears(5);
+                break;
             case TenYears:
-                return getEnd().minusYears(10);
+                start = end.minusYears(10);
+                break;
             default:
                 Log.e("Magellan", "getStart(): period is corrupt");
-                return null;
         }
-    }
 
-    public DateTime getEnd()
-    {
-        return ApplicationContext.getLastTradingDayCloseTime();
+        if (interval.ordinal() < Interval.OneHour.ordinal()) // interval neatly spans from start to open.
+            start = ApplicationContext.getOpenTimeForCloseTime(start);
     }
-
 
     public Duration getIntervalAsDuration()
     {
