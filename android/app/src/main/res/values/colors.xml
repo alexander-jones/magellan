@@ -9,9 +9,11 @@
     <color name="colorSecondaryDark">#0e161a</color>
     <color name="colorSecondaryDarkAlpha">#990e161a</color>
     <color name="colorAccentPrimary">#4a81ff</color>
-    <color name="colorAccentPrimaryDark">#7f4a81ff</color>
+    <color name="colorAccentPrimaryDark">#3b67cc</color>
     <color name="colorAccentSecondary">#ff8d28</color>
-    <color name="colorAccentSecondaryDark">#7f4a81ff</color>
+    <color name="colorAccentSecondaryDark">#cc7120</color>
+    <color name="colorAccentTertiary">#d428ff</color>
+    <color name="colorAccentTertiaryDark">#aa20cc</color>
     <color name="colorTextPrimary">#1a2930</color>
     <color name="colorTextSecondary">#f7ce3e</color>
     <color name="colorPriceUp">#01cd98</color>

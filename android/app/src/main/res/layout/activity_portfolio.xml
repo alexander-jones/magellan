@@ -106,25 +106,103 @@
                             android:layout_height="wrap_content"
                             android:background="@color/colorSecondaryDark">
 
-                            <TextView
-                                android:id="@+id/portfolio_price"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_alignParentTop="true"
-                                android:layout_marginTop="@dimen/spacing_internal"
-                                android:gravity="center_horizontal"
-                                android:text="$0.00"
-                                android:textSize="@dimen/large_header_text_size"
-                                android:textColor="@color/colorTextSecondary"/>
-
                             <com.github.mikephil.charting.charts.CombinedChart
-                                android:id="@+id/portfolio_chart"
+                                android:id="@+id/index_chart"
                                 android:layout_width="match_parent"
                                 android:layout_height="300dp"
                                 android:layout_below="@+id/value"/>
 
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentTop="true"
+                                android:layout_alignParentLeft="true"
+                                android:layout_marginTop="@dimen/spacing_internal"
+                                android:layout_marginLeft="@dimen/spacing_external"
+                                android:background="@color/colorSecondaryDarkAlpha"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/index_one_name"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="S&amp;P 500"
+                                    android:textSize="@dimen/large_header_text_size"
+                                    android:textColor="@color/colorAccentPrimary"/>
+
+                                <TextView
+                                    android:id="@+id/index_one_price"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="$0.00"
+                                    android:textSize="@dimen/small_header_text_size"
+                                    android:textColor="@color/colorAccentPrimary"/>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentTop="true"
+                                android:layout_centerHorizontal="true"
+                                android:layout_marginTop="@dimen/spacing_internal"
+                                android:layout_marginRight="@dimen/spacing_external"
+                                android:background="@color/colorSecondaryDarkAlpha"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/index_two_name"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="Dow Jones"
+                                    android:textSize="@dimen/large_header_text_size"
+                                    android:textColor="@color/colorAccentSecondary"/>
+
+                                <TextView
+                                    android:id="@+id/index_two_price"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="$0.00"
+                                    android:textSize="@dimen/small_header_text_size"
+                                    android:textColor="@color/colorAccentSecondary"/>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentTop="true"
+                                android:layout_alignParentRight="true"
+                                android:layout_marginTop="@dimen/spacing_internal"
+                                android:layout_marginRight="@dimen/spacing_external"
+                                android:background="@color/colorSecondaryDarkAlpha"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/index_three_name"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="Nasdaq"
+                                    android:textSize="@dimen/large_header_text_size"
+                                    android:textColor="@color/colorAccentTertiary"/>
+
+                                <TextView
+                                    android:id="@+id/index_three_price"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="$0.00"
+                                    android:textSize="@dimen/small_header_text_size"
+                                    android:textColor="@color/colorAccentTertiary"/>
+                            </LinearLayout>
+
                             <ProgressBar
-                                android:id="@+id/progress"
+                                android:id="@+id/index_chart_progress"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_centerInParent="true"

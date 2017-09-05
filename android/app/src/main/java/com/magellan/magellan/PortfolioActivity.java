@@ -41,9 +41,11 @@ import com.magellan.magellan.quote.QuoteQueryTask;
 import com.magellan.magellan.stock.Stock;
 import com.magellan.magellan.stock.StockQueryActivity;
 
+import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +55,12 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
     public class LineDataSetStyler implements ILineDataSetStyler {
 
+        private int mLineColor;
+        public LineDataSetStyler(int color)
+        {
+            mLineColor = color;
+        }
+
         @Override
         public void onApply(LineDataSet lineSet) {
             lineSet.setDrawCircles(false);
@@ -61,17 +69,12 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             lineSet.setDrawIcons(false);
             lineSet.setHighlightEnabled(false);
             lineSet.disableDashedLine();
-            lineSet.setHighLightColor(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPrimary));
-            lineSet.setColor(ContextCompat.getColor(PortfolioActivity.this, R.color.colorAccentPrimary));
-            lineSet.setFillColor(ContextCompat.getColor(PortfolioActivity.this, R.color.colorAccentPrimary));
+            lineSet.setColor(mLineColor);
             lineSet.setLineWidth(1f);
-            lineSet.setFormLineWidth(1f);
-            lineSet.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
-            lineSet.setFormSize(15.f);
         }
     }
 
-    private LineDataSetStyler mLineDataStyler = new LineDataSetStyler();
+    private LineDataSetStyler mLineDataStyler;
 
     private int mWachListGeneration;
     private DrawerLayout mDrawerLayout;
@@ -79,23 +82,42 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private RecyclerView mWatchListContainer;
     private WatchlistStockAdapter mWatchListAdapter;
     private List<Stock> mWatchListItems = new ArrayList<Stock>();
-    private List<ChartContext> mWatchListChartContexts = new ArrayList<ChartContext>();
-    private HashMap<QuoteQuery, Stock> queriesInFlight = new HashMap<QuoteQuery, Stock>();
+    private List<WatchListStockContext> mWatchListWatchListStockContexts = new ArrayList<WatchListStockContext>();
+    private HashMap<QuoteQuery, Stock> stockQueriesInFlight = new HashMap<QuoteQuery, Stock>();
+    private HashMap<QuoteQuery, Stock> indexQueriesInFlight = new HashMap<QuoteQuery, Stock>();
 
-    private TextView mPortfolioChartPrice;
-    private CombinedChart mPortfolioChart;
-    private ChartContext mPortfolioChartContext;
-    private class ChartContext
+    private CombinedChart mIndexChart;
+    private List<Stock> mIndexes = new ArrayList<Stock>();
+    private List<IndexContext> mIndexContexts = new ArrayList<IndexContext>();
+    private CombinedData mIndexData = new CombinedData();
+    
+    private class WatchListStockContext
     {
-        public ChartContext(List<Quote> qs)
+        public WatchListStockContext()
         {
             layer = new PriceLineLayer(mLineDataStyler);
             data = new CombinedData();
-            quotes = qs;
+            quotes = null;
         }
         PriceLineLayer layer;
         CombinedData data;
         List<Quote> quotes;
+    }
+
+    private class IndexContext
+    {
+        public IndexContext(TextView priceTextView, int color)
+        {
+            price = priceTextView;
+            layer = new PriceLineLayer(new LineDataSetStyler(color));
+            original_quotes = null;
+            normalized_quotes = null;
+        }
+
+        PriceLineLayer layer;
+        TextView price;
+        List<Quote> original_quotes;
+        List<Quote> normalized_quotes;
     }
 
     @Override
@@ -117,14 +139,28 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mPortfolioChart = (CombinedChart)findViewById(R.id.portfolio_chart);
-        mPortfolioChartPrice = (TextView)findViewById(R.id.portfolio_price);
-        mPortfolioChartContext = new ChartContext(new ArrayList<Quote>());
-        ApplicationContext.initializeSimpleChart(mPortfolioChart);
+        TextView [] indexNameViews = {(TextView)findViewById(R.id.index_one_name), (TextView)findViewById(R.id.index_two_name), (TextView)findViewById(R.id.index_three_name)};
+        TextView [] indexPriceViews = {(TextView)findViewById(R.id.index_one_price), (TextView)findViewById(R.id.index_two_price), (TextView)findViewById(R.id.index_three_price)};
+        int [] indexColors = {ContextCompat.getColor(this, R.color.colorAccentPrimary), ContextCompat.getColor(this, R.color.colorAccentSecondary), ContextCompat.getColor(this, R.color.colorAccentTertiary)};
+        mIndexChart = (CombinedChart)findViewById(R.id.index_chart);
+        mIndexes =  Arrays.asList(new Stock("SPX", "S&P 500", "N/A", "Index"), new Stock("DJIA", "Dow Jones", "N/A", "Index"), new Stock("IXIC", "NASDAQ", "N/A", "Index"));
+        for (int i =0; i < mIndexes.size(); ++i)
+        {
+            Stock index = mIndexes.get(i);
+            indexNameViews[i].setText(index.getCompany());
+            mIndexContexts.add(new IndexContext(indexPriceViews[i], indexColors[i]));
+            QuoteQuery query = new QuoteQuery(index.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
+            indexQueriesInFlight.put(query, index);
+            QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
+            task.execute(query);
+        }
 
+        ApplicationContext.initializeSimpleChart(mIndexChart);
+
+        mLineDataStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPrimary));
         mWatchListItems.addAll(ApplicationContext.getWatchList());
         for (int i =0; i < mWatchListItems.size(); ++i)
-            mWatchListChartContexts.add(new ChartContext(null));
+            mWatchListWatchListStockContexts.add(new WatchListStockContext());
 
         mWachListGeneration = ApplicationContext.getWatchListGeneration();
         mWatchListContainer = (RecyclerView)findViewById(R.id.watchlist_container);
@@ -144,7 +180,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     }
                     dragTo = toPos;
                     Collections.swap(mWatchListItems, fromPos, toPos);
-                    Collections.swap(mWatchListChartContexts, fromPos, toPos);
+                    Collections.swap(mWatchListWatchListStockContexts, fromPos, toPos);
                     mWatchListAdapter.notifyItemMoved(fromPos, toPos);
                     return true;
                 }
@@ -152,15 +188,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     int position = viewHolder.getAdapterPosition();
                     ApplicationContext.removeFromWatchList(position);
                     mWatchListItems.remove(position);
-                    mWatchListChartContexts.remove(position);
+                    mWatchListWatchListStockContexts.remove(position);
                     mWatchListAdapter.notifyItemRemoved(position);
-
-                    mPortfolioChartContext.quotes.clear();
-                    for (ChartContext ctx : mWatchListChartContexts)
-                    {
-                        if (ctx.quotes != null)
-                            addToPortfolioChart(ctx.quotes);
-                    }
                 }
 
                 @Override
@@ -193,14 +222,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
             QuoteQuery query = queries.get(i);
             Duration intervalDuration = query.getIntervalAsDuration();
-            Stock stock = queriesInFlight.remove(query);
-            int position = mWatchListItems.indexOf(stock);
-            ChartContext chartCtx = mWatchListChartContexts.get(position);
-            WatchlistStockAdapter.ViewHolder vh = (WatchlistStockAdapter.ViewHolder)mWatchListContainer.findViewHolderForAdapterPosition(position);
-
-            chartCtx.quotes = quotes;
-            if (chartCtx.data.getLineData() != null)
-                chartCtx.data.getLineData().clearValues();
 
             Quote initialQuote = quotes.get(0);
             Quote finalQuote = quotes.get(quotes.size() -1);
@@ -211,7 +232,61 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
 
-            chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.data);
+            Stock stock = indexQueriesInFlight.remove(query);
+            if (stock == null)
+            {
+                stock = stockQueriesInFlight.remove(query);
+                int position = mWatchListItems.indexOf(stock);
+                WatchListStockContext chartCtx = mWatchListWatchListStockContexts.get(position);
+                chartCtx.quotes = quotes;
+                if (chartCtx.data.getLineData() != null)
+                    chartCtx.data.getLineData().clearValues();
+                chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.data);
+
+                WatchlistStockAdapter.ViewHolder vh = (WatchlistStockAdapter.ViewHolder)mWatchListContainer.findViewHolderForAdapterPosition(position);
+                vh.value.setText(PriceMetric.valueToString(finalQuote.close));
+                if (finalQuote.close > initialQuote.open)
+                    vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceUp));
+                else
+                    vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceDown));
+                vh.chart.setData(chartCtx.data);
+                vh.chart.notifyDataSetChanged();
+                vh.chart.fitScreen();
+            }
+            else
+            {
+                int position = mIndexes.indexOf(stock);
+                IndexContext chartCtx = mIndexContexts.get(position);
+                float lowestPrice = Float.MAX_VALUE;
+                float highestPrice = -Float.MAX_VALUE;
+                for (Quote q : quotes)
+                {
+                    if (lowestPrice > q.low)
+                        lowestPrice = q.low;
+
+                    if (highestPrice < q.high)
+                        highestPrice = q.high;
+                }
+
+                float range = highestPrice - lowestPrice;
+                chartCtx.normalized_quotes = new ArrayList<Quote>(quotes.size());
+                chartCtx.original_quotes = quotes;
+                for (Quote q : quotes)
+                {
+                    float open = (q.open - lowestPrice) / range;
+                    float close = (q.open - lowestPrice) / range;
+                    float low = (q.open - lowestPrice) / range;
+                    float high = (q.open - lowestPrice) / range;
+                    chartCtx.normalized_quotes.add(new Quote(q.time, open, close, low, high, q.volume));
+                }
+
+                chartCtx.price.setText(PriceMetric.valueToString(finalQuote.close));
+                chartCtx.layer.onDrawQuotes(chartCtx.normalized_quotes, missingStartSteps, missingEndSteps, mIndexData);
+
+                mIndexChart.setData(mIndexData);
+                mIndexChart.notifyDataSetChanged();
+                mIndexChart.fitScreen();
+            }
 
             // enable for center line
              /*float startingOpen = initialQuote.open;
@@ -232,16 +307,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             LineData data = chartCtx.data.getLineData();
             data.addDataSet(lineSet);*/
 
-            vh.value.setText(PriceMetric.valueToString(finalQuote.close));
-            if (finalQuote.close > initialQuote.open)
-                vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceUp));
-            else
-                vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceDown));
-            vh.chart.setData(chartCtx.data);
-            vh.chart.notifyDataSetChanged();
-            vh.chart.fitScreen();
-
-            addToPortfolioChart(quotes);
         }
     }
 
@@ -251,25 +316,20 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         int newWatchListGen = ApplicationContext.getWatchListGeneration();
         if (mWachListGeneration != newWatchListGen)
         {
-            boolean itemsRemoved = false;
             List<Stock> newWatchList = ApplicationContext.getWatchList();
             for (int i =0; i < mWatchListItems.size(); ++i) {
                 if (i >= newWatchList.size() || !mWatchListItems.get(i).equals(newWatchList.get(i)))
                 {
                     mWatchListItems.remove(i);
-                    mWatchListChartContexts.remove(i);
+                    mWatchListWatchListStockContexts.remove(i);
                     mWatchListAdapter.notifyItemRemoved(i);
-                    itemsRemoved = true;
                 }
             }
-
-            if (itemsRemoved)
-                mPortfolioChartContext.quotes.clear();
 
             for (int i = mWatchListItems.size(); i < newWatchList.size(); ++i) {
                 Stock stock = newWatchList.get(i);
                 mWatchListItems.add(stock);
-                mWatchListChartContexts.add(new ChartContext(null));
+                mWatchListWatchListStockContexts.add(new WatchListStockContext());
                 mWatchListAdapter.notifyItemRangeInserted(mWatchListItems.size() -1, 1);
                 lanchTaskForStock(stock);
             }
@@ -332,49 +392,9 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private void lanchTaskForStock(Stock stock)
     {
         QuoteQuery query = new QuoteQuery(stock.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
-        queriesInFlight.put(query, stock);
+        stockQueriesInFlight.put(query, stock);
 
         QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
         task.execute(query);
-    }
-
-    private void addToPortfolioChart(List<Quote> quotes)
-    {
-        LineData ld = mPortfolioChartContext.data.getLineData();
-        if (ld != null)
-            ld.clearValues();
-
-        if (mPortfolioChartContext.quotes.size() == 0)
-        {
-            for (Quote quote : quotes)
-            {
-                Quote mergedQuote = new Quote(quote.time, quote.open, quote.close, quote.low, quote.high, quote.volume);
-                mPortfolioChartContext.quotes.add(mergedQuote);
-            }
-        }
-        else
-        {
-            int i;
-            for (i = 0;  i < quotes.size() && i < mPortfolioChartContext.quotes.size(); ++i)
-            {
-                Quote incomingQuote = quotes.get(i);
-                Quote mergedQuote = mPortfolioChartContext.quotes.get(i);
-                mergedQuote.open += incomingQuote.open;
-                mergedQuote.close += incomingQuote.close;
-                mergedQuote.high += incomingQuote.high;
-                mergedQuote.low += incomingQuote.low;
-                mergedQuote.volume += incomingQuote.volume;
-            }
-
-            while (i < mPortfolioChartContext.quotes.size())
-                mPortfolioChartContext.quotes.remove(i);
-        }
-
-        mPortfolioChartPrice.setText(PriceMetric.valueToString(mPortfolioChartContext.quotes.get(mPortfolioChartContext.quotes.size() -1).close));
-
-        mPortfolioChartContext.layer.onDrawQuotes(mPortfolioChartContext.quotes, 0, 0, mPortfolioChartContext.data); // TODO: fix missing start / missing end steps
-        mPortfolioChart.setData(mPortfolioChartContext.data);
-        mPortfolioChart.notifyDataSetChanged();
-        mPortfolioChart.fitScreen();
     }
 }

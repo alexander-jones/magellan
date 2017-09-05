@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.magellan.magellan.ApplicationContext;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -39,15 +40,11 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
         mQueries = new ArrayList<QuoteQuery>();
         for (int i = 0; i < count; i++) {
             QuoteQuery query = queries[i];
-            File endpointDir = new File(mCacheDir, dateTimeFormatter.print(query.end));
-            if (!endpointDir.exists())
-                endpointDir.mkdir();
+            File endOfPeriodCachedFile = getCacheFile(query.symbol, query.period, query.interval, query.end);
 
             List<Quote> quotes = null;
-            String queryCacheFilename = query.symbol + "_" + query.period.toString() + "_" + query.interval.toString();
-            File cachedFile = new File(endpointDir, queryCacheFilename);
-            if (cachedFile.exists())
-                quotes = Quote.loadFrom(cachedFile);
+            if (endOfPeriodCachedFile.exists())
+                quotes = Quote.loadFrom(endOfPeriodCachedFile);
 
             if (quotes == null)
             {
@@ -57,8 +54,20 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
                     mQueries.add(query);
                     mQuoteCollections.add(quotes);
                     try {
-                        cachedFile.createNewFile();
-                        Quote.saveTo(cachedFile, quotes);
+                        if (quotes != null && !quotes.isEmpty())
+                        {
+                            Quote lastQuote = quotes.get(quotes.size() -1);
+                            if (lastQuote.time.isEqual(query.end)) {
+                                endOfPeriodCachedFile.createNewFile();
+                                Quote.saveTo(endOfPeriodCachedFile, quotes);
+                            }
+                            /*else // For now don't cache intermediate results.
+                            {
+                                File intermediateFile = getCacheFile(query.symbol, query.period, query.interval, lastQuote.time);
+                                intermediateFile.createNewFile();
+                                Quote.saveTo(intermediateFile, quotes);
+                            }*/
+                        }
                     }
                     catch (IOException e)
                     {
@@ -77,6 +86,16 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
             if (isCancelled()) break;
         }
         return result;
+    }
+
+    private File getCacheFile(String symbol, QuoteQuery.Period period, QuoteQuery.Interval interval, DateTime dateTime)
+    {
+        File endpointDir = new File(mCacheDir, dateTimeFormatter.print(dateTime));
+        if (!endpointDir.exists())
+            endpointDir.mkdir();
+
+        String queryCacheFilename = symbol + "_" + period.toString() + "_" + interval.toString();
+        return new File(endpointDir, queryCacheFilename);
     }
 
     protected void onProgressUpdate(Integer... progress) {
