@@ -8,8 +8,9 @@
     <dimen name="button_height">30dp</dimen>
     <dimen name="button_width">60dp</dimen>
     <dimen name="button_height_plus_internal">40dp</dimen>
-    <dimen name="spacing_small">2dp</dimen>
-    <dimen name="spacing_internal">5dp</dimen>
+    <dimen name="spacing_small">3dp</dimen>
+    <dimen name="spacing_cleanup">-3dp</dimen>
+    <dimen name="spacing_internal">4dp</dimen>
     <dimen name="spacing_external">8dp</dimen>
     <dimen name="spacing_large">15dp</dimen>
     <dimen name="spacing_dialog">15dp</dimen>
