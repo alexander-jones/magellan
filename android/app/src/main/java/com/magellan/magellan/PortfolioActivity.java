@@ -74,7 +74,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         }
     }
 
-    private LineDataSetStyler mLineDataStyler;
+    private LineDataSetStyler mPriceUpLineStyler;
+    private LineDataSetStyler mPriceDownLineStyler;
 
     private int mWachListGeneration;
     private DrawerLayout mDrawerLayout;
@@ -95,7 +96,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     {
         public WatchListStockContext()
         {
-            layer = new PriceLineLayer(mLineDataStyler);
+            layer = new PriceLineLayer(mPriceUpLineStyler);
             data = new CombinedData();
             quotes = null;
         }
@@ -157,7 +158,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
         ApplicationContext.initializeSimpleChart(mIndexChart);
 
-        mLineDataStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPrimary));
+        mPriceUpLineStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPriceUp));
+        mPriceDownLineStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPriceDown));
         mWatchListItems.addAll(ApplicationContext.getWatchList());
         for (int i =0; i < mWatchListItems.size(); ++i)
             mWatchListWatchListStockContexts.add(new WatchListStockContext());
@@ -241,14 +243,40 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 chartCtx.quotes = quotes;
                 if (chartCtx.data.getLineData() != null)
                     chartCtx.data.getLineData().clearValues();
-                chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.data);
+
 
                 WatchlistStockAdapter.ViewHolder vh = (WatchlistStockAdapter.ViewHolder)mWatchListContainer.findViewHolderForAdapterPosition(position);
                 vh.value.setText(PriceMetric.valueToString(finalQuote.close));
-                if (finalQuote.close > initialQuote.open)
+                if (finalQuote.close > initialQuote.open) {
+                    chartCtx.layer.setStyler(mPriceUpLineStyler);
                     vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceUp));
-                else
+                }
+                else {
+                    chartCtx.layer.setStyler(mPriceDownLineStyler);
                     vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceDown));
+                }
+
+                chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.data);
+
+                // draw center line
+                 float startingOpen = initialQuote.open;
+                ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
+                missingPriceValues.add(new Entry(0, startingOpen, null));
+                missingPriceValues.add(new Entry(quotes.size(), startingOpen, null));
+
+                LineDataSet lineSet = new LineDataSet(missingPriceValues, "");
+                lineSet.setDrawIcons(false);
+                lineSet.setHighlightEnabled(false);
+                lineSet.enableDashedLine(10f, 10f, 0f);
+                lineSet.setColor(Color.WHITE);
+                lineSet.setFillColor(Color.WHITE);
+                lineSet.setLineWidth(1f);
+                lineSet.setDrawCircles(false);
+                lineSet.setDrawValues(false);
+
+                LineData data = chartCtx.data.getLineData();
+                data.addDataSet(lineSet);
+
                 vh.chart.setData(chartCtx.data);
                 vh.chart.notifyDataSetChanged();
                 vh.chart.fitScreen();
@@ -287,26 +315,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 mIndexChart.notifyDataSetChanged();
                 mIndexChart.fitScreen();
             }
-
-            // enable for center line
-             /*float startingOpen = initialQuote.open;
-            ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
-            missingPriceValues.add(new Entry(0, startingOpen, null));
-            missingPriceValues.add(new Entry(quotes.size(), startingOpen, null));
-
-            LineDataSet lineSet = new LineDataSet(missingPriceValues, "");
-            lineSet.setDrawIcons(false);
-            lineSet.setHighlightEnabled(false);
-            lineSet.enableDashedLine(10f, 10f, 0f);
-            lineSet.setColor(Color.WHITE);
-            lineSet.setFillColor(Color.WHITE);
-            lineSet.setLineWidth(1f);
-            lineSet.setDrawCircles(false);
-            lineSet.setDrawValues(false);
-
-            LineData data = chartCtx.data.getLineData();
-            data.addDataSet(lineSet);*/
-
         }
     }
 

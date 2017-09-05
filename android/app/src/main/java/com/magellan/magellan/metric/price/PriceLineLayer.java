@@ -38,6 +38,11 @@ public class PriceLineLayer implements IMetricLayer
         mStyler = styler;
     }
 
+    public void setStyler(ILineDataSetStyler styler)
+    {
+        mStyler = styler;
+    }
+
     public void onDrawQuotes(List<Quote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData) {
         Quote initialQuote = quotes.get(0);
         Quote finalQuote = quotes.get(quotes.size() - 1);
