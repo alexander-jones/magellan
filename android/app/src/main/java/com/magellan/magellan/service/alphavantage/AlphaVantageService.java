@@ -42,7 +42,7 @@ public class AlphaVantageService implements IQuoteService {
         String function;
         String interval = null;
         String output_size = null;
-        DateTimeFormatter formatter = dateFormatter;
+        DateTimeFormatter formatter = dateTimeFormatter;
 
         switch (query.interval)
         {
@@ -50,46 +50,44 @@ public class AlphaVantageService implements IQuoteService {
                 function = "TIME_SERIES_INTRADAY";
                 interval = "1min";
                 output_size = "full";
-                formatter = dateTimeFormatter;
                 break;
             case FiveMinutes:
                 function = "TIME_SERIES_INTRADAY";
                 interval = "5min";
                 if (query.period.ordinal() > QuoteQuery.Period.OneDay.ordinal())
                     output_size = "full";
-                formatter = dateTimeFormatter;
                 break;
             case FifteenMinutes:
                 function = "TIME_SERIES_INTRADAY";
                 interval = "15min";
                 if (query.period.ordinal() > QuoteQuery.Period.OneDay.ordinal())
                     output_size = "full";
-                formatter = dateTimeFormatter;
                 break;
             case ThirtyMinutes:
                 function = "TIME_SERIES_INTRADAY";
                 interval = "30min";
                 if (query.period.ordinal() > QuoteQuery.Period.OneWeek.ordinal())
                     output_size = "full";
-                formatter = dateTimeFormatter;
                 break;
             case OneHour:
                 function = "TIME_SERIES_INTRADAY";
                 interval = "60min";
                 if (query.period.ordinal() > QuoteQuery.Period.OneWeek.ordinal())
                     output_size = "full";
-                formatter = dateTimeFormatter;
                 break;
             case OneDay:
                 function = "TIME_SERIES_DAILY";
                 if (query.period.ordinal() > QuoteQuery.Period.ThreeMonths.ordinal())
                     output_size = "full";
+                formatter = dateFormatter;
                 break;
             case OneWeek:
                 function = "TIME_SERIES_WEEKLY";
+                formatter = dateFormatter;
                 break;
             case OneMonth:
                 function = "TIME_SERIES_MONTHLY";
+                formatter = dateFormatter;
                 break;
             default:
                 Log.e("Magellan", "getIntervalAsDuration(): intervalUnit is corrupt");
@@ -121,6 +119,9 @@ public class AlphaVantageService implements IQuoteService {
                     while ((line = bReader.readLine()) != null) {
                         String [] parts = line.split(",");
                         DateTime date = formatter.parseDateTime(parts[0]);
+                        if (formatter == dateFormatter)
+                            date = date.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
+
                         if (date.isBefore(queryStart) && !date.isEqual(queryStart))
                             break;
 
