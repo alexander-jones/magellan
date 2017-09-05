@@ -18,6 +18,7 @@ import com.magellan.magellan.stock.Stock;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
+import org.joda.time.chrono.GregorianChronology;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,69 +37,69 @@ public class ApplicationContext {
     private static int mWatchListGeneration = 0;
     private static List<Stock> mWatchList = null;
     private static SharedPreferences mSharedPreferences;
-    private static DateTime mStartOfTradingDay = null;
-    private static DateTime mEndOfTradingDay = null;
     private static IQuoteService mQuoteService = new AlphaVantageService();
 
     public static IQuoteService getQuoteService()
     {
         return mQuoteService;
     }
+    public static DateTimeZone TRADING_TIME_ZONE = DateTimeZone.forTimeZone(TimeZone.getTimeZone("EST"));
+    public static final GregorianChronology GREGORIAN_CHRONO = GregorianChronology.getInstance(TRADING_TIME_ZONE);
 
     public static enum StockMarketHolidays2017
     {
-        NewYearsDay(0, 2), // actually 0,1 but observed 0, 2
-        MartinLutherKingDay(0, 16),
-        WashingtonsBirthday(1, 20),
-        GoodFriday(3, 14),
-        MemorialDay(4, 29),
-        IndependenceDay(6,4),
-        LaborDay(8,4),
-        ThanskgivingDay(10, 23),
-        Christmas(11, 25);
+        NewYearsDay(1, 2), // actually 1,1 but observed 1, 2
+        MartinLutherKingDay(1, 16),
+        WashingtonsBirthday(2, 20),
+        GoodFriday(4, 14),
+        MemorialDay(5, 29),
+        IndependenceDay(7,4),
+        LaborDay(9,4),
+        ThanskgivingDay(11, 23),
+        Christmas(12, 25);
 
-        private final Date date;
+        private final DateTime date;
         StockMarketHolidays2017(int month, int day)
         {
-            date = new GregorianCalendar(2017, month, day).getTime();
+            date = new DateTime(2017, month, day, 0, 0, 0, 0, GREGORIAN_CHRONO);
         }
     }
 
     public static enum StockMarketHolidays2018
     {
-        NewYearsDay(0, 1),
-        MartinLutherKingDay(0, 15),
-        WashingtonsBirthday(1, 19),
-        GoodFriday(2, 30),
-        MemorialDay(4, 28),
-        IndependenceDay(6,4),
-        LaborDay(8,3),
-        ThanskgivingDay(10, 22),
-        Christmas(11, 25);
+        NewYearsDay(1, 1),
+        MartinLutherKingDay(1, 15),
+        WashingtonsBirthday(2, 19),
+        GoodFriday(3, 30),
+        MemorialDay(5, 28),
+        IndependenceDay(7,4),
+        LaborDay(9,3),
+        ThanskgivingDay(11, 22),
+        Christmas(12, 25);
 
-        public final Date date;
+        public final DateTime date;
         StockMarketHolidays2018(int month, int day)
         {
-            date = new GregorianCalendar(2018, month, day).getTime();
+            date = new DateTime(2018, month, day, 0, 0, 0, 0, GREGORIAN_CHRONO);
         }
     }
 
     public static enum StockMarketHolidays2019
     {
-        NewYearsDay(0, 1),
-        MartinLutherKingDay(0, 21),
-        WashingtonsBirthday(1, 18),
-        GoodFriday(3, 19),
-        MemorialDay(4, 27),
-        IndependenceDay(6,4),
-        LaborDay(8,2),
-        ThanskgivingDay(10, 28),
-        Christmas(11, 25);
+        NewYearsDay(1, 1),
+        MartinLutherKingDay(1, 21),
+        WashingtonsBirthday(2, 18),
+        GoodFriday(4, 19),
+        MemorialDay(5, 27),
+        IndependenceDay(7,4),
+        LaborDay(9,2),
+        ThanskgivingDay(11, 28),
+        Christmas(12, 25);
 
-        public final Date date;
+        public final DateTime date;
         StockMarketHolidays2019(int month, int day)
         {
-            date = new GregorianCalendar(2019, month, day).getTime();
+            date = new DateTime(2019, month, day, 0, 0, 0, 0, GREGORIAN_CHRONO);
         }
     }
 
@@ -136,30 +137,26 @@ public class ApplicationContext {
         rightAxis.setSpaceTop(0);
     }
 
-    public static DateTime getLastTradingCloseTimeBefore(DateTime dateTime)
+    public static DateTime getLastTradingDayCloseTime()
     {
-        DateTime dateTimeCopy = new DateTime(dateTime);
+        DateTime ret = DateTime.now(TRADING_TIME_ZONE);
+        boolean correctedForEndOfDay = false;
         boolean checkIfTradingDay = true;
         while (checkIfTradingDay)
         {
             checkIfTradingDay = false;
-            int year = dateTimeCopy.year().get();
 
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(dateTimeCopy.toDate());
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-            Date currentTradingDate = cal.getTime();
+            DateTime currentTradingDate = ret.withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
+
+            int year = ret.year().get();
             if (year == 2017)
             {
                 for (StockMarketHolidays2017 holiday : StockMarketHolidays2017.values())
                 {
-                    if (holiday.date.compareTo(currentTradingDate) == 0)
+                    if (holiday.date.isEqual(currentTradingDate))
                     {
-                        dateTimeCopy =  dateTimeCopy.minusDays(1);
-                        checkIfTradingDay = true;
+                        ret = getDayEndOfClose(ret.minusDays(1));
+                        checkIfTradingDay = correctedForEndOfDay = true;
                         break;
                     }
                 }
@@ -168,10 +165,10 @@ public class ApplicationContext {
             {
                 for (StockMarketHolidays2018 holiday : StockMarketHolidays2018.values())
                 {
-                    if (holiday.date.compareTo(currentTradingDate) == 0)
+                    if (holiday.date.isEqual(currentTradingDate))
                     {
-                        dateTimeCopy =  dateTimeCopy.minusDays(1);
-                        checkIfTradingDay = true;
+                        ret = getDayEndOfClose(ret.minusDays(1));
+                        checkIfTradingDay = correctedForEndOfDay = true;
                         break;
                     }
                 }
@@ -180,10 +177,10 @@ public class ApplicationContext {
             {
                 for (StockMarketHolidays2019 holiday : StockMarketHolidays2019.values())
                 {
-                    if (holiday.date.compareTo(currentTradingDate) == 0)
+                    if (holiday.date.isEqual(currentTradingDate))
                     {
-                        dateTimeCopy =  dateTimeCopy.minusDays(1);
-                        checkIfTradingDay = true;
+                        ret = getDayEndOfClose(ret.minusDays(1));
+                        checkIfTradingDay = correctedForEndOfDay =  true;
                         break;
                     }
                 }
@@ -191,18 +188,18 @@ public class ApplicationContext {
             else
                 Log.e("Magellan", "ERROR: Holiday / Blacklist days not handed for year " + Integer.toString(year));
 
-            int hourOfDay = dateTimeCopy.hourOfDay().get();
-            int minuteOfDay = dateTimeCopy.minuteOfDay().get();
+            int hourOfDay = ret.hourOfDay().get();
+            int minuteOfDay = ret.minuteOfDay().get();
 
-            int endDay = dateTimeCopy.dayOfWeek().get();
+            int endDay = ret.dayOfWeek().get();
             if (endDay == 6)
-                {
-                dateTimeCopy = dateTimeCopy.minus(Duration.standardDays(1));
+            {
+                ret = ret.minus(Duration.standardDays(1));
                 checkIfTradingDay = true;
             }
             else if (endDay == 7)
             {
-                dateTimeCopy = dateTimeCopy.minus(Duration.standardDays(2));
+                ret = ret.minus(Duration.standardDays(2));
                 checkIfTradingDay = true;
             }
             else if (hourOfDay < 9 || ( hourOfDay == 9  && minuteOfDay < 40)) // make sure we have at least 2 quotes (as line graphs will not work with one entry point)
@@ -210,21 +207,17 @@ public class ApplicationContext {
                 checkIfTradingDay = true;
 
                 if (endDay == 1)
-                    dateTimeCopy = dateTimeCopy.minus(Duration.standardDays(3));
+                    ret = ret.minus(Duration.standardDays(3));
                 else
-                    dateTimeCopy = dateTimeCopy.minus(Duration.standardDays(1));
+                    ret = ret.minus(Duration.standardDays(1));
             }
+
+            if (!correctedForEndOfDay)
+                ret = ret.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0); // 4:00 pm is NYSE close
+
         }
 
-        dateTimeCopy = dateTimeCopy.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0); // 4:00 pm is NYSE close
-
-        return dateTimeCopy;
-    }
-
-    public static DateTime getLastTradingDayCloseTime()
-    {
-        return getLastTradingCloseTimeBefore(DateTime.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone("EST"))));
-
+        return ret;
     }
 
     public static DateTime getOpenTimeForCloseTime(DateTime closeTime)
@@ -325,4 +318,10 @@ public class ApplicationContext {
         Stock.saveTo(sp, mWatchList);
         sp.commit();
     }
+
+    private static DateTime getDayEndOfClose(DateTime time)
+    {
+        return time.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
+    }
+
 }

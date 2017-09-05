@@ -139,14 +139,14 @@
                     android:layout_marginRight="@dimen/spacing_external"
                     android:layout_marginBottom="@dimen/spacing_external"
                     android:layout_alignParentBottom="true"
+                    android:background="@drawable/rounded_background_dark"
                     app:tabMaxWidth="0dp"
                     app:tabGravity="fill"
                     app:tabMode="fixed"
                     app:tabIndicatorColor="@color/colorPrimary"
                     app:tabSelectedTextColor="@color/colorPrimary"
                     app:tabTextColor="@color/colorPrimaryDark"
-                    android:background="@color/colorSecondaryDark"
-                    android:elevation="2dp">
+                    app:elevation="@dimen/elevation">
 
                     <android.support.design.widget.TabItem
                         android:layout_height="wrap_content"

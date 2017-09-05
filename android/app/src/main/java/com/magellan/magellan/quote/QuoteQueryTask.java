@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.magellan.magellan.ApplicationContext;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -21,7 +23,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
     private IQuoteService mQuoteService;
     private File mCacheDir;
 
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd_HH:mm").withZone(DateTimeZone.forID("America/New_York"));
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd_HH:mm").withZone(ApplicationContext.TRADING_TIME_ZONE);
     public QuoteQueryTask(Context context, IQuoteService quoteService, IQuoteQueryListener listener)
     {
         super();

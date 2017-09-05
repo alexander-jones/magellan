@@ -16,4 +16,5 @@
     <color name="colorTextSecondary">#f7ce3e</color>
     <color name="colorPriceUp">#01cd98</color>
     <color name="colorPriceDown">#ff3b3f</color>
+    <color name="colorHighlight">#22ffffff</color>
 </resources>

@@ -11,6 +11,7 @@
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="actionMenuTextColor">@color/colorSecondary</item>
         <item name="colorControlActivated">@color/colorPrimary</item>
+        <item name="selectableItemBackground">@drawable/ripple_custom</item>
     </style>
 
     <style name="AppTheme.Overlay" parent="Theme.AppCompat.Light.NoActionBar">

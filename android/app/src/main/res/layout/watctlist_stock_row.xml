@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorSecondaryDark"
+    android:background="@drawable/rounded_background_dark"
+    android:foreground="?attr/selectableItemBackground"
     android:focusable="true"
-    android:clickable="true">
+    android:clickable="true"
+    android:elevation="@dimen/elevation"
+    android:outlineProvider="bounds">
 
     <TextView
         android:id="@+id/symbol"
@@ -16,7 +18,8 @@
         android:layout_centerVertical="true"
         android:text="QQQQ"
         android:textSize="@dimen/large_header_text_size"
-        android:textColor="@color/colorPrimary"/>
+        android:textColor="@color/colorPrimary"
+        android:clickable="false"/>
 
     <com.github.mikephil.charting.charts.CombinedChart
         android:id="@+id/chart"
@@ -27,7 +30,8 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="@dimen/spacing_large"/>
+        android:layout_margin="@dimen/spacing_large"
+        android:clickable="false"/>
 
     <TextView
         android:id="@+id/value"
@@ -40,6 +44,7 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:textSize="@dimen/large_header_text_size"
-        android:textColor="@color/colorPriceUp"/>
+        android:textColor="@color/colorPriceUp"
+        android:clickable="false"/>
 
 </RelativeLayout>

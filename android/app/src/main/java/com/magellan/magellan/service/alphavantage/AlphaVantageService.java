@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.barchart.ondemand.BarchartOnDemandClient;
 import com.barchart.ondemand.api.HistoryRequest;
+import com.magellan.magellan.ApplicationContext;
 import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
@@ -34,7 +35,7 @@ import java.util.List;
 
 public class AlphaVantageService implements IQuoteService {
 
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forID("America/New_York"));
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(ApplicationContext.TRADING_TIME_ZONE);
     private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
     public List<Quote> execute(QuoteQuery query) {
 

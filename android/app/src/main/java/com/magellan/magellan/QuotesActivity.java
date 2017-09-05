@@ -151,7 +151,7 @@ public class QuotesActivity extends AppCompatActivity
         initializeChart(mPriceChart);
         YAxis priceAxisRight = mPriceChart.getAxisRight();
         priceAxisRight.setValueFormatter(new PriceMetric.AxisValueFormatter());
-        mPriceChart.setViewPortOffsets(0, internal_spacing, (priceAxisRight.getTextSize() * 4) + internal_spacing, internal_spacing);
+        mPriceChart.setViewPortOffsets(internal_spacing, internal_spacing, (priceAxisRight.getTextSize() * 4) + internal_spacing, internal_spacing);
 
         mPriceLayers.add(new PriceCandleLayer(this));
         mPriceLayers.add(new PriceLineLayer(mLineDataStyler));
@@ -175,7 +175,7 @@ public class QuotesActivity extends AppCompatActivity
         initializeChart(mVolumeChart);
         YAxis volAxisRight = mVolumeChart.getAxisRight();
         volAxisRight.setValueFormatter(new VolumeMetric.AxisValueFormatter(2));
-        mVolumeChart.setViewPortOffsets(0, internal_spacing,(volAxisRight.getTextSize() * 4) + internal_spacing, internal_spacing);
+        mVolumeChart.setViewPortOffsets(internal_spacing, internal_spacing,(volAxisRight.getTextSize() * 4) + internal_spacing, internal_spacing);
 
         mVolumeLayers.add(new VolumeBarLayer(this));
 
