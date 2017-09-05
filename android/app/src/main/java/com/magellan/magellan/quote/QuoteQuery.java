@@ -72,6 +72,8 @@ public class QuoteQuery
                 Log.e("Magellan", "getStart(): period is corrupt");
         }
 
+        start = ApplicationContext.getLastTradingDayFromTime(start);
+
         if (interval.ordinal() < Interval.OneHour.ordinal()) // interval neatly spans from start to open.
             start = ApplicationContext.getOpenTimeForCloseTime(start);
     }

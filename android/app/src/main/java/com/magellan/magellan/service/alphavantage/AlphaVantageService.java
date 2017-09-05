@@ -122,7 +122,7 @@ public class AlphaVantageService implements IQuoteService {
                         if (formatter == dateFormatter)
                             date = date.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
 
-                        if (date.isBefore(queryStart) && !date.isEqual(queryStart))
+                        if (date.isBefore(queryStart))
                             break;
 
                         float open = Float.parseFloat(parts[1]);

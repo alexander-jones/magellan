@@ -225,13 +225,13 @@ public class ApplicationContext {
         return closeTime.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open*/
     }
 
-    public static DateTime getCloseTimeOneTradingWeekFromClose(DateTime closeTime)
+    public static DateTime getLastTradingDayFromTime(DateTime inTime)
     {
-        DateTime ret = closeTime.minusDays(1);
-        int tradingDaysPassed = 1;
-        while (tradingDaysPassed <  6)
+        DateTime ret = inTime.minusDays(1);
+        boolean isTradingDay = false;
+        while (!isTradingDay)
         {
-            boolean isTradingDay = true;
+            isTradingDay = true;
             int endDay = ret.dayOfWeek().get();
             if (endDay == 6)
             {
@@ -276,11 +276,8 @@ public class ApplicationContext {
                     Log.e("Magellan", "ERROR: Holiday / Blacklist days not handed for year " + Integer.toString(year));
             }
 
-            if (isTradingDay)
-            {
+            if (!isTradingDay)
                 ret = ret.minusDays(1);
-                ++tradingDaysPassed;
-            }
         }
         return ret;
     }
