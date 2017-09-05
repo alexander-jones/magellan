@@ -7,18 +7,18 @@
     android:focusable="true"
     android:clickable="true"
     android:elevation="@dimen/elevation"
+    android:padding="@dimen/spacing_large"
     android:outlineProvider="bounds">
 
     <TextView
         android:id="@+id/symbol"
         android:layout_width="75dp"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_large"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         android:text="QQQQ"
         android:textSize="@dimen/small_header_text_size"
-        android:textColor="@android:color/white"
+        android:textColor="@color/colorPrimary"
         android:clickable="false"/>
 
     <com.github.mikephil.charting.charts.CombinedChart
@@ -27,23 +27,22 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/symbol"
         android:layout_toLeftOf="@+id/value"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="@dimen/spacing_large"
+        android:layout_marginLeft="@dimen/spacing_large"
+        android:layout_marginRight="@dimen/spacing_large"
         android:clickable="false"/>
 
     <TextView
         android:id="@+id/value"
         android:layout_width="75dp"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_large"
         android:layout_gravity="end"
         android:gravity="end"
         android:text="$1.24"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:textSize="@dimen/large_header_text_size"
+        android:textSize="@dimen/small_header_text_size"
         android:textColor="@color/colorPriceUp"
         android:clickable="false"/>
 

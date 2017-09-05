@@ -234,6 +234,17 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
 
+            float lowestPrice = Float.MAX_VALUE;
+            float highestPrice = -Float.MAX_VALUE;
+            for (Quote q : quotes)
+            {
+                if (lowestPrice > q.low)
+                    lowestPrice = q.low;
+
+                if (highestPrice < q.high)
+                    highestPrice = q.high;
+            }
+
             Stock stock = indexQueriesInFlight.remove(query);
             if (stock == null)
             {
@@ -243,7 +254,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 chartCtx.quotes = quotes;
                 if (chartCtx.data.getLineData() != null)
                     chartCtx.data.getLineData().clearValues();
-
 
                 WatchlistStockAdapter.ViewHolder vh = (WatchlistStockAdapter.ViewHolder)mWatchListContainer.findViewHolderForAdapterPosition(position);
                 vh.value.setText(PriceMetric.valueToString(finalQuote.close));
@@ -259,7 +269,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.data);
 
                 // draw center line
-                 float startingOpen = initialQuote.open;
+                float startingOpen = initialQuote.open;
                 ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
                 missingPriceValues.add(new Entry(0, startingOpen, null));
                 missingPriceValues.add(new Entry(quotes.size(), startingOpen, null));
@@ -268,8 +278,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 lineSet.setDrawIcons(false);
                 lineSet.setHighlightEnabled(false);
                 lineSet.enableDashedLine(10f, 10f, 0f);
-                lineSet.setColor(Color.WHITE);
-                lineSet.setFillColor(Color.WHITE);
+                lineSet.setColor(ContextCompat.getColor(this, R.color.colorPrimary));
+                lineSet.setFillColor(ContextCompat.getColor(this, R.color.colorPrimary));
                 lineSet.setLineWidth(1f);
                 lineSet.setDrawCircles(false);
                 lineSet.setDrawValues(false);
@@ -277,6 +287,10 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 LineData data = chartCtx.data.getLineData();
                 data.addDataSet(lineSet);
 
+                float fromCenterToExtent = Math.max(highestPrice - startingOpen, startingOpen - lowestPrice);
+
+                vh.chart.getAxisLeft().setAxisMaximum(startingOpen + fromCenterToExtent);
+                vh.chart.getAxisLeft().setAxisMinimum(startingOpen - fromCenterToExtent);
                 vh.chart.setData(chartCtx.data);
                 vh.chart.notifyDataSetChanged();
                 vh.chart.fitScreen();
@@ -285,16 +299,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             {
                 int position = mIndexes.indexOf(stock);
                 IndexContext chartCtx = mIndexContexts.get(position);
-                float lowestPrice = Float.MAX_VALUE;
-                float highestPrice = -Float.MAX_VALUE;
-                for (Quote q : quotes)
-                {
-                    if (lowestPrice > q.low)
-                        lowestPrice = q.low;
-
-                    if (highestPrice < q.high)
-                        highestPrice = q.high;
-                }
 
                 float range = highestPrice - lowestPrice;
                 chartCtx.normalized_quotes = new ArrayList<Quote>(quotes.size());
