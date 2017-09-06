@@ -37,7 +37,7 @@ public class WatchlistStockAdapter extends RecyclerView.Adapter<WatchlistStockAd
             chart = (CombinedChart)v.findViewById(R.id.chart);
             rootView = v;
             v.setOnClickListener(listener);
-            ApplicationContext.initializeSimpleChart(chart);
+            ApplicationContext.initializeSimpleChart(v.getContext(), chart);
         }
 
     }

@@ -14,13 +14,19 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.CombinedChart;
@@ -31,6 +37,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.magellan.magellan.WatchlistStockAdapter;
 import com.magellan.magellan.metric.ILineDataSetStyler;
+import com.magellan.magellan.metric.MetricLayerButtonAdapter;
 import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.metric.volume.VolumeMetric;
@@ -91,17 +98,23 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private List<Stock> mIndexes = new ArrayList<Stock>();
     private List<IndexContext> mIndexContexts = new ArrayList<IndexContext>();
     private CombinedData mIndexData = new CombinedData();
-    
+    private LinearLayout.LayoutParams mIndexPriceLayoutParams;
+    private LinearLayout mIndexPriceContainer;
+    private RecyclerView mIndexItemButtonContainer;
+    private MetricLayerButtonAdapter mIndexItemButtonAdapter;
+    private List<String> mIndexItemLabels = new ArrayList<String>();
+    private List<Integer> mIndexColors = new ArrayList<Integer>();
+
     private class WatchListStockContext
     {
         public WatchListStockContext()
         {
             layer = new PriceLineLayer(mPriceUpLineStyler);
-            data = new CombinedData();
+            allData = new CombinedData();
             quotes = null;
         }
         PriceLineLayer layer;
-        CombinedData data;
+        CombinedData allData;
         List<Quote> quotes;
     }
 
@@ -115,8 +128,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             normalized_quotes = null;
         }
 
-        PriceLineLayer layer;
         TextView price;
+        PriceLineLayer layer;
         List<Quote> original_quotes;
         List<Quote> normalized_quotes;
     }
@@ -140,23 +153,36 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        TextView [] indexNameViews = {(TextView)findViewById(R.id.index_one_name), (TextView)findViewById(R.id.index_two_name), (TextView)findViewById(R.id.index_three_name)};
-        TextView [] indexPriceViews = {(TextView)findViewById(R.id.index_one_price), (TextView)findViewById(R.id.index_two_price), (TextView)findViewById(R.id.index_three_price)};
-        int [] indexColors = {ContextCompat.getColor(this, R.color.colorAccentPrimary), ContextCompat.getColor(this, R.color.colorAccentSecondary), ContextCompat.getColor(this, R.color.colorAccentTertiary)};
-        mIndexChart = (CombinedChart)findViewById(R.id.index_chart);
+        mIndexPriceLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        mIndexPriceLayoutParams.setMargins(0, (int)getResources().getDimension(R.dimen.spacing_internal), (int)getResources().getDimension(R.dimen.spacing_external),0);
+
         mIndexes =  Arrays.asList(new Stock("SPX", "S&P 500", "N/A", "Index"), new Stock("DJIA", "Dow Jones", "N/A", "Index"), new Stock("IXIC", "NASDAQ", "N/A", "Index"));
+        int [] indexColors = {ContextCompat.getColor(this, R.color.colorAccentPrimary), ContextCompat.getColor(this, R.color.colorAccentSecondary), ContextCompat.getColor(this, R.color.colorAccentTertiary)};
+        for (int i =0; i < mIndexes.size(); ++i)
+        {
+            mIndexItemLabels.add(mIndexes.get(i).getCompany());
+            mIndexColors.add(indexColors[i]);
+        }
+
+        mIndexPriceContainer = (LinearLayout) findViewById(R.id.price_container);
+        mIndexItemButtonContainer = (RecyclerView) findViewById(R.id.index_layers);
+        mIndexItemButtonAdapter = new MetricLayerButtonAdapter(mIndexItemLabels, mIndexColors);
+        mIndexItemButtonContainer.setAdapter(mIndexItemButtonAdapter);
+
+        mIndexChart = (CombinedChart)findViewById(R.id.index_chart);
         for (int i =0; i < mIndexes.size(); ++i)
         {
             Stock index = mIndexes.get(i);
-            indexNameViews[i].setText(index.getCompany());
-            mIndexContexts.add(new IndexContext(indexPriceViews[i], indexColors[i]));
+            TextView textView = createPriceTextView(indexColors[i]);
+            mIndexPriceContainer.addView(textView, mIndexPriceLayoutParams);
+            mIndexContexts.add(new IndexContext(textView, indexColors[i]));
             QuoteQuery query = new QuoteQuery(index.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
             indexQueriesInFlight.put(query, index);
             QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
             task.execute(query);
         }
 
-        ApplicationContext.initializeSimpleChart(mIndexChart);
+        ApplicationContext.initializeSimpleChart(this, mIndexChart);
 
         mPriceUpLineStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPriceUp));
         mPriceDownLineStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPriceDown));
@@ -212,6 +238,14 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             lanchTaskForStock(stock);
     }
 
+    private TextView createPriceTextView(int color)
+    {
+        TextView ret = new TextView(this);
+        ret.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.small_header_text_size));
+        ret.setTextColor(color);
+        return ret;
+    }
+
     @Override
     public void onQuotesReceived(List<QuoteQuery> queries, List<List<Quote>> manyQuotes)
     {
@@ -252,8 +286,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 int position = mWatchListItems.indexOf(stock);
                 WatchListStockContext chartCtx = mWatchListWatchListStockContexts.get(position);
                 chartCtx.quotes = quotes;
-                if (chartCtx.data.getLineData() != null)
-                    chartCtx.data.getLineData().clearValues();
+                if (chartCtx.allData.getLineData() != null)
+                    chartCtx.allData.getLineData().clearValues();
 
                 WatchlistStockAdapter.ViewHolder vh = (WatchlistStockAdapter.ViewHolder)mWatchListContainer.findViewHolderForAdapterPosition(position);
                 vh.value.setText(PriceMetric.valueToString(finalQuote.close));
@@ -266,32 +300,38 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceDown));
                 }
 
-                chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.data);
-
                 // draw center line
                 float startingOpen = initialQuote.open;
-                ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
-                missingPriceValues.add(new Entry(0, startingOpen, null));
-                missingPriceValues.add(new Entry(quotes.size(), startingOpen, null));
+                ArrayList<Entry> centerLineValues = new ArrayList<Entry>();
+                centerLineValues.add(new Entry(0, startingOpen, null));
+                centerLineValues.add(new Entry(quotes.size(), startingOpen, null));
 
-                LineDataSet lineSet = new LineDataSet(missingPriceValues, "");
-                lineSet.setDrawIcons(false);
-                lineSet.setHighlightEnabled(false);
-                lineSet.enableDashedLine(10f, 10f, 0f);
-                lineSet.setColor(ContextCompat.getColor(this, R.color.colorPrimary));
-                lineSet.setFillColor(ContextCompat.getColor(this, R.color.colorPrimary));
-                lineSet.setLineWidth(1f);
-                lineSet.setDrawCircles(false);
-                lineSet.setDrawValues(false);
+                LineDataSet centerLineSet = new LineDataSet(centerLineValues, "");
+                centerLineSet.setDrawIcons(false);
+                centerLineSet.setHighlightEnabled(false);
+                centerLineSet.enableDashedLine(10f, 10f, 0f);
+                centerLineSet.setColor(ContextCompat.getColor(this, R.color.colorPrimary));
+                centerLineSet.setFillColor(ContextCompat.getColor(this, R.color.colorPrimary));
+                centerLineSet.setLineWidth(1f);
+                centerLineSet.setDrawCircles(false);
+                centerLineSet.setDrawValues(false);
 
-                LineData data = chartCtx.data.getLineData();
-                data.addDataSet(lineSet);
+                LineData data = chartCtx.allData.getLineData();
+                if (data == null){
+                    ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
+                    priceDataSets.add(centerLineSet);
+                    data = new LineData(priceDataSets);
+                }
+                else
+                    data.addDataSet(centerLineSet);
+                chartCtx.allData.setData(data);
+
+                chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.allData);
 
                 float fromCenterToExtent = Math.max(highestPrice - startingOpen, startingOpen - lowestPrice);
-
                 vh.chart.getAxisLeft().setAxisMaximum(startingOpen + fromCenterToExtent);
                 vh.chart.getAxisLeft().setAxisMinimum(startingOpen - fromCenterToExtent);
-                vh.chart.setData(chartCtx.data);
+                vh.chart.setData(chartCtx.allData);
                 vh.chart.notifyDataSetChanged();
                 vh.chart.fitScreen();
             }

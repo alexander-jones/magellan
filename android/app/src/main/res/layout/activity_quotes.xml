@@ -58,142 +58,135 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <RelativeLayout
-        android:id="@+id/content"
+    <LinearLayout
+        android:id="@+id/portfolio_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/colorPrimary"
+        android:orientation="vertical"
         app:layout_anchor="@id/app_bar"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
-            android:id="@+id/portfolio_layout"
+        <android.support.design.widget.TabLayout
+            android:id="@+id/stock_tabs"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="@dimen/spacing_external"
+            android:layout_marginRight="@dimen/spacing_external"
+            android:background="@color/colorPrimary"
+            app:tabMode="scrollable"
+            app:tabIndicatorColor="@color/colorSecondary"
+            app:tabSelectedTextColor="@color/colorSecondary"
+            app:tabTextColor="@color/colorSecondary"/>
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorPrimary"
-            android:orientation="vertical">
+            android:id="@+id/header_layout">
 
-            <android.support.design.widget.TabLayout
-                android:id="@+id/stock_tabs"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginLeft="@dimen/spacing_external"
-                android:layout_marginRight="@dimen/spacing_external"
-                android:background="@color/colorPrimary"
-                app:tabMode="scrollable"
-                app:tabIndicatorColor="@color/colorSecondary"
-                app:tabSelectedTextColor="@color/colorSecondary"
-                app:tabTextColor="@color/colorSecondary"/>
+            <View
+                android:id="@+id/header_background"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="@color/colorPrimary"/>
 
-            <RelativeLayout
+            <View
+                android:id="@+id/background"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_below="@+id/header_background"
+                android:layout_alignParentBottom="true"
+                android:background="@color/colorSecondary"/>
+
+
+            <LinearLayout
+                android:id="@+id/metric_cards"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/header_layout">
+                android:layout_marginTop="@dimen/spacing_cleanup"
+                android:layout_marginLeft="@dimen/spacing_internal"
+                android:layout_marginRight="@dimen/spacing_internal"
+                android:weightSum="9"
+                android:layout_above="@+id/interval_tabs_cardview"
+                android:orientation="vertical">
 
-                <View
-                    android:id="@+id/header_background"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:background="@color/colorPrimary"/>
-
-                <View
-                    android:id="@+id/background"
+                <include layout="@layout/metric_card"
+                    android:id="@+id/price_card"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_below="@+id/header_background"
-                    android:layout_alignParentBottom="true"
-                    android:background="@color/colorSecondary"/>
+                    android:layout_weight="6"/>
 
-
-                <LinearLayout
-                    android:id="@+id/metric_cards"
+                <include layout="@layout/metric_card"
+                    android:id="@+id/volume_card"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="@dimen/spacing_cleanup"
-                    android:layout_marginLeft="@dimen/spacing_internal"
-                    android:layout_marginRight="@dimen/spacing_internal"
-                    android:weightSum="9"
-                    android:layout_above="@+id/interval_tabs_cardview"
-                    android:orientation="vertical">
+                    android:layout_height="0dp"
+                    android:layout_weight="3"/>
+            </LinearLayout>
 
-                    <include layout="@layout/metric_card"
-                        android:id="@+id/price_card"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="6"/>
+            <android.support.v7.widget.CardView
+                android:id="@+id/interval_tabs_cardview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/spacing_internal"
+                android:layout_marginRight="@dimen/spacing_internal"
+                android:layout_marginBottom="@dimen/spacing_internal"
+                android:layout_alignParentBottom="true"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardUseCompatPadding="true"
+                app:elevation="@dimen/elevation"
+                app:cardCornerRadius="@dimen/corner_rounding">
 
-                    <include layout="@layout/metric_card"
-                        android:id="@+id/volume_card"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="3"/>
-                </LinearLayout>
-
-                <android.support.v7.widget.CardView
-                    android:id="@+id/interval_tabs_cardview"
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/interval_tabs"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/spacing_internal"
-                    android:layout_marginRight="@dimen/spacing_internal"
-                    android:layout_marginBottom="@dimen/spacing_internal"
-                    android:layout_alignParentBottom="true"
-                    app:cardBackgroundColor="@android:color/transparent"
-                    app:cardUseCompatPadding="true"
-                    app:elevation="@dimen/elevation"
-                    app:cardCornerRadius="@dimen/corner_rounding">
+                    android:layout_height="@dimen/button_height"
+                    android:background="@drawable/rounded_background_dark"
+                    app:tabMaxWidth="0dp"
+                    app:tabGravity="fill"
+                    app:tabMode="fixed"
+                    app:tabIndicatorColor="@color/colorPrimary"
+                    app:tabSelectedTextColor="@color/colorPrimary"
+                    app:tabTextColor="@color/colorPrimaryDark">
 
-                    <android.support.design.widget.TabLayout
-                        android:id="@+id/interval_tabs"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/button_height"
-                        android:background="@drawable/rounded_background_dark"
-                        app:tabMaxWidth="0dp"
-                        app:tabGravity="fill"
-                        app:tabMode="fixed"
-                        app:tabIndicatorColor="@color/colorPrimary"
-                        app:tabSelectedTextColor="@color/colorPrimary"
-                        app:tabTextColor="@color/colorPrimaryDark">
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1D"/>
 
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="1D"/>
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1W"/>
 
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="1W"/>
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1M"/>
 
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="1M"/>
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="3M"/>
 
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="3M"/>
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="1Y"/>
 
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="1Y"/>
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="5Y"/>
 
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="5Y"/>
+                    <android.support.design.widget.TabItem
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:text="10Y"/>
 
-                        <android.support.design.widget.TabItem
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:text="10Y"/>
-
-                    </android.support.design.widget.TabLayout>
-                </android.support.v7.widget.CardView>
-            </RelativeLayout>
-        </LinearLayout>
-
-    </RelativeLayout>
+                </android.support.design.widget.TabLayout>
+            </android.support.v7.widget.CardView>
+        </RelativeLayout>
+    </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

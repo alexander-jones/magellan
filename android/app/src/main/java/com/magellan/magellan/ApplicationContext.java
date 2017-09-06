@@ -104,8 +104,9 @@ public class ApplicationContext {
     }
 
     // initialize default settins for any charts in this activity
-    public static void initializeSimpleChart(CombinedChart chart)
+    public static void initializeSimpleChart(Context context, CombinedChart chart)
     {
+        float internal_spacing = context.getResources().getDimension(R.dimen.spacing_internal);
         chart.setNoDataText("");
         chart.setTouchEnabled(false);
         chart.setDrawGridBackground(false);
@@ -113,7 +114,7 @@ public class ApplicationContext {
         chart.setDrawBorders(false);
         chart.getDescription().setText("");
         chart.getLegend().setEnabled(false);
-        chart.setViewPortOffsets(10, 10, 10, 10);
+        chart.setViewPortOffsets(internal_spacing, internal_spacing, internal_spacing, internal_spacing);
 
         XAxis xAxis = chart.getXAxis();
         xAxis.setDrawLabels(false);

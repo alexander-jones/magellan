@@ -12,6 +12,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.Html;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.os.Bundle;
 import android.view.MenuInflater;
