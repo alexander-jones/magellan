@@ -304,7 +304,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 float startingOpen = initialQuote.open;
                 ArrayList<Entry> centerLineValues = new ArrayList<Entry>();
                 centerLineValues.add(new Entry(0, startingOpen, null));
-                centerLineValues.add(new Entry(quotes.size(), startingOpen, null));
+                centerLineValues.add(new Entry(quotes.size() + missingStartSteps + missingEndSteps - 1, startingOpen, null));
 
                 LineDataSet centerLineSet = new LineDataSet(centerLineValues, "");
                 centerLineSet.setDrawIcons(false);
@@ -326,7 +326,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     data.addDataSet(centerLineSet);
                 chartCtx.allData.setData(data);
 
-                chartCtx.layer.onDrawQuotes(quotes, missingStartSteps, missingEndSteps, chartCtx.allData);
+                chartCtx.layer.onDrawQuotes(quotes, 0, 0, chartCtx.allData); // don't draw missing start / end steps when center line will pad data for us
 
                 float fromCenterToExtent = Math.max(highestPrice - startingOpen, startingOpen - lowestPrice);
                 vh.chart.getAxisLeft().setAxisMaximum(startingOpen + fromCenterToExtent);

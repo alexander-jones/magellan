@@ -81,9 +81,9 @@ public class QuotesActivity extends AppCompatActivity
 
     private LineDataSetStyler mLineDataStyler = new LineDataSetStyler();
 
-    private String mSymbol;
-    private TextView mDateText;
-    private TextView mTimeText;
+    private Stock mStock;
+    private TextView mHeaderTextOne;
+    private TextView mHeaderTextTwo;
 
     private TabLayout mStockTabLayout;
     private List<Stock> mExtraStocks = new ArrayList<Stock>();
@@ -108,7 +108,7 @@ public class QuotesActivity extends AppCompatActivity
     private ProgressBar mVolumeLoadProgress;
     private QuoteQueryTask mQuoteTask;
     private QueryContext mLastQueryContext = new QueryContext();
-    private Quote mPeriodQuote;
+    private Quote mPeriodQuote = null;
 
     private List<IMetricLayer> mPriceLayers = new ArrayList<IMetricLayer>();
     private List<IMetricLayer> mVolumeLayers = new ArrayList<IMetricLayer>();
@@ -133,8 +133,8 @@ public class QuotesActivity extends AppCompatActivity
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        mDateText = (TextView) findViewById(R.id.date);
-        mTimeText = (TextView) findViewById(R.id.time);
+        mHeaderTextOne = (TextView) findViewById(R.id.header_value_one);
+        mHeaderTextTwo = (TextView) findViewById(R.id.header_value_two);
         mStockTabLayout = (TabLayout) findViewById(R.id.stock_tabs);
 
         View priceCard = findViewById(R.id.price_card);
@@ -189,7 +189,8 @@ public class QuotesActivity extends AppCompatActivity
         int currentStock = onLoadInstanceState(savedInstanceState);
         if (currentStock != -1)
         {
-            mSymbol = mStockTabLayout.getTabAt(currentStock).getText().toString();
+            mStock = (Stock)mStockTabLayout.getTabAt(currentStock).getTag();
+            updateHeaderText(mPeriodQuote);
             mStockTabLayout.getTabAt(currentStock).select();
             launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
         }
@@ -197,7 +198,8 @@ public class QuotesActivity extends AppCompatActivity
         mStockTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                mSymbol = tab.getText().toString();
+                mStock = (Stock)tab.getTag();
+                updateHeaderText(mPeriodQuote);
                 updateChangeWatchListStatus();
                 launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
             }
@@ -245,13 +247,15 @@ public class QuotesActivity extends AppCompatActivity
         else
         {
             selection = inState.getInt("SELECTED_STOCK");
-            useWatchlist = inState.getBoolean("USE_WATCHLIST", false);
             mIntervalTabLayout.getTabAt(inState.getInt("SELECTED_INTERVAL")).select();
             stocks = Stock.loadFrom(inState);
         }
 
         for (Stock stock : stocks)
             mStockTabLayout.addTab(createTabForStock(stock));
+
+        if (stocks.size() == 1)
+            mStockTabLayout.setVisibility(View.GONE);
 
         return selection;
     }
@@ -400,7 +404,7 @@ public class QuotesActivity extends AppCompatActivity
                 interval = QuoteQuery.Interval.OneMonth;
                 break;
         }
-        mLastQueryContext.query = new QuoteQuery(mSymbol, period, interval);
+        mLastQueryContext.query = new QuoteQuery(mStock.getSymbol(), period, interval);
         mLastQueryContext.results = null;
         mQuoteTask = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
         mQuoteTask.execute(mLastQueryContext.query);
@@ -456,34 +460,6 @@ public class QuotesActivity extends AppCompatActivity
 
             for (IMetricLayer layer : mVolumeLayers)
                 layer.onDrawQuotes(quotes,  missingStartSteps, missingEndSteps, mVolumeChartData);
-
-            // enable for center line
-            /*float startingOpen = initialQuote.open;
-            ArrayList<Entry> missingPriceValues = new ArrayList<Entry>();
-            missingPriceValues.add(new Entry(0, startingOpen, null));
-            missingPriceValues.add(new Entry(quotes.size(), startingOpen, null));
-
-            // enable for center line
-            LineDataSet lineSet = new LineDataSet(missingPriceValues, "");
-            lineSet.setDrawIcons(false);
-            lineSet.setHighlightEnabled(false);
-            lineSet.enableDashedLine(10f, 10f, 0f);
-            lineSet.setColor(Color.WHITE);
-            lineSet.setFillColor(Color.WHITE);
-            lineSet.setLineWidth(1f);
-            lineSet.setDrawCircles(false);
-            lineSet.setDrawValues(false);
-
-            LineData data = mPriceChartData.getLineData();
-            if (data == null){
-                ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
-                priceDataSets.add(lineSet);
-                data = new LineData(priceDataSets);
-                mPriceChartData.setData(data);
-            }
-            else {
-                data.addDataSet(lineSet);
-            }*/
 
             updateHeaderText(mPeriodQuote);
             oneValidQuote = true;
@@ -549,10 +525,23 @@ public class QuotesActivity extends AppCompatActivity
 
     private void updateHeaderText(Quote quote)
     {
-        mDateText.setText(dateFormatter.print(quote.time));
-        mTimeText.setText(timeFormatter.print(quote.time));
-        mPriceText.setText(Html.fromHtml(String.format("<b>H</b> %s  <b>L</b> %s  <b>O</b> %s  <b>C</b> %s",PriceMetric.valueToString(quote.high), PriceMetric.valueToString(quote.low), PriceMetric.valueToString(quote.open), PriceMetric.valueToString(quote.close))));
-        mVolumeText.setText(Html.fromHtml("<b>" + VolumeMetric.valueToString(quote.volume)+ "</b>"));
+        if (quote == mPeriodQuote)
+        {
+            mHeaderTextOne.setText(mStock.getCompany());
+            mHeaderTextTwo.setVisibility(View.GONE);
+        }
+        else
+        {
+            mHeaderTextTwo.setVisibility(View.VISIBLE);
+            mHeaderTextOne.setText(dateFormatter.print(quote.time));
+            mHeaderTextTwo.setText(timeFormatter.print(quote.time));
+        }
+
+        if (quote != null)
+        {
+            mPriceText.setText(Html.fromHtml(String.format("<b>H</b> %s  <b>L</b> %s  <b>O</b> %s  <b>C</b> %s",PriceMetric.valueToString(quote.high), PriceMetric.valueToString(quote.low), PriceMetric.valueToString(quote.open), PriceMetric.valueToString(quote.close))));
+            mVolumeText.setText(Html.fromHtml("<b>" + VolumeMetric.valueToString(quote.volume)+ "</b>"));
+        }
     }
 
 

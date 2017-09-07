@@ -69,9 +69,7 @@ public class PriceLineLayer implements IMetricLayer
             missingDataSet = new LineDataSet(missingPriceValues, "");
             missingDataSet.setDrawIcons(false);
             missingDataSet.setHighlightEnabled(false);
-            missingDataSet.setHighLightColor(Color.TRANSPARENT);
             missingDataSet.setColor(Color.TRANSPARENT);
-            missingDataSet.setFillColor(Color.TRANSPARENT);
             missingDataSet.setDrawCircles(false);
             missingDataSet.setDrawValues(false);
         }

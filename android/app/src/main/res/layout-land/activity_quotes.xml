@@ -33,9 +33,8 @@
                     android:layout_gravity="left"
                     android:gravity="left"
                     android:orientation="horizontal">
-
                     <TextView
-                        android:id="@+id/date"
+                        android:id="@+id/header_value_one"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -47,7 +46,7 @@
                         android:textStyle="bold"/>
 
                     <TextView
-                        android:id="@+id/time"
+                        android:id="@+id/header_value_two"
                         android:layout_alignBaseline="@+id/date"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -55,7 +54,8 @@
                         android:gravity="center_vertical"
                         android:text="12:55 PM EST"
                         android:textSize="@dimen/small_header_text_size"
-                        android:textColor="@color/colorTextPrimary"/>
+                        android:textColor="@color/colorTextPrimary"
+                        android:visibility="gone"/>
                 </LinearLayout>
             </android.support.v7.widget.Toolbar>
 
