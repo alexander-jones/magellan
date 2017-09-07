@@ -79,7 +79,7 @@ public class BarChartService implements IQuoteService
         }
         catch (Exception e)
         {
-            Log.e("Magellan", String.format("Stock line data for symbol '%s'could not be retrieved!", query.symbol));
+            Log.e("Magellan", String.format("Equity line data for symbol '%s'could not be retrieved!", query.symbol));
             return null;
         }
     }

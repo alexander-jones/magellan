@@ -2,9 +2,9 @@ package com.magellan.magellan.service.yahoo;
 
 import android.util.Log;
 
-import com.magellan.magellan.stock.Stock;
-import com.magellan.magellan.stock.IStockService;
-import com.magellan.magellan.stock.StockQuery;
+import com.magellan.magellan.equity.Equity;
+import com.magellan.magellan.equity.IEquityService;
+import com.magellan.magellan.equity.EquityQuery;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,13 +20,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class YahooService implements IStockService{
+public class YahooService implements IEquityService {
 
-    public List<Stock> execute(StockQuery stockQuery) {
+    public List<Equity> execute(EquityQuery equityQuery) {
 
-        String url_select = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query=" + stockQuery.symbolTemplate + "&region=1&lang=en";
+        String url_select = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query=" + equityQuery.symbolTemplate + "&region=1&lang=en";
 
-        List<Stock> ret = null;
+        List<Equity> ret = null;
         try {
             URL url = new URL(url_select);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -46,7 +46,7 @@ public class YahooService implements IStockService{
                         String response = sBuilder.toString();
                         JSONObject rootObject = new JSONObject(response);
                         JSONArray resultArray = rootObject.getJSONObject("ResultSet").getJSONArray("Result");
-                        ret = new ArrayList<Stock>();
+                        ret = new ArrayList<Equity>();
                         for(int i=0; i < resultArray.length(); ++i) {
                             JSONObject result = resultArray.getJSONObject(i);
 
@@ -58,11 +58,11 @@ public class YahooService implements IStockService{
                             if (!type.contentEquals("S") && !type.contentEquals("E"))
                                 continue;
 
-                            if (!stockQuery.mRestrictToExchanges.isEmpty())
+                            if (!equityQuery.mRestrictToExchanges.isEmpty())
                             {
                                 boolean storeValue = false;
                                 String exchange = result.getString("exchDisp");
-                                for(String str: stockQuery.mRestrictToExchanges) {
+                                for(String str: equityQuery.mRestrictToExchanges) {
                                     if(str.contentEquals(exchange)) {
                                         storeValue = true;
                                         break;
@@ -72,7 +72,7 @@ public class YahooService implements IStockService{
                                     continue;
                             }
 
-                            ret.add(new Stock(result.getString("symbol"), result.getString("name"),result.getString("exchDisp"),result.getString("typeDisp")));
+                            ret.add(new Equity(result.getString("symbol"), result.getString("name"),result.getString("exchDisp"),result.getString("typeDisp")));
                         }
                     } catch (JSONException e) {
                         Log.e("Magellan", "Error parsing json from yahoo finance: " + e.toString());

@@ -27,7 +27,7 @@
             android:windowSoftInputMode="adjustNothing"/>
 
         <activity
-            android:name=".stock.StockQueryActivity"
+            android:name=".equity.EquityQueryActivity"
             android:theme="@style/AppTheme.Overlay"
             android:windowSoftInputMode="adjustResize"/>
     </application>

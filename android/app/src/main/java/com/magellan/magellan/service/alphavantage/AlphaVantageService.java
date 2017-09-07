@@ -2,23 +2,14 @@ package com.magellan.magellan.service.alphavantage;
 
 import android.util.Log;
 
-import com.barchart.ondemand.BarchartOnDemandClient;
-import com.barchart.ondemand.api.HistoryRequest;
 import com.magellan.magellan.ApplicationContext;
 import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
-import com.magellan.magellan.stock.IStockService;
-import com.magellan.magellan.stock.Stock;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -28,9 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 public class AlphaVantageService implements IQuoteService {

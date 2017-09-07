@@ -1,23 +1,15 @@
 package com.magellan.magellan;
 
 
-import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.CombinedChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.magellan.magellan.ApplicationContext;
-import com.magellan.magellan.ChartGestureHandler;
-import com.magellan.magellan.R;
-import com.magellan.magellan.stock.Stock;
+import com.magellan.magellan.equity.Equity;
 
 import java.util.List;
 
@@ -43,9 +35,9 @@ public class WatchlistStockAdapter extends RecyclerView.Adapter<WatchlistStockAd
     }
 
     private AdapterView.OnClickListener mListener;
-    private List<Stock> mStocks;
-    public WatchlistStockAdapter(List<Stock> stocks, AdapterView.OnClickListener listener) {
-        mStocks = stocks;
+    private List<Equity> mEquities;
+    public WatchlistStockAdapter(List<Equity> equities, AdapterView.OnClickListener listener) {
+        mEquities = equities;
         mListener = listener;
     }
 
@@ -59,13 +51,13 @@ public class WatchlistStockAdapter extends RecyclerView.Adapter<WatchlistStockAd
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Stock stock = mStocks.get(position);
-        holder.symbol.setText(stock.getSymbol());
-        holder.rootView.setTag(stock);
+        Equity equity = mEquities.get(position);
+        holder.symbol.setText(equity.getSymbol());
+        holder.rootView.setTag(equity);
     }
 
     @Override
     public int getItemCount() {
-        return mStocks.size();
+        return mEquities.size();
     }
 }

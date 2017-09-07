@@ -2,40 +2,33 @@ package com.magellan.magellan;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.DashPathEffect;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
+import com.magellan.magellan.equity.Equity;
 import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.service.alphavantage.AlphaVantageService;
-import com.magellan.magellan.stock.Stock;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.chrono.GregorianChronology;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.TimeZone;
 
 public class ApplicationContext {
 
     private static String PREFERENCE_KEY = "APPLICATION_CONTEXT";
 
+    private static List<Equity> mSectorIndices = new ArrayList<Equity>();
+
     private static Context mContext;
     private static int mWatchListGeneration = 0;
-    private static List<Stock> mWatchList = null;
+    private static List<Equity> mWatchList = null;
     private static SharedPreferences mSharedPreferences;
     private static IQuoteService mQuoteService = new AlphaVantageService();
 
@@ -101,6 +94,80 @@ public class ApplicationContext {
         {
             date = new DateTime(2019, month, day, 0, 0, 0, 0, getChronology());
         }
+    }
+
+    public static List<Equity> getSectorIndices()
+    {
+        if (mSectorIndices.size() == 0) {
+            mSectorIndices.add(new Equity("ABAQ", "ABA Community Bank NASDAQ Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("BIXX", "BetterInvesting 100 Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("BIXR", "BetterInvesting 100 Total Return Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("BXN", "CBOE NASDAQ-100 BuyWrite Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("INDU", "Dow Industrials", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("TRAN", "Dow Transportation", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("UTIL", "Dow15 Utilities" , "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("FTSELC", "FTSE NASDAQ Large Cap Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("FTSEMC", "FTSE NASDAQ Mid Cap Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("FTSESC", "FTSE NASDAQ Small Cap Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("BKX", "KBW Bank Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("MFX", "KBW Mortgage Finance Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("KRX", "KBW Regional Banking Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXBK", "NASDAQ Bank", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NBI", "NASDAQ Biotechnology", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NBIE", "NASDAQ Biotechnology Equal Weighted Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("CHXN", "NASDAQ China Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("CELS", "NASDAQ Clean Edge Green Energy Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("CEXX", "NASDAQ Clean Edge Green Energy Total Return Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NQCICLER", "NASDAQ Commodity Crude Oil Index ER", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NQCIGCER", "ABA Community Bank NASDAQ Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NQCIHGER", "NASDAQ Commodity Gold Index ER", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NQCINGER", "NASDAQ Commodity Natural Gas Index ER", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NQCISIER", "NASDAQ Commodity Silver Index ER", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXCO", "NASDAQ Computer", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("DTEC", "NASDAQ Dallas Regional Chamber Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("DIVQ", "NASDAQ Dividend Achievers Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("DVQT", "NASDAQ Dividend Achievers Total Return Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXFIN", "NASDAQ Financial-100", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXHC", "NASDAQ Health Care Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXID", "NASDAQ Industrial", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXIS", "NASDAQ Insurance", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("QNET", "NASDAQ Internet Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("ISRQ", "NASDAQ Israel", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("ISRX", "NASDAQ Israel Total Return", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("QWND", "NASDAQ OMX Clean Edge Global Wind Energy Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("QAGR", "NASDAQ OMX Global Agriculture Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("QCOL", "NASDAQ OMX Global Coal Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("QGLD", "NASDAQ OMX Global Gold & Precious Metals Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("QSTL", "NASDAQ OMX Global Steel Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("QGRI", "NASDAQ OMX Government Relief Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXFN", "NASDAQ Other Finance", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NXTQ", "NASDAQ Q-50 Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXTC", "NASDAQ Telecommunications", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("IXTR", "NASDAQ Transportation", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NDXX", "NASDAQ-100 Ex-Tech Sector Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("NDXT", "NASDAQ-100 Technology Sector Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("XCM", "PHLX Chemicals Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("DFX", "PHLX Defense Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("RXS", "PHLX Drug Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("XEX", "PHLX Europe Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("XAU", "PHLX Gold/Silver Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("HGX", "PHLX Housing Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("SHX", "PHLX Marine Shipping Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("MXZ", "PHLX Medical Device Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("OSX", "PHLX Oil Service Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("XRE", "PHLX Retail Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("SOX", "PHLX Semiconductor Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("SXP", "PHLX Sports Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("UTY", "PHLX Utility Sector", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("RUI/E", "Russell 1000 Growth", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("RUI/P", "Russell 1000 Value", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("RUTE2KG", "Russell 2000 Growth", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("RUTP2KV", "Russell 2000 Value", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("SVO", "SIG Energy MLP Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("EPX", "SIG Oil Exploration & Production Index", "NASDAQ", "Index"));
+            mSectorIndices.add(new Equity("HAUL", "Wilder NASDAQ OMX Global Energy Efficient Transport Index", "NASDAQ", "Index"));
+        }
+        return mSectorIndices;
     }
 
     // initialize default settins for any charts in this activity
@@ -287,20 +354,20 @@ public class ApplicationContext {
     {
         mContext = context;
         mSharedPreferences = mContext.getSharedPreferences(PREFERENCE_KEY, Context.MODE_PRIVATE);
-        mWatchList = Stock.loadFrom(mSharedPreferences);
+        mWatchList = Equity.loadFrom(mSharedPreferences);
         mWatchListGeneration = mSharedPreferences.getInt("GENERATION", 0);
         if (mWatchList == null){
-            mWatchList = new ArrayList<Stock>();
+            mWatchList = new ArrayList<Equity>();
         }
     }
 
     public static int getWatchListGeneration() { return mWatchListGeneration;}
 
-    public static int getWatchListIndex(Stock stock)
+    public static int getWatchListIndex(Equity equity)
     {
         int index = -1;
         for (int i =0; i < mWatchList.size(); ++i){
-            if (stock.equals(mWatchList.get(i)))
+            if (equity.equals(mWatchList.get(i)))
             {
                 index = i;
                 break;
@@ -334,37 +401,18 @@ public class ApplicationContext {
         return true;
     }
 
-    public static boolean removeFromWatchList(Stock stock)
+    public static boolean addToWatchList(Equity equity)
     {
-        int indexToRemove = getWatchListIndex(stock);
-        if (indexToRemove == -1)
-            return false;
-
-        removeFromWatchList(indexToRemove);
-        return true;
-    }
-
-    public static boolean isStockInWatchList(Stock stock)
-    {
-        for (Stock s : mWatchList){
-            if (stock.equals(s))
-                return true;
-        }
-        return false;
-    }
-
-    public static boolean addToWatchList(Stock stock)
-    {
-        if (getWatchListIndex(stock) != -1)
+        if (getWatchListIndex(equity) != -1)
             return false;
 
         ++mWatchListGeneration;
-        mWatchList.add(stock);
+        mWatchList.add(equity);
         saveWatchList();
         return true;
     }
 
-    public static List<Stock> getWatchList()
+    public static List<Equity> getWatchList()
     {
         return Collections.unmodifiableList(mWatchList);
     }
@@ -373,7 +421,7 @@ public class ApplicationContext {
     {
         SharedPreferences.Editor sp = mSharedPreferences.edit();
         sp.putInt("GENERATION", mWatchListGeneration);
-        Stock.saveTo(sp, mWatchList);
+        Equity.saveTo(sp, mWatchList);
         sp.commit();
     }
 

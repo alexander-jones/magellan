@@ -1,4 +1,4 @@
-package com.magellan.magellan.stock;
+package com.magellan.magellan.equity;
 
 import android.app.Activity;
 import android.content.Context;
@@ -23,13 +23,13 @@ import com.magellan.magellan.service.yahoo.YahooService;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StockQueryActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, IStockQueryListener, AdapterView.OnItemClickListener{
+public class EquityQueryActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, IEquityQueryListener, AdapterView.OnItemClickListener{
 
     private ListView mList;
-    private StockQueryTask mTask;
-    private StockAdapter mAdapter;
-    private List<Stock> mCurrentStocks = new ArrayList<Stock>();
-    private IStockService mService = new YahooService();
+    private EquityQueryTask mTask;
+    private EquityAdapter mAdapter;
+    private List<Equity> mCurrentEquities = new ArrayList<Equity>();
+    private IEquityService mService = new YahooService();
     private List<String> mSupportedExchanges = new ArrayList<String>();
     private Toolbar mToolbar;
     private SearchView mSearchView;
@@ -45,7 +45,7 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
 
         setTitle("");
         mList =(ListView) findViewById(R.id.search_list_view);
-        mAdapter = new StockAdapter(this, mCurrentStocks);
+        mAdapter = new EquityAdapter(this, mCurrentEquities);
         mList.setAdapter(mAdapter);
         mList.setOnItemClickListener(this);
         mToolbar = (Toolbar)findViewById(R.id.toolbar);
@@ -69,16 +69,16 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         mSearchViewTextToSet = inState.getString("SEARCH_TEXT", null);
         mRemoveSearchViewFocus = !inState.getBoolean("SEARCH_FOCUS", false);
 
-        List<Stock> stocks = Stock.loadFrom(inState);
-        if (stocks != null){
-            mCurrentStocks = stocks;
+        List<Equity> equities = Equity.loadFrom(inState);
+        if (equities != null){
+            mCurrentEquities = equities;
             mAdapter.notifyDataSetChanged();
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        Stock.saveTo(outState, mCurrentStocks);
+        Equity.saveTo(outState, mCurrentEquities);
         outState.putBoolean("SEARCH_FOCUS", mSearchView.hasFocus());
         outState.putString("SEARCH_TEXT", mSearchView.getQuery().toString());
         super.onSaveInstanceState(outState);
@@ -137,16 +137,16 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         if (newText.isEmpty())
             return false;
 
-        mTask = new StockQueryTask(mService, this);
-        mTask.execute(new StockQuery(newText, mSupportedExchanges));
+        mTask = new EquityQueryTask(mService, this);
+        mTask.execute(new EquityQuery(newText, mSupportedExchanges));
         return false;
     }
 
     @Override
-    public void onStocksReceived(List<List<Stock>> stocks)
+    public void onStocksReceived(List<List<Equity>> stocks)
     {
-        mCurrentStocks.clear();
-        mCurrentStocks.addAll(stocks.get(0));
+        mCurrentEquities.clear();
+        mCurrentEquities.addAll(stocks.get(0));
         mAdapter.notifyDataSetChanged();
     }
 
@@ -166,14 +166,14 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
         }
     }
 
-    private void finishWithResult(Stock stock)
+    private void finishWithResult(Equity equity)
     {
         Intent returnIntent = new Intent();
-        if (stock != null)
+        if (equity != null)
         {
-            List<Stock> chosenStocks = new ArrayList<Stock>();
-            chosenStocks.add(stock);
-            Stock.saveTo(returnIntent, chosenStocks);
+            List<Equity> chosenEquities = new ArrayList<Equity>();
+            chosenEquities.add(equity);
+            Equity.saveTo(returnIntent, chosenEquities);
         }
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
@@ -181,6 +181,6 @@ public class StockQueryActivity extends AppCompatActivity implements SearchView.
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        finishWithResult((Stock)((StockAdapter.ViewHolder)view.getTag()).changeWatchListStatus.getTag());
+        finishWithResult((Equity)((EquityAdapter.ViewHolder)view.getTag()).changeWatchListStatus.getTag());
     }
 }

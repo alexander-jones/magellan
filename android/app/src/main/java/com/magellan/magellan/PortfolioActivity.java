@@ -1,31 +1,22 @@
 package com.magellan.magellan;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.DashPathEffect;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -35,20 +26,17 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.magellan.magellan.WatchlistStockAdapter;
 import com.magellan.magellan.metric.ILineDataSetStyler;
 import com.magellan.magellan.metric.MetricLayerButtonAdapter;
 import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
-import com.magellan.magellan.metric.volume.VolumeMetric;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.QuoteQueryTask;
-import com.magellan.magellan.stock.Stock;
-import com.magellan.magellan.stock.StockQueryActivity;
+import com.magellan.magellan.equity.Equity;
+import com.magellan.magellan.equity.EquityQueryActivity;
 
-import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.ArrayList;
@@ -89,13 +77,13 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     ActionBarDrawerToggle mDrawerToggle;
     private RecyclerView mWatchListContainer;
     private WatchlistStockAdapter mWatchListAdapter;
-    private List<Stock> mWatchListItems = new ArrayList<Stock>();
+    private List<Equity> mWatchListItems = new ArrayList<Equity>();
     private List<WatchListStockContext> mWatchListWatchListStockContexts = new ArrayList<WatchListStockContext>();
-    private HashMap<QuoteQuery, Stock> stockQueriesInFlight = new HashMap<QuoteQuery, Stock>();
-    private HashMap<QuoteQuery, Stock> indexQueriesInFlight = new HashMap<QuoteQuery, Stock>();
+    private HashMap<QuoteQuery, Equity> stockQueriesInFlight = new HashMap<QuoteQuery, Equity>();
+    private HashMap<QuoteQuery, Equity> indexQueriesInFlight = new HashMap<QuoteQuery, Equity>();
 
     private CombinedChart mIndexChart;
-    private List<Stock> mIndexes = new ArrayList<Stock>();
+    private List<Equity> mIndexes = new ArrayList<Equity>();
     private List<IndexContext> mIndexContexts = new ArrayList<IndexContext>();
     private CombinedData mIndexData = new CombinedData();
     private LinearLayout.LayoutParams mIndexPriceLayoutParams;
@@ -156,11 +144,11 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         mIndexPriceLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         mIndexPriceLayoutParams.setMargins(0, (int)getResources().getDimension(R.dimen.spacing_internal), (int)getResources().getDimension(R.dimen.spacing_external),0);
 
-        mIndexes =  Arrays.asList(new Stock("SPX", "S&P 500", "N/A", "Index"), new Stock("DJIA", "Dow Jones", "N/A", "Index"), new Stock("IXIC", "NASDAQ", "N/A", "Index"));
+        mIndexes =  Arrays.asList(new Equity("SPX", "S&P 500", "N/A", "Index"), new Equity("DJIA", "Dow Jones", "N/A", "Index"), new Equity("IXIC", "NASDAQ", "N/A", "Index"));
         int [] indexColors = {ContextCompat.getColor(this, R.color.colorAccentPrimary), ContextCompat.getColor(this, R.color.colorAccentSecondary), ContextCompat.getColor(this, R.color.colorAccentTertiary)};
         for (int i =0; i < mIndexes.size(); ++i)
         {
-            mIndexItemLabels.add(mIndexes.get(i).getCompany());
+            mIndexItemLabels.add(mIndexes.get(i).getName());
             mIndexColors.add(indexColors[i]);
         }
 
@@ -172,7 +160,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         mIndexChart = (CombinedChart)findViewById(R.id.index_chart);
         for (int i =0; i < mIndexes.size(); ++i)
         {
-            Stock index = mIndexes.get(i);
+            Equity index = mIndexes.get(i);
             TextView textView = createPriceTextView(indexColors[i]);
             mIndexPriceContainer.addView(textView, mIndexPriceLayoutParams);
             mIndexContexts.add(new IndexContext(textView, indexColors[i]));
@@ -234,8 +222,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
         ith.attachToRecyclerView(mWatchListContainer);
 
-        for (Stock stock : mWatchListItems)
-            lanchTaskForStock(stock);
+        for (Equity equity : mWatchListItems)
+            lanchTaskForStock(equity);
     }
 
     private TextView createPriceTextView(int color)
@@ -279,11 +267,11 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     highestPrice = q.high;
             }
 
-            Stock stock = indexQueriesInFlight.remove(query);
-            if (stock == null)
+            Equity equity = indexQueriesInFlight.remove(query);
+            if (equity == null)
             {
-                stock = stockQueriesInFlight.remove(query);
-                int position = mWatchListItems.indexOf(stock);
+                equity = stockQueriesInFlight.remove(query);
+                int position = mWatchListItems.indexOf(equity);
                 WatchListStockContext chartCtx = mWatchListWatchListStockContexts.get(position);
                 chartCtx.quotes = quotes;
                 if (chartCtx.allData.getLineData() != null)
@@ -337,7 +325,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             }
             else
             {
-                int position = mIndexes.indexOf(stock);
+                int position = mIndexes.indexOf(equity);
                 IndexContext chartCtx = mIndexContexts.get(position);
 
                 float range = highestPrice - lowestPrice;
@@ -368,7 +356,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         int newWatchListGen = ApplicationContext.getWatchListGeneration();
         if (mWachListGeneration != newWatchListGen)
         {
-            List<Stock> newWatchList = ApplicationContext.getWatchList();
+            List<Equity> newWatchList = ApplicationContext.getWatchList();
             for (int i =0; i < mWatchListItems.size(); ++i) {
                 if (i >= newWatchList.size() || !mWatchListItems.get(i).equals(newWatchList.get(i)))
                 {
@@ -379,19 +367,19 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             }
 
             for (int i = mWatchListItems.size(); i < newWatchList.size(); ++i) {
-                Stock stock = newWatchList.get(i);
-                mWatchListItems.add(stock);
+                Equity equity = newWatchList.get(i);
+                mWatchListItems.add(equity);
                 mWatchListWatchListStockContexts.add(new WatchListStockContext());
                 mWatchListAdapter.notifyItemRangeInserted(mWatchListItems.size() -1, 1);
-                lanchTaskForStock(stock);
+                lanchTaskForStock(equity);
             }
         }
 
-        List<Stock> stocksChosen = Stock.loadFrom(data);
+        List<Equity> stocksChosen = Equity.loadFrom(data);
         if (stocksChosen != null)
         {
             Intent intent = new Intent(this, QuotesActivity.class);
-            Stock.saveTo(intent, stocksChosen);
+            Equity.saveTo(intent, stocksChosen);
             startActivityForResult(intent, 1);
         }
     }
@@ -409,7 +397,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     {
         switch (item.getItemId()) {
             case R.id.search:
-                Intent intent = new Intent(this, StockQueryActivity.class);
+                Intent intent = new Intent(this, EquityQueryActivity.class);
                 startActivityForResult(intent, 1);
                 break;
         }
@@ -441,10 +429,10 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         startActivityForResult(intent, 1);
     }
 
-    private void lanchTaskForStock(Stock stock)
+    private void lanchTaskForStock(Equity equity)
     {
-        QuoteQuery query = new QuoteQuery(stock.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
-        stockQueriesInFlight.put(query, stock);
+        QuoteQuery query = new QuoteQuery(equity.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
+        stockQueriesInFlight.put(query, equity);
 
         QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
         task.execute(query);

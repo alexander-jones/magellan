@@ -12,7 +12,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.Html;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.os.Bundle;
 import android.view.MenuInflater;
@@ -31,6 +30,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.magellan.magellan.equity.Equity;
 import com.magellan.magellan.metric.ILineDataSetStyler;
 import com.magellan.magellan.metric.IMetricLayer;
 import com.magellan.magellan.metric.MetricLayerButtonAdapter;
@@ -43,7 +43,6 @@ import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.QuoteQueryTask;
-import com.magellan.magellan.stock.Stock;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
@@ -81,12 +80,12 @@ public class QuotesActivity extends AppCompatActivity
 
     private LineDataSetStyler mLineDataStyler = new LineDataSetStyler();
 
-    private Stock mStock;
+    private Equity mEquity;
     private TextView mHeaderTextOne;
     private TextView mHeaderTextTwo;
 
     private TabLayout mStockTabLayout;
-    private List<Stock> mExtraStocks = new ArrayList<Stock>();
+    private List<Equity> mExtraEquities = new ArrayList<Equity>();
 
     private TextView mPriceText;
     private TextView mVolumeText;
@@ -189,7 +188,7 @@ public class QuotesActivity extends AppCompatActivity
         int currentStock = onLoadInstanceState(savedInstanceState);
         if (currentStock != -1)
         {
-            mStock = (Stock)mStockTabLayout.getTabAt(currentStock).getTag();
+            mEquity = (Equity)mStockTabLayout.getTabAt(currentStock).getTag();
             updateHeaderText(mPeriodQuote);
             mStockTabLayout.getTabAt(currentStock).select();
             launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
@@ -198,7 +197,7 @@ public class QuotesActivity extends AppCompatActivity
         mStockTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                mStock = (Stock)tab.getTag();
+                mEquity = (Equity)tab.getTag();
                 updateHeaderText(mPeriodQuote);
                 updateChangeWatchListStatus();
                 launchTaskForInterval(mIntervalTabLayout.getSelectedTabPosition());
@@ -229,7 +228,7 @@ public class QuotesActivity extends AppCompatActivity
     private int onLoadInstanceState(Bundle inState)
     {
         int selection;
-        List<Stock> stocks;
+        List<Equity> equities;
         boolean useWatchlist;
         if (inState == null)
         {
@@ -237,10 +236,10 @@ public class QuotesActivity extends AppCompatActivity
             selection = intent.getIntExtra("WATCHLIST_ITEM", -1);
             useWatchlist = selection != -1;
             if (useWatchlist)
-                stocks = ApplicationContext.getWatchList();
+                equities = ApplicationContext.getWatchList();
             else
             {
-                stocks = Stock.loadFrom(intent);
+                equities = Equity.loadFrom(intent);
                 selection = 0;
             }
         }
@@ -248,13 +247,13 @@ public class QuotesActivity extends AppCompatActivity
         {
             selection = inState.getInt("SELECTED_STOCK");
             mIntervalTabLayout.getTabAt(inState.getInt("SELECTED_INTERVAL")).select();
-            stocks = Stock.loadFrom(inState);
+            equities = Equity.loadFrom(inState);
         }
 
-        for (Stock stock : stocks)
-            mStockTabLayout.addTab(createTabForStock(stock));
+        for (Equity equity : equities)
+            mStockTabLayout.addTab(createTabForStock(equity));
 
-        if (stocks.size() == 1)
+        if (equities.size() == 1)
             mStockTabLayout.setVisibility(View.GONE);
 
         return selection;
@@ -263,14 +262,14 @@ public class QuotesActivity extends AppCompatActivity
     @Override
     public void onSaveInstanceState(Bundle outState)
     {
-        Stock.saveTo(outState, mExtraStocks);
+        Equity.saveTo(outState, mExtraEquities);
         outState.putInt("SELECTED_STOCK",  mStockTabLayout.getSelectedTabPosition());
         outState.putInt("SELECTED_INTERVAL", mIntervalTabLayout.getSelectedTabPosition());
-        List<Stock> stocks = new ArrayList<Stock>();
+        List<Equity> equities = new ArrayList<Equity>();
         for (int i =0; i < mStockTabLayout.getTabCount(); ++i)
-            stocks.add((Stock)mStockTabLayout.getTabAt(i).getTag());
+            equities.add((Equity)mStockTabLayout.getTabAt(i).getTag());
 
-        Stock.saveTo(outState, stocks);
+        Equity.saveTo(outState, equities);
     }
 
     @Override
@@ -299,11 +298,11 @@ public class QuotesActivity extends AppCompatActivity
                 finish();
                 break;
             case R.id.change_watchlist_status:
-                Stock stock = (Stock)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
-                int watchListIndex = ApplicationContext.getWatchListIndex(stock);
+                Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
+                int watchListIndex = ApplicationContext.getWatchListIndex(equity);
                 if (watchListIndex == -1)
                 {
-                    ApplicationContext.addToWatchList(stock);
+                    ApplicationContext.addToWatchList(equity);
                     mChangeWatchListStatus.setIcon(R.drawable.ic_remove_secondary_24dp);
                 }
                 else
@@ -357,8 +356,8 @@ public class QuotesActivity extends AppCompatActivity
 
     private void updateChangeWatchListStatus()
     {
-        Stock stock = (Stock)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
-        int watchListIndex = ApplicationContext.getWatchListIndex(stock);
+        Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
+        int watchListIndex = ApplicationContext.getWatchListIndex(equity);
         if (watchListIndex == -1)
             mChangeWatchListStatus.setIcon(R.drawable.ic_add_secondary_24dp);
         else
@@ -404,7 +403,7 @@ public class QuotesActivity extends AppCompatActivity
                 interval = QuoteQuery.Interval.OneMonth;
                 break;
         }
-        mLastQueryContext.query = new QuoteQuery(mStock.getSymbol(), period, interval);
+        mLastQueryContext.query = new QuoteQuery(mEquity.getSymbol(), period, interval);
         mLastQueryContext.results = null;
         mQuoteTask = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
         mQuoteTask.execute(mLastQueryContext.query);
@@ -527,7 +526,7 @@ public class QuotesActivity extends AppCompatActivity
     {
         if (quote == mPeriodQuote)
         {
-            mHeaderTextOne.setText(mStock.getCompany());
+            mHeaderTextOne.setText(mEquity.getName());
             mHeaderTextTwo.setVisibility(View.GONE);
         }
         else
@@ -545,11 +544,11 @@ public class QuotesActivity extends AppCompatActivity
     }
 
 
-    private TabLayout.Tab createTabForStock(Stock stock)
+    private TabLayout.Tab createTabForStock(Equity equity)
     {
         TabLayout.Tab tab = mStockTabLayout.newTab();
-        tab.setText(stock.getSymbol());
-        tab.setTag(stock);
+        tab.setText(equity.getSymbol());
+        tab.setTag(equity);
         return tab;
     }
 }

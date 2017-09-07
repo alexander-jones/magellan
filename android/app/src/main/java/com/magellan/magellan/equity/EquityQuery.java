@@ -1,12 +1,12 @@
-package com.magellan.magellan.stock;
+package com.magellan.magellan.equity;
 
 import java.util.List;
 
-public class StockQuery {
+public class EquityQuery {
     public String symbolTemplate;
     public List<String> mRestrictToExchanges;
 
-    public StockQuery(String inSymbolTemplate, List<String> restrictToExchanges)
+    public EquityQuery(String inSymbolTemplate, List<String> restrictToExchanges)
     {
         symbolTemplate = inSymbolTemplate;
         mRestrictToExchanges = restrictToExchanges;

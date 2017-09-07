@@ -1,4 +1,4 @@
-package com.magellan.magellan.stock;
+package com.magellan.magellan.equity;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
@@ -14,13 +14,13 @@ import com.magellan.magellan.R;
 
 import java.util.List;
 
-public class StockAdapter extends ArrayAdapter<Stock> implements View.OnClickListener
+public class EquityAdapter extends ArrayAdapter<Equity> implements View.OnClickListener
 {
-    private final List<Stock> mItems;
+    private final List<Equity> mItems;
     private final Context mContext;
     private final LayoutInflater mInflater;
 
-    public StockAdapter (Context context, List<Stock> items)
+    public EquityAdapter(Context context, List<Equity> items)
     {
         super(context, R.layout.stock_row);
 
@@ -33,7 +33,7 @@ public class StockAdapter extends ArrayAdapter<Stock> implements View.OnClickLis
     public View getView(int position, View convertView, ViewGroup parent)
     {
         ViewHolder holder;
-        Stock stock = getItem(position);
+        Equity equity = getItem(position);
         if (convertView == null)
         {
             convertView = mInflater.inflate(R.layout.stock_row, null);
@@ -49,15 +49,15 @@ public class StockAdapter extends ArrayAdapter<Stock> implements View.OnClickLis
             holder = (ViewHolder)convertView.getTag();
         }
 
-        holder.changeWatchListStatus.setTag(stock);
+        holder.changeWatchListStatus.setTag(equity);
 
-        if (ApplicationContext.getWatchListIndex(stock) == -1)
+        if (ApplicationContext.getWatchListIndex(equity) == -1)
             holder.changeWatchListStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_add_24dp));
         else
             holder.changeWatchListStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_remove_24dp));
 
-        holder.symbol.setText(stock.getSymbol());
-        holder.company.setText(stock.getCompany());
+        holder.symbol.setText(equity.getSymbol());
+        holder.company.setText(equity.getName());
 
         return convertView;
     }
@@ -69,7 +69,7 @@ public class StockAdapter extends ArrayAdapter<Stock> implements View.OnClickLis
     }
 
     @Override
-    public Stock getItem(int position)
+    public Equity getItem(int position)
     {
         return mItems.get(position);
     }
@@ -77,11 +77,11 @@ public class StockAdapter extends ArrayAdapter<Stock> implements View.OnClickLis
     @Override
     public void onClick(View view) {
         ImageButton button = (ImageButton)view;
-        Stock stock = (Stock)view.getTag();
-        int curStockIndex = ApplicationContext.getWatchListIndex(stock);
+        Equity equity = (Equity)view.getTag();
+        int curStockIndex = ApplicationContext.getWatchListIndex(equity);
         if (curStockIndex == -1)
         {
-            if (ApplicationContext.addToWatchList(stock))
+            if (ApplicationContext.addToWatchList(equity))
                 button.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_remove_24dp));
         }
         else

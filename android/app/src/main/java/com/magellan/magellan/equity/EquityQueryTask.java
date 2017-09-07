@@ -1,28 +1,28 @@
-package com.magellan.magellan.stock;
+package com.magellan.magellan.equity;
 
 import android.os.AsyncTask;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StockQueryTask extends AsyncTask<StockQuery, Integer, Long> {
-    private IStockQueryListener mListener;
-    private List<List<Stock>> mResult;
-    private IStockService mService;
+public class EquityQueryTask extends AsyncTask<EquityQuery, Integer, Long> {
+    private IEquityQueryListener mListener;
+    private List<List<Equity>> mResult;
+    private IEquityService mService;
 
-    public StockQueryTask(IStockService service, IStockQueryListener listener)
+    public EquityQueryTask(IEquityService service, IEquityQueryListener listener)
     {
         super();
         mListener = listener;
         mService = service;
     }
 
-    protected Long doInBackground(StockQuery... queries) {
+    protected Long doInBackground(EquityQuery... queries) {
         int count = queries.length;
         long result = 0;
-        mResult = new ArrayList<List<Stock>>();
+        mResult = new ArrayList<List<Equity>>();
         for (int i = 0; i < count; i++) {
-            StockQuery query = queries[i];
+            EquityQuery query = queries[i];
             mResult.add(mService.execute(query));
             if (isCancelled()) break;
         }
