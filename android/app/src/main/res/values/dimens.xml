@@ -17,6 +17,7 @@
     <dimen name="double_spacing_dialog">30dp</dimen>
     <dimen name="largest_header_text_size">25sp</dimen>
     <dimen name="large_header_text_size">20sp</dimen>
+    <dimen name="medium_header_text_size">17sp</dimen>
     <dimen name="small_header_text_size">15sp</dimen>
     <dimen name="icon_size">300dp</dimen>
     <dimen name="elevation">5dp</dimen>
