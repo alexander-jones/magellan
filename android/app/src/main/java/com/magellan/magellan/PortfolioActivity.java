@@ -1,6 +1,8 @@
 package com.magellan.magellan;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -17,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,7 +31,6 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.magellan.magellan.metric.ILineDataSetStyler;
-import com.magellan.magellan.metric.MetricLayerButtonAdapter;
 import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.quote.IQuoteQueryListener;
@@ -86,16 +88,17 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private HashMap<QuoteQuery, Equity> indexQueriesInFlight = new HashMap<QuoteQuery, Equity>();
 
     private List<Integer> mComparisonColors = new ArrayList<Integer>();
-    private List<Equity> mComparisones = new ArrayList<Equity>();
+    private List<Equity> mComparisonEquities = new ArrayList<Equity>();
     private List<String> mComparisonItemLabels = new ArrayList<String>();
-    private List<IndexContext> mComparisonContexts = new ArrayList<IndexContext>();
+    private List<ComparisonContext> mComparisonContexts = new ArrayList<ComparisonContext>();
 
+    private int           mComparisonDisabledColor;
     private CombinedChart mComparisonChart;
     private CombinedData mComparisonData = new CombinedData();
     private LinearLayout.LayoutParams mComparisonPriceLayoutParams;
     private LinearLayout mComparisonPriceContainer;
     private RecyclerView mComparisonItemButtonContainer;
-    private MetricLayerButtonAdapter mComparisonItemButtonAdapter;
+    private ButtonAdapter mComparisonItemButtonAdapter;
     private ImageButton mEditLayersButton;
 
     private class WatchListStockContext
@@ -111,20 +114,24 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         List<Quote> quotes;
     }
 
-    private class IndexContext
+    private class ComparisonContext
     {
-        public IndexContext(TextView priceTextView, int color)
+        public ComparisonContext(TextView priceTextView, int c)
         {
             price = priceTextView;
-            layer = new PriceLineLayer(new LineDataSetStyler(color));
+            layer = new PriceLineLayer(new LineDataSetStyler(c));
             original_quotes = null;
             normalized_quotes = null;
+            enabled = true;
+            color = c;
         }
 
         TextView price;
         PriceLineLayer layer;
         List<Quote> original_quotes;
         List<Quote> normalized_quotes;
+        boolean enabled;
+        int color;
     }
 
     @Override
@@ -149,26 +156,27 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         mComparisonPriceLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         mComparisonPriceLayoutParams.setMargins(0, (int)getResources().getDimension(R.dimen.spacing_internal), (int)getResources().getDimension(R.dimen.spacing_external),0);
 
-        mComparisones = new ArrayList<Equity>(ApplicationContext.getComparisonEquities());
+        mComparisonDisabledColor = ContextCompat.getColor(PortfolioActivity.this, R.color.colorSecondaryDark);
+        mComparisonEquities = new ArrayList<Equity>(ApplicationContext.getComparisonEquities());
         mComparisonColors = new ArrayList<Integer>(ApplicationContext.getComparisonEquityColors());
-        for (int i =0; i < mComparisones.size(); ++i)
-            mComparisonItemLabels.add(mComparisones.get(i).getSymbol());
+        for (int i =0; i < mComparisonEquities.size(); ++i)
+            mComparisonItemLabels.add(mComparisonEquities.get(i).getSymbol());
 
         mComparisonGeneration = ApplicationContext.getComparisonEquityGeneration();
         mEditLayersButton = (ImageButton) findViewById(R.id.edit_layers);
         mEditLayersButton.setOnClickListener(this);
         mComparisonPriceContainer = (LinearLayout) findViewById(R.id.price_container);
         mComparisonItemButtonContainer = (RecyclerView) findViewById(R.id.comparison_layers);
-        mComparisonItemButtonAdapter = new MetricLayerButtonAdapter(mComparisonItemLabels, mComparisonColors);
+        mComparisonItemButtonAdapter = new ComparisonButtonAdapter(mComparisonItemLabels, mComparisonColors);
         mComparisonItemButtonContainer.setAdapter(mComparisonItemButtonAdapter);
 
         mComparisonChart = (CombinedChart)findViewById(R.id.comparison_chart);
-        for (int i =0; i < mComparisones.size(); ++i)
+        for (int i =0; i < mComparisonEquities.size(); ++i)
         {
-            Equity index = mComparisones.get(i);
+            Equity index = mComparisonEquities.get(i);
             TextView textView = createPriceTextView(mComparisonColors.get(i));
             mComparisonPriceContainer.addView(textView, mComparisonPriceLayoutParams);
-            mComparisonContexts.add(new IndexContext(textView, mComparisonColors.get(i)));
+            mComparisonContexts.add(new ComparisonContext(textView, mComparisonColors.get(i)));
             QuoteQuery query = new QuoteQuery(index.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
             indexQueriesInFlight.put(query, index);
             QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
@@ -227,8 +235,45 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
         ith.attachToRecyclerView(mWatchListContainer);
 
+        onLoadInstanceState(savedInstanceState);
         for (Equity equity : mWatchListItems)
             lanchTaskForStock(equity);
+
+    }
+
+    public void onLoadInstanceState(Bundle inState)
+    {
+        if (inState == null)
+            return;
+
+        int disabledIndex = 0;
+        int associatedIndex = -1;
+        do
+        {
+            associatedIndex = inState.getInt("DISABLED_" + Integer.toString(disabledIndex), -1);
+            if (associatedIndex != -1) {
+                mComparisonContexts.get(associatedIndex).enabled = false;
+                mComparisonColors.set(associatedIndex, mComparisonDisabledColor);
+            }
+            else
+                break;
+            ++disabledIndex;
+        }
+        while (true);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        int disabledIndex = 0;
+        for (int i =0; i < mComparisonContexts.size(); ++i)
+        {
+            ComparisonContext ctx = mComparisonContexts.get(i);
+            if (!ctx.enabled) {
+                outState.putInt("DISABLED_" + Integer.toString(disabledIndex), i);
+                ++disabledIndex;
+            }
+        }
     }
 
     private TextView createPriceTextView(int color)
@@ -332,8 +377,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             }
             else
             {
-                int position = mComparisones.indexOf(equity);
-                IndexContext chartCtx = mComparisonContexts.get(position);
+                int position = mComparisonEquities.indexOf(equity);
+                ComparisonContext chartCtx = mComparisonContexts.get(position);
 
                 float range = highestPrice - lowestPrice;
                 chartCtx.normalized_quotes = new ArrayList<Quote>(quotes.size());
@@ -348,7 +393,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 }
 
                 chartCtx.price.setText(PriceMetric.valueToString(finalQuote.close));
-                chartCtx.layer.onDrawQuotes(chartCtx.normalized_quotes, missingStartSteps, missingEndSteps, mComparisonData);
+                if (chartCtx.enabled)
+                    chartCtx.layer.onDrawQuotes(chartCtx.normalized_quotes, missingStartSteps, missingEndSteps, mComparisonData);
 
                 mComparisonChart.setData(mComparisonData);
                 mComparisonChart.notifyDataSetChanged();
@@ -395,11 +441,11 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         {
             List<Equity> equities = ApplicationContext.getComparisonEquities();
             List<Integer> colors = ApplicationContext.getComparisonEquityColors();
-            HashMap<Integer, IndexContext> commonContexts = new HashMap<Integer, IndexContext>();
+            HashMap<Integer, ComparisonContext> commonContexts = new HashMap<Integer, ComparisonContext>();
 
-            for (int i = 0; i < mComparisones.size(); )
+            for (int i = 0; i < mComparisonEquities.size(); )
             {
-                Equity equity = mComparisones.get(i);
+                Equity equity = mComparisonEquities.get(i);
 
                 int newIndex = -1;
                 for (int j = 0; j < equities.size(); ++j)
@@ -414,7 +460,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 if (newIndex == -1)
                 {
                     mComparisonPriceContainer.removeViewAt(i);
-                    mComparisones.remove(i);
+                    mComparisonEquities.remove(i);
                 }
                 else
                 {
@@ -425,25 +471,25 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
             mComparisonItemLabels.clear();
             mComparisonContexts.clear();
-            mComparisones.clear();
-            mComparisones.addAll(equities);
+            mComparisonEquities.clear();
+            mComparisonEquities.addAll(equities);
             mComparisonColors.clear();
             mComparisonColors.addAll(colors);
 
             LineData ld = mComparisonData.getLineData();
             if (ld != null)
                 ld.clearValues();
-            for (int i = 0; i < mComparisones.size(); ++i)
+            for (int i = 0; i < mComparisonEquities.size(); ++i)
             {
-                Equity equity = mComparisones.get(i);
-                IndexContext existingContext = commonContexts.get(i);
+                Equity equity = mComparisonEquities.get(i);
+                ComparisonContext existingContext = commonContexts.get(i);
                 mComparisonItemLabels.add(equity.getSymbol());
                 if (existingContext == null)
                 {
                     int color = mComparisonColors.get(i);
                     TextView textView = createPriceTextView(color);
                     mComparisonPriceContainer.addView(textView, i, mComparisonPriceLayoutParams);
-                    mComparisonContexts.add(new IndexContext(textView, color));
+                    mComparisonContexts.add(new ComparisonContext(textView, color));
                     QuoteQuery query = new QuoteQuery(equity.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
                     indexQueriesInFlight.put(query, equity);
                     QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
@@ -453,7 +499,10 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 {
                     existingContext.layer.setStyler(new LineDataSetStyler(mComparisonColors.get(i)));
                     mComparisonContexts.add(existingContext);
-                    existingContext.layer.onDrawQuotes(existingContext.normalized_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+                    if (existingContext.enabled)
+                        existingContext.layer.onDrawQuotes(existingContext.normalized_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+                    else
+                        mComparisonColors.set(i, mComparisonDisabledColor);
                 }
             }
             mComparisonItemButtonAdapter.notifyDataSetChanged();
@@ -523,5 +572,60 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
         QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
         task.execute(query);
+    }
+
+    private void redrawComparisonChart()
+    {
+        LineData ld = mComparisonData.getLineData();
+        if (ld != null)
+            ld.clearValues();
+        for (int i = 0; i < mComparisonEquities.size(); ++i)
+        {
+            ComparisonContext ctx = mComparisonContexts.get(i);
+            if (ctx.enabled)
+                ctx.layer.onDrawQuotes(ctx.normalized_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+        }
+        mComparisonItemButtonAdapter.notifyDataSetChanged();
+        mComparisonChart.setData(mComparisonData);
+        mComparisonChart.notifyDataSetChanged();
+        mComparisonChart.fitScreen();
+    }
+
+    private class ComparisonButtonAdapter extends ButtonAdapter
+    {
+        ComparisonButtonAdapter(List<String> labels, List<Integer> colors)
+        {
+            super(labels, colors);
+        }
+
+        @Override
+        public void onButtonPressed(Button button)
+        {
+            CharSequence symbol = button.getText();
+            int index = -1;
+            for (int i =0 ; i < mComparisonEquities.size(); ++i)
+            {
+                if (mComparisonEquities.get(i).getSymbol().equals(symbol))
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            ComparisonContext ctx = mComparisonContexts.get(index);
+            if (ctx.enabled)
+            {
+                mComparisonColors.set(index, mComparisonDisabledColor);
+                ctx.enabled = false;
+            }
+            else
+            {
+                mComparisonColors.set(index, ctx.color);
+                ctx.enabled = true;
+            }
+
+            notifyItemChanged(index);
+            redrawComparisonChart();
+        }
     }
 }

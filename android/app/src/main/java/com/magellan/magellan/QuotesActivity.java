@@ -20,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -33,7 +34,6 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.magellan.magellan.equity.Equity;
 import com.magellan.magellan.metric.ILineDataSetStyler;
 import com.magellan.magellan.metric.IMetricLayer;
-import com.magellan.magellan.metric.MetricLayerButtonAdapter;
 import com.magellan.magellan.metric.price.PriceCandleLayer;
 import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
@@ -90,9 +90,9 @@ public class QuotesActivity extends AppCompatActivity
     private TextView mPriceText;
     private TextView mVolumeText;
     private RecyclerView mPriceLayersContainer;
-    private MetricLayerButtonAdapter mPriceLayerAdapter;
+    private ButtonAdapter mPriceLayerAdapter;
     private RecyclerView mVolumeLayersContainer;
-    private MetricLayerButtonAdapter mVolumeLayerAdapter;
+    private ButtonAdapter mVolumeLayerAdapter;
     private MenuItem mChangeStatus;
 
     private TabLayout mIntervalTabLayout;
@@ -159,7 +159,7 @@ public class QuotesActivity extends AppCompatActivity
         List<String> priceLayerLabels = new ArrayList<String>();
         for (IMetricLayer layer : mPriceLayers)
             priceLayerLabels.add(layer.getShortName());
-        mPriceLayerAdapter = new MetricLayerButtonAdapter(priceLayerLabels);
+        mPriceLayerAdapter = new MetricButtonAdapter(priceLayerLabels);
         mPriceLayersContainer.setAdapter(mPriceLayerAdapter);
 
         View volumeCard = findViewById(R.id.volume_card);
@@ -182,7 +182,7 @@ public class QuotesActivity extends AppCompatActivity
         List<String> volumeLayerLabels = new ArrayList<String>();
         for (IMetricLayer layer : mVolumeLayers)
             volumeLayerLabels.add(layer.getShortName());
-        mVolumeLayerAdapter = new MetricLayerButtonAdapter(volumeLayerLabels);
+        mVolumeLayerAdapter = new MetricButtonAdapter(volumeLayerLabels);
         mVolumeLayersContainer.setAdapter(mVolumeLayerAdapter);
 
         int currentStock = onLoadInstanceState(savedInstanceState);
@@ -550,5 +550,19 @@ public class QuotesActivity extends AppCompatActivity
         tab.setText(equity.getSymbol());
         tab.setTag(equity);
         return tab;
+    }
+
+    private class MetricButtonAdapter extends ButtonAdapter
+    {
+        MetricButtonAdapter(List<String> labels)
+        {
+            super(labels);
+        }
+
+        @Override
+        public void onButtonPressed(Button button)
+        {
+
+        }
     }
 }
