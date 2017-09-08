@@ -31,6 +31,14 @@
         <item name="actionMenuTextColor">@color/colorPrimary</item>
         <item name="windowActionBar">false</item>
     </style>
+    <!-- Alert Dialog -->
+    <style name="AppTheme.AlertDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:textColorPrimary">@color/colorPrimary</item>
+        <item name="android:colorBackground">@color/colorSecondary</item>
+        <item name="android:windowBackground">@color/colorSecondaryDarkAlpha</item>
+    </style>
+
     <style name="AppTheme.Overlay.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="AppTheme.Overlay.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
         <item name="android:background">@color/colorPrimary</item>

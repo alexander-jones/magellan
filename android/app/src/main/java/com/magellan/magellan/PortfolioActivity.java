@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -35,12 +36,10 @@ import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.QuoteQueryTask;
 import com.magellan.magellan.equity.Equity;
-import com.magellan.magellan.equity.EquityQueryActivity;
 
 import org.joda.time.Duration;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +72,10 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private LineDataSetStyler mPriceDownLineStyler;
 
     private int mWachListGeneration;
+    private int mComparisonGeneration;
+    private int mLastMissingStartSteps;
+    private int mLastMissingEndSteps;
+
     private DrawerLayout mDrawerLayout;
     ActionBarDrawerToggle mDrawerToggle;
     private RecyclerView mWatchListContainer;
@@ -82,16 +85,18 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private HashMap<QuoteQuery, Equity> stockQueriesInFlight = new HashMap<QuoteQuery, Equity>();
     private HashMap<QuoteQuery, Equity> indexQueriesInFlight = new HashMap<QuoteQuery, Equity>();
 
-    private CombinedChart mIndexChart;
-    private List<Equity> mIndexes = new ArrayList<Equity>();
-    private List<IndexContext> mIndexContexts = new ArrayList<IndexContext>();
-    private CombinedData mIndexData = new CombinedData();
-    private LinearLayout.LayoutParams mIndexPriceLayoutParams;
-    private LinearLayout mIndexPriceContainer;
-    private RecyclerView mIndexItemButtonContainer;
-    private MetricLayerButtonAdapter mIndexItemButtonAdapter;
-    private List<String> mIndexItemLabels = new ArrayList<String>();
-    private List<Integer> mIndexColors = new ArrayList<Integer>();
+    private List<Integer> mComparisonColors = new ArrayList<Integer>();
+    private List<Equity> mComparisones = new ArrayList<Equity>();
+    private List<String> mComparisonItemLabels = new ArrayList<String>();
+    private List<IndexContext> mComparisonContexts = new ArrayList<IndexContext>();
+
+    private CombinedChart mComparisonChart;
+    private CombinedData mComparisonData = new CombinedData();
+    private LinearLayout.LayoutParams mComparisonPriceLayoutParams;
+    private LinearLayout mComparisonPriceContainer;
+    private RecyclerView mComparisonItemButtonContainer;
+    private MetricLayerButtonAdapter mComparisonItemButtonAdapter;
+    private ImageButton mEditLayersButton;
 
     private class WatchListStockContext
     {
@@ -141,36 +146,36 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mIndexPriceLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        mIndexPriceLayoutParams.setMargins(0, (int)getResources().getDimension(R.dimen.spacing_internal), (int)getResources().getDimension(R.dimen.spacing_external),0);
+        mComparisonPriceLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        mComparisonPriceLayoutParams.setMargins(0, (int)getResources().getDimension(R.dimen.spacing_internal), (int)getResources().getDimension(R.dimen.spacing_external),0);
 
-        mIndexes =  Arrays.asList(new Equity("SPX", "S&P 500", "N/A", "Index"), new Equity("DJIA", "Dow Jones", "N/A", "Index"), new Equity("IXIC", "NASDAQ", "N/A", "Index"));
-        int [] indexColors = {ContextCompat.getColor(this, R.color.colorAccentPrimary), ContextCompat.getColor(this, R.color.colorAccentSecondary), ContextCompat.getColor(this, R.color.colorAccentTertiary)};
-        for (int i =0; i < mIndexes.size(); ++i)
+        mComparisones = new ArrayList<Equity>(ApplicationContext.getComparisonEquities());
+        mComparisonColors = new ArrayList<Integer>(ApplicationContext.getComparisonEquityColors());
+        for (int i =0; i < mComparisones.size(); ++i)
+            mComparisonItemLabels.add(mComparisones.get(i).getSymbol());
+
+        mComparisonGeneration = ApplicationContext.getComparisonEquityGeneration();
+        mEditLayersButton = (ImageButton) findViewById(R.id.edit_layers);
+        mEditLayersButton.setOnClickListener(this);
+        mComparisonPriceContainer = (LinearLayout) findViewById(R.id.price_container);
+        mComparisonItemButtonContainer = (RecyclerView) findViewById(R.id.comparison_layers);
+        mComparisonItemButtonAdapter = new MetricLayerButtonAdapter(mComparisonItemLabels, mComparisonColors);
+        mComparisonItemButtonContainer.setAdapter(mComparisonItemButtonAdapter);
+
+        mComparisonChart = (CombinedChart)findViewById(R.id.comparison_chart);
+        for (int i =0; i < mComparisones.size(); ++i)
         {
-            mIndexItemLabels.add(mIndexes.get(i).getName());
-            mIndexColors.add(indexColors[i]);
-        }
-
-        mIndexPriceContainer = (LinearLayout) findViewById(R.id.price_container);
-        mIndexItemButtonContainer = (RecyclerView) findViewById(R.id.index_layers);
-        mIndexItemButtonAdapter = new MetricLayerButtonAdapter(mIndexItemLabels, mIndexColors);
-        mIndexItemButtonContainer.setAdapter(mIndexItemButtonAdapter);
-
-        mIndexChart = (CombinedChart)findViewById(R.id.index_chart);
-        for (int i =0; i < mIndexes.size(); ++i)
-        {
-            Equity index = mIndexes.get(i);
-            TextView textView = createPriceTextView(indexColors[i]);
-            mIndexPriceContainer.addView(textView, mIndexPriceLayoutParams);
-            mIndexContexts.add(new IndexContext(textView, indexColors[i]));
+            Equity index = mComparisones.get(i);
+            TextView textView = createPriceTextView(mComparisonColors.get(i));
+            mComparisonPriceContainer.addView(textView, mComparisonPriceLayoutParams);
+            mComparisonContexts.add(new IndexContext(textView, mComparisonColors.get(i)));
             QuoteQuery query = new QuoteQuery(index.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
             indexQueriesInFlight.put(query, index);
             QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
             task.execute(query);
         }
 
-        ApplicationContext.initializeSimpleChart(this, mIndexChart);
+        ApplicationContext.initializeSimpleChart(this, mComparisonChart);
 
         mPriceUpLineStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPriceUp));
         mPriceDownLineStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPriceDown));
@@ -267,6 +272,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     highestPrice = q.high;
             }
 
+            mLastMissingStartSteps = missingStartSteps;
+            mLastMissingEndSteps = missingEndSteps;
             Equity equity = indexQueriesInFlight.remove(query);
             if (equity == null)
             {
@@ -325,8 +332,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             }
             else
             {
-                int position = mIndexes.indexOf(equity);
-                IndexContext chartCtx = mIndexContexts.get(position);
+                int position = mComparisones.indexOf(equity);
+                IndexContext chartCtx = mComparisonContexts.get(position);
 
                 float range = highestPrice - lowestPrice;
                 chartCtx.normalized_quotes = new ArrayList<Quote>(quotes.size());
@@ -341,11 +348,11 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 }
 
                 chartCtx.price.setText(PriceMetric.valueToString(finalQuote.close));
-                chartCtx.layer.onDrawQuotes(chartCtx.normalized_quotes, missingStartSteps, missingEndSteps, mIndexData);
+                chartCtx.layer.onDrawQuotes(chartCtx.normalized_quotes, missingStartSteps, missingEndSteps, mComparisonData);
 
-                mIndexChart.setData(mIndexData);
-                mIndexChart.notifyDataSetChanged();
-                mIndexChart.fitScreen();
+                mComparisonChart.setData(mComparisonData);
+                mComparisonChart.notifyDataSetChanged();
+                mComparisonChart.fitScreen();
             }
         }
     }
@@ -381,6 +388,78 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             Intent intent = new Intent(this, QuotesActivity.class);
             Equity.saveTo(intent, stocksChosen);
             startActivityForResult(intent, 1);
+        }
+
+        int newComparisonGeneration = ApplicationContext.getWatchListGeneration();
+        if (mComparisonGeneration != newComparisonGeneration)
+        {
+            List<Equity> equities = ApplicationContext.getComparisonEquities();
+            List<Integer> colors = ApplicationContext.getComparisonEquityColors();
+            HashMap<Integer, IndexContext> commonContexts = new HashMap<Integer, IndexContext>();
+
+            for (int i = 0; i < mComparisones.size(); )
+            {
+                Equity equity = mComparisones.get(i);
+
+                int newIndex = -1;
+                for (int j = 0; j < equities.size(); ++j)
+                {
+                    if (equities.get(j).equals(equity))
+                    {
+                        newIndex = j;
+                        break;
+                    }
+                }
+
+                if (newIndex == -1)
+                {
+                    mComparisonPriceContainer.removeViewAt(i);
+                    mComparisones.remove(i);
+                }
+                else
+                {
+                    commonContexts.put(newIndex, mComparisonContexts.get(i));
+                    ++i;
+                }
+            }
+
+            mComparisonItemLabels.clear();
+            mComparisonContexts.clear();
+            mComparisones.clear();
+            mComparisones.addAll(equities);
+            mComparisonColors.clear();
+            mComparisonColors.addAll(colors);
+
+            LineData ld = mComparisonData.getLineData();
+            if (ld != null)
+                ld.clearValues();
+            for (int i = 0; i < mComparisones.size(); ++i)
+            {
+                Equity equity = mComparisones.get(i);
+                IndexContext existingContext = commonContexts.get(i);
+                mComparisonItemLabels.add(equity.getSymbol());
+                if (existingContext == null)
+                {
+                    int color = mComparisonColors.get(i);
+                    TextView textView = createPriceTextView(color);
+                    mComparisonPriceContainer.addView(textView, i, mComparisonPriceLayoutParams);
+                    mComparisonContexts.add(new IndexContext(textView, color));
+                    QuoteQuery query = new QuoteQuery(equity.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
+                    indexQueriesInFlight.put(query, equity);
+                    QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
+                    task.execute(query);
+                }
+                else
+                {
+                    existingContext.layer.setStyler(new LineDataSetStyler(mComparisonColors.get(i)));
+                    mComparisonContexts.add(existingContext);
+                    existingContext.layer.onDrawQuotes(existingContext.normalized_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+                }
+            }
+            mComparisonItemButtonAdapter.notifyDataSetChanged();
+            mComparisonChart.setData(mComparisonData);
+            mComparisonChart.notifyDataSetChanged();
+            mComparisonChart.fitScreen();
         }
     }
 
@@ -424,9 +503,17 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
     @Override
     public void onClick(View view) {
-        Intent intent = new Intent(this, QuotesActivity.class);
-        intent.putExtra("WATCHLIST_ITEM", mWatchListItems.indexOf(view.getTag()));
-        startActivityForResult(intent, 1);
+        if (view == mEditLayersButton)
+        {
+            Intent intent = new Intent(this, EditComparisonEquitiesActivity.class);
+            startActivityForResult(intent, 1);
+        }
+        else
+        {
+            Intent intent = new Intent(this, QuotesActivity.class);
+            intent.putExtra("WATCHLIST_ITEM", mWatchListItems.indexOf(view.getTag()));
+            startActivityForResult(intent, 1);
+        }
     }
 
     private void lanchTaskForStock(Equity equity)

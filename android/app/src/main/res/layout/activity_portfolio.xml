@@ -84,7 +84,7 @@
                             android:background="@color/colorSecondaryDark">
 
                             <com.github.mikephil.charting.charts.CombinedChart
-                                android:id="@+id/index_chart"
+                                android:id="@+id/comparison_chart"
                                 android:layout_width="match_parent"
                                 android:layout_height="300dp"
                                 android:layout_below="@+id/value"/>
@@ -104,7 +104,7 @@
                             </LinearLayout>
 
                             <ProgressBar
-                                android:id="@+id/index_chart_progress"
+                                android:id="@+id/comparison_chart_progress"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_centerInParent="true"
@@ -114,13 +114,13 @@
                                 android:id="@+id/layers_container"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_below="@+id/index_chart"
+                                android:layout_below="@+id/comparison_chart"
                                 android:layout_alignParentBottom="true"
                                 android:layout_marginLeft="@dimen/spacing_internal"
                                 android:layout_marginRight="@dimen/spacing_internal">
 
                                 <android.support.v7.widget.RecyclerView
-                                    android:id="@+id/index_layers"
+                                    android:id="@+id/comparison_layers"
                                     android:layout_width="wrap_content"
                                     android:layout_height="@dimen/button_height"
                                     android:layout_marginRight="@dimen/spacing_internal"
@@ -131,12 +131,12 @@
                                     app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
 
                                 <ImageButton
-                                    android:id="@+id/add_layer"
+                                    android:id="@+id/edit_layers"
                                     android:layout_width="@dimen/button_height"
                                     android:layout_height="@dimen/button_height"
                                     android:layout_alignParentRight="true"
                                     android:layout_marginBottom="@dimen/spacing_internal"
-                                    android:src="@drawable/ic_add_24dp"
+                                    android:src="@drawable/ic_edit_24dp"
                                     android:background="@color/colorSecondaryDark"/>
                             </RelativeLayout>
                         </RelativeLayout>

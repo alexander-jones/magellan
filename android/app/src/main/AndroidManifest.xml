@@ -27,7 +27,12 @@
             android:windowSoftInputMode="adjustNothing"/>
 
         <activity
-            android:name=".equity.EquityQueryActivity"
+            android:name=".EditComparisonEquitiesActivity"
+            android:theme="@style/AppTheme.Overlay"
+            android:windowSoftInputMode="adjustNothing"/>
+
+        <activity
+            android:name=".EquityQueryActivity"
             android:theme="@style/AppTheme.Overlay"
             android:windowSoftInputMode="adjustResize"/>
     </application>

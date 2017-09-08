@@ -93,7 +93,7 @@ public class QuotesActivity extends AppCompatActivity
     private MetricLayerButtonAdapter mPriceLayerAdapter;
     private RecyclerView mVolumeLayersContainer;
     private MetricLayerButtonAdapter mVolumeLayerAdapter;
-    private MenuItem mChangeWatchListStatus;
+    private MenuItem mChangeStatus;
 
     private TabLayout mIntervalTabLayout;
 
@@ -284,7 +284,7 @@ public class QuotesActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.quotes, menu);
-        mChangeWatchListStatus = menu.findItem(R.id.change_watchlist_status);
+        mChangeStatus = menu.findItem(R.id.change_status);
         updateChangeWatchListStatus();
         return super.onCreateOptionsMenu(menu);
     }
@@ -297,18 +297,18 @@ public class QuotesActivity extends AppCompatActivity
                 setResult(Activity.RESULT_OK, new Intent());
                 finish();
                 break;
-            case R.id.change_watchlist_status:
+            case R.id.change_status:
                 Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
                 int watchListIndex = ApplicationContext.getWatchListIndex(equity);
                 if (watchListIndex == -1)
                 {
                     ApplicationContext.addToWatchList(equity);
-                    mChangeWatchListStatus.setIcon(R.drawable.ic_remove_secondary_24dp);
+                    mChangeStatus.setIcon(R.drawable.ic_remove_secondary_24dp);
                 }
                 else
                 {
                     ApplicationContext.removeFromWatchList(watchListIndex);
-                    mChangeWatchListStatus.setIcon(R.drawable.ic_add_secondary_24dp);
+                    mChangeStatus.setIcon(R.drawable.ic_add_secondary_24dp);
                 }
                 break;
             case R.id.settings:
@@ -359,9 +359,9 @@ public class QuotesActivity extends AppCompatActivity
         Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
         int watchListIndex = ApplicationContext.getWatchListIndex(equity);
         if (watchListIndex == -1)
-            mChangeWatchListStatus.setIcon(R.drawable.ic_add_secondary_24dp);
+            mChangeStatus.setIcon(R.drawable.ic_add_secondary_24dp);
         else
-            mChangeWatchListStatus.setIcon(R.drawable.ic_remove_secondary_24dp);
+            mChangeStatus.setIcon(R.drawable.ic_remove_secondary_24dp);
     }
 
     private void launchTaskForInterval(int position)

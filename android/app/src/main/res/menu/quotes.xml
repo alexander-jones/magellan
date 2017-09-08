@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/change_watchlist_status"
+        android:id="@+id/change_status"
         android:title="Add"
         android:icon="@drawable/ic_add_secondary_24dp"
         app:showAsAction="ifRoom" />

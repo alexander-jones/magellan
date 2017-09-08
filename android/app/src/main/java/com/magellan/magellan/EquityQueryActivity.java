@@ -1,9 +1,10 @@
-package com.magellan.magellan.equity;
+package com.magellan.magellan;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -16,8 +17,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.magellan.magellan.ApplicationContext;
-import com.magellan.magellan.R;
+import com.magellan.magellan.equity.Equity;
+import com.magellan.magellan.equity.EquityQuery;
+import com.magellan.magellan.equity.EquityQueryTask;
+import com.magellan.magellan.equity.IEquityQueryListener;
+import com.magellan.magellan.equity.IEquityService;
 import com.magellan.magellan.service.yahoo.YahooService;
 
 import java.util.ArrayList;
@@ -27,7 +31,7 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
 
     private ListView mList;
     private EquityQueryTask mTask;
-    private EquityAdapter mAdapter;
+    private EquityRowAdapter mAdapter;
     private List<Equity> mCurrentEquities = new ArrayList<Equity>();
     private IEquityService mService = new YahooService();
     private List<String> mSupportedExchanges = new ArrayList<String>();
@@ -45,7 +49,7 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
 
         setTitle("");
         mList =(ListView) findViewById(R.id.search_list_view);
-        mAdapter = new EquityAdapter(this, mCurrentEquities);
+        mAdapter = new EquityQueryRowAdapter(mCurrentEquities);
         mList.setAdapter(mAdapter);
         mList.setOnItemClickListener(this);
         mToolbar = (Toolbar)findViewById(R.id.toolbar);
@@ -181,6 +185,39 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        finishWithResult((Equity)((EquityAdapter.ViewHolder)view.getTag()).changeWatchListStatus.getTag());
+        finishWithResult((Equity)view.getTag());
+    }
+
+    private class EquityQueryRowAdapter extends EquityRowAdapter
+    {
+        EquityQueryRowAdapter(List<Equity> equities)
+        {
+            super(EquityQueryActivity.this, equities);
+        }
+
+        @Override
+        public void onInitialStatus(Equity equity, ViewHolder holder)
+        {
+            if (ApplicationContext.getWatchListIndex(equity) == -1)
+                holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_add_24dp));
+            else
+                holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_remove_24dp));
+        }
+
+        @Override
+        public void onChangeStatusPressed(Equity equity, ViewHolder holder)
+        {
+            int curStockIndex = ApplicationContext.getWatchListIndex(equity);
+            if (curStockIndex == -1)
+            {
+                if (ApplicationContext.addToWatchList(equity))
+                    holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_remove_24dp));
+            }
+            else
+            {
+                if (ApplicationContext.removeFromWatchList(curStockIndex))
+                    holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_add_24dp));
+            }
+        }
     }
 }
