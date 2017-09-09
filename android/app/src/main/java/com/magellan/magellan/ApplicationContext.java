@@ -392,11 +392,6 @@ public class ApplicationContext {
         sp.commit();
     }
 
-    private static DateTime getDayEndOfClose(DateTime time)
-    {
-        return time.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
-    }
-
     // initialize default settins for any charts in this activity
     public static void initializeSimpleChart(Context context, CombinedChart chart)
     {
@@ -432,87 +427,9 @@ public class ApplicationContext {
         rightAxis.setSpaceTop(0);
     }
 
-    public static DateTime getLastTradingDayCloseTime()
+    public static DateTime getCloseTimeWithSameDate(DateTime time)
     {
-        DateTime ret = DateTime.now(getChronology());
-        boolean correctedForEndOfDay = false;
-        boolean checkIfTradingDay = true;
-        while (checkIfTradingDay)
-        {
-            checkIfTradingDay = false;
-
-            DateTime currentTradingDate = ret.withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
-
-            int year = ret.year().get();
-            if (year == 2017)
-            {
-                for (StockMarketHolidays2017 holiday : StockMarketHolidays2017.values())
-                {
-                    if (holiday.date.isEqual(currentTradingDate))
-                    {
-                        ret = getDayEndOfClose(ret.minusDays(1));
-                        checkIfTradingDay = correctedForEndOfDay = true;
-                        break;
-                    }
-                }
-            }
-            else if (year == 2018)
-            {
-                for (StockMarketHolidays2018 holiday : StockMarketHolidays2018.values())
-                {
-                    if (holiday.date.isEqual(currentTradingDate))
-                    {
-                        ret = getDayEndOfClose(ret.minusDays(1));
-                        checkIfTradingDay = correctedForEndOfDay = true;
-                        break;
-                    }
-                }
-            }
-            else if (year == 2019)
-            {
-                for (StockMarketHolidays2019 holiday : StockMarketHolidays2019.values())
-                {
-                    if (holiday.date.isEqual(currentTradingDate))
-                    {
-                        ret = getDayEndOfClose(ret.minusDays(1));
-                        checkIfTradingDay = correctedForEndOfDay =  true;
-                        break;
-                    }
-                }
-            }
-            else
-                Log.e("Magellan", "ERROR: Holiday / Blacklist days not handed for year " + Integer.toString(year));
-
-            int hourOfDay = ret.hourOfDay().get();
-            int minuteOfDay = ret.minuteOfDay().get();
-
-            int endDay = ret.dayOfWeek().get();
-            if (endDay == 6)
-            {
-                ret = ret.minus(Duration.standardDays(1));
-                checkIfTradingDay = true;
-            }
-            else if (endDay == 7)
-            {
-                ret = ret.minus(Duration.standardDays(2));
-                checkIfTradingDay = true;
-            }
-            else if (hourOfDay < 9 || ( hourOfDay == 9  && minuteOfDay < 40)) // make sure we have at least 2 quotes (as line graphs will not work with one entry point)
-            {
-                checkIfTradingDay = true;
-
-                if (endDay == 1)
-                    ret = ret.minus(Duration.standardDays(3));
-                else
-                    ret = ret.minus(Duration.standardDays(1));
-            }
-
-            if (!correctedForEndOfDay)
-                ret = ret.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0); // 4:00 pm is NYSE close
-
-        }
-
-        return ret;
+        return time.withHourOfDay(16).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0); // 4:00 pm is NYSE close
     }
 
     public static DateTime getOpenTimeForCloseTime(DateTime closeTime)
@@ -520,60 +437,68 @@ public class ApplicationContext {
         return closeTime.minusHours(7).plusMinutes(30); // 9:30 EST is NYSE open*/
     }
 
-    public static DateTime getLastTradingDayFromTime(DateTime inTime)
+    public static DateTime getLastCloseDateTime()
     {
-        DateTime ret = inTime.minusDays(1);
-        boolean isTradingDay = false;
-        while (!isTradingDay)
+        DateTime now = DateTime.now(getTradingTimeZone());
+        return getLastTradingDateTimeFrom(now);
+    }
+
+    public static DateTime getLastTradingDateTimeFrom(DateTime inTime)
+    {
+        DateTime ret = inTime;
+        int hourOfDay = ret.hourOfDay().get();
+        int minuteOfHour = ret.minuteOfHour().get();
+        if (hourOfDay > 16)
+            ret = getCloseTimeWithSameDate(ret);
+        else if (hourOfDay < 9 || (hourOfDay == 9 && minuteOfHour < 30))
+            ret = getCloseTimeWithSameDate(ret.minusDays(1));
+
+        do
         {
-            isTradingDay = true;
+            int daysToUnwind = 0;
             int endDay = ret.dayOfWeek().get();
-            if (endDay == 6)
-            {
-                ret = ret.minus(Duration.standardDays(1));
-                isTradingDay = false;
-            }
-            else if (endDay == 7)
-            {
-                ret = ret.minus(Duration.standardDays(2));
-                isTradingDay = false;
-            }
+            if (endDay == 6) // Saturday?
+                daysToUnwind = 1;
+            else if (endDay == 7) // Sunday?
+                daysToUnwind = 2;
             else
             {
                 DateTime currentTradingDate = ret.withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);
-
                 int year = ret.year().get();
                 if (year == 2017) {
                     for (StockMarketHolidays2017 holiday : StockMarketHolidays2017.values()) {
                         if (holiday.date.isEqual(currentTradingDate)) {
-                            ret = getDayEndOfClose(ret.minusDays(1));
-                            isTradingDay = false;
+                            daysToUnwind = 1;
                             break;
                         }
                     }
                 } else if (year == 2018) {
                     for (StockMarketHolidays2018 holiday : StockMarketHolidays2018.values()) {
                         if (holiday.date.isEqual(currentTradingDate)) {
-                            ret = getDayEndOfClose(ret.minusDays(1));
-                            isTradingDay = false;
+                            daysToUnwind = 1;
                             break;
                         }
                     }
                 } else if (year == 2019) {
                     for (StockMarketHolidays2019 holiday : StockMarketHolidays2019.values()) {
                         if (holiday.date.isEqual(currentTradingDate)) {
-                            ret = getDayEndOfClose(ret.minusDays(1));
-                            isTradingDay = false;
+                            daysToUnwind = 1;
                             break;
                         }
                     }
-                } else
+                } else {
                     Log.e("Magellan", "ERROR: Holiday / Blacklist days not handed for year " + Integer.toString(year));
+                    break;
+                }
             }
 
-            if (!isTradingDay)
-                ret = ret.minusDays(1);
+            if (daysToUnwind == 0)
+                break;
+            else
+                ret = getCloseTimeWithSameDate(ret.minusDays(daysToUnwind));
         }
+        while (true);
+
         return ret;
     }
 

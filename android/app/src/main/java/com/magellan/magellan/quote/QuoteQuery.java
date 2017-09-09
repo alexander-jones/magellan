@@ -44,14 +44,14 @@ public class QuoteQuery
         period = p;
         interval = i;
 
-        end = ApplicationContext.getLastTradingDayCloseTime();
+        end = ApplicationContext.getLastCloseDateTime();
         switch (period)
         {
             case OneDay:
                 start = ApplicationContext.getOpenTimeForCloseTime(end);
                 return; // dont recompute open time
             case OneWeek:
-                start = end.minusWeeks(1); //ApplicationContext.getCloseTimeOneTradingWeekFromClose(end);
+                start = end.minusWeeks(1);
                 break;
             case OneMonth:
                 start = end.minusMonths(1);
@@ -72,7 +72,7 @@ public class QuoteQuery
                 Log.e("Magellan", "getStart(): period is corrupt");
         }
 
-        start = ApplicationContext.getLastTradingDayFromTime(start);
+        start = ApplicationContext.getLastTradingDateTimeFrom(start);
 
         if (interval.ordinal() < Interval.OneHour.ordinal()) // interval neatly spans from start to open.
             start = ApplicationContext.getOpenTimeForCloseTime(start);
@@ -101,6 +101,62 @@ public class QuoteQuery
             default:
                 Log.e("Magellan", "getIntervalAsDuration(): intervalUnit is corrupt");
                 return null;
+        }
+    }
+
+    public DateTime getLastStepFromTime(DateTime time)
+    {
+        if (time.isAfter(end))
+            return end;
+        else if (time.isBefore(start))
+            return null;
+
+        DateTime ret = ApplicationContext.getLastTradingDateTimeFrom(time);
+        switch (interval)
+        {
+            case OneMinute:
+                return ret.withSecondOfMinute(0).withMillisOfSecond(0);
+            case FiveMinutes:
+                return getLastTradingTimeEvenlyDivisibleByMinutes(ret, 5);
+            case FifteenMinutes:
+                return getLastTradingTimeEvenlyDivisibleByMinutes(ret, 15);
+            case ThirtyMinutes:
+                return getLastTradingTimeEvenlyDivisibleByMinutes(ret, 30);
+            case OneHour:
+                return getLastTradingTimeEvenlyDivisibleByMinutes(ret, 60);
+            case OneDay:
+                DateTime inputClose = ApplicationContext.getCloseTimeWithSameDate(time);
+                Duration diffSinceInputClose = new Duration(ret, inputClose);
+                if (diffSinceInputClose.getStandardDays() >= 1)
+                    return ret;
+                else
+                    return ApplicationContext.getLastTradingDateTimeFrom(inputClose.minusDays(1));
+            case OneWeek: //
+                return ApplicationContext.getLastTradingDateTimeFrom(ret.minusWeeks(1));
+            case OneMonth:
+                return ApplicationContext.getLastTradingDateTimeFrom(ret.minusMonths(1));
+            default:
+                Log.e("Magellan", "getIntervalAsDuration(): intervalUnit is corrupt");
+                return null;
+        }
+    }
+
+    private DateTime getLastTradingTimeEvenlyDivisibleByMinutes(DateTime time, int minutes)
+    {
+        int minuteOfHour = time.minuteOfHour().get();
+        int minutesSince = minuteOfHour % 5;
+        if (minuteOfHour % minutes == 0)
+            return time.withSecondOfMinute(0).withMillisOfSecond(0);
+        else
+        {
+            DateTime ret = time.minusMinutes(minutesSince).withSecondOfMinute(0).withMillisOfSecond(0);
+            int hourOfDay = ret.hourOfDay().get();
+            minuteOfHour -= minutesSince;
+            if (hourOfDay > 16) // 4:00 pm is NYSE close
+                ret = ApplicationContext.getCloseTimeWithSameDate(ret);
+            else if (hourOfDay < 9 || (hourOfDay == 9 && minuteOfHour < 30)) // 9:30 am is NYSE open
+                ret = ApplicationContext.getCloseTimeWithSameDate(ret.minusDays(1));
+            return  ret;
         }
     }
 }

@@ -121,7 +121,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             price = priceTextView;
             layer = new PriceLineLayer(new LineDataSetStyler(c));
             original_quotes = null;
-            normalized_quotes = null;
+            percent_difference_quotes = null;
             enabled = true;
             color = c;
         }
@@ -129,7 +129,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         TextView price;
         PriceLineLayer layer;
         List<Quote> original_quotes;
-        List<Quote> normalized_quotes;
+        List<Quote> percent_difference_quotes;
         boolean enabled;
         int color;
     }
@@ -306,17 +306,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
             int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
 
-            float lowestPrice = Float.MAX_VALUE;
-            float highestPrice = -Float.MAX_VALUE;
-            for (Quote q : quotes)
-            {
-                if (lowestPrice > q.low)
-                    lowestPrice = q.low;
-
-                if (highestPrice < q.high)
-                    highestPrice = q.high;
-            }
-
+            float startingOpen = initialQuote.open;
             mLastMissingStartSteps = missingStartSteps;
             mLastMissingEndSteps = missingEndSteps;
             Equity equity = indexQueriesInFlight.remove(query);
@@ -341,7 +331,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 }
 
                 // draw center line
-                float startingOpen = initialQuote.open;
                 ArrayList<Entry> centerLineValues = new ArrayList<Entry>();
                 centerLineValues.add(new Entry(0, startingOpen, null));
                 centerLineValues.add(new Entry(quotes.size() + missingStartSteps + missingEndSteps - 1, startingOpen, null));
@@ -368,6 +357,17 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
                 chartCtx.layer.onDrawQuotes(quotes, 0, 0, chartCtx.allData); // don't draw missing start / end steps when center line will pad data for us
 
+                float lowestPrice = Float.MAX_VALUE;
+                float highestPrice = -Float.MAX_VALUE;
+                for (Quote q : quotes)
+                {
+                    if (lowestPrice > q.low)
+                        lowestPrice = q.low;
+
+                    if (highestPrice < q.high)
+                        highestPrice = q.high;
+                }
+
                 float fromCenterToExtent = Math.max(highestPrice - startingOpen, startingOpen - lowestPrice);
                 vh.chart.getAxisLeft().setAxisMaximum(startingOpen + fromCenterToExtent);
                 vh.chart.getAxisLeft().setAxisMinimum(startingOpen - fromCenterToExtent);
@@ -380,21 +380,20 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 int position = mComparisonEquities.indexOf(equity);
                 ComparisonContext chartCtx = mComparisonContexts.get(position);
 
-                float range = highestPrice - lowestPrice;
-                chartCtx.normalized_quotes = new ArrayList<Quote>(quotes.size());
+                chartCtx.percent_difference_quotes = new ArrayList<Quote>(quotes.size());
                 chartCtx.original_quotes = quotes;
                 for (Quote q : quotes)
                 {
-                    float open = (q.open - lowestPrice) / range;
-                    float close = (q.open - lowestPrice) / range;
-                    float low = (q.open - lowestPrice) / range;
-                    float high = (q.open - lowestPrice) / range;
-                    chartCtx.normalized_quotes.add(new Quote(q.time, open, close, low, high, q.volume));
+                    float open = (q.open / startingOpen) - 1.0f;
+                    float close =  (q.close / startingOpen) - 1.0f;
+                    float low =(q.low / startingOpen) - 1.0f;
+                    float high =  (q.high / startingOpen) - 1.0f;
+                    chartCtx.percent_difference_quotes.add(new Quote(q.time, open, close, low, high, q.volume));
                 }
-
-                chartCtx.price.setText(PriceMetric.valueToString(finalQuote.close));
+                float finalPercentageDifference = chartCtx.percent_difference_quotes.get(chartCtx.percent_difference_quotes.size() -1).close;
+                chartCtx.price.setText(String.format("%.2f%%", finalPercentageDifference * 100));
                 if (chartCtx.enabled)
-                    chartCtx.layer.onDrawQuotes(chartCtx.normalized_quotes, missingStartSteps, missingEndSteps, mComparisonData);
+                    chartCtx.layer.onDrawQuotes(chartCtx.percent_difference_quotes, missingStartSteps, missingEndSteps, mComparisonData);
 
                 mComparisonChart.setData(mComparisonData);
                 mComparisonChart.notifyDataSetChanged();
@@ -500,7 +499,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     existingContext.layer.setStyler(new LineDataSetStyler(mComparisonColors.get(i)));
                     mComparisonContexts.add(existingContext);
                     if (existingContext.enabled)
-                        existingContext.layer.onDrawQuotes(existingContext.normalized_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+                        existingContext.layer.onDrawQuotes(existingContext.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
                     else
                         mComparisonColors.set(i, mComparisonDisabledColor);
                 }
@@ -583,7 +582,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         {
             ComparisonContext ctx = mComparisonContexts.get(i);
             if (ctx.enabled)
-                ctx.layer.onDrawQuotes(ctx.normalized_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+                ctx.layer.onDrawQuotes(ctx.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
         }
         mComparisonItemButtonAdapter.notifyDataSetChanged();
         mComparisonChart.setData(mComparisonData);
