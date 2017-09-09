@@ -119,16 +119,18 @@ public class ApplicationContext {
         mComparisonEquityColors = null;
         mComparisonEquities = Equity.loadFrom(mSharedPreferences, COMPARISON_PREFIX);
 
-        int numColors = mSharedPreferences.getInt(COMPARISON_PREFIX + "_COLOR_COUNT", 0);
-        if (numColors > 0)
-            mComparisonEquityColors = new ArrayList<Integer>();
+        int numColors = mSharedPreferences.getInt(COMPARISON_PREFIX + "_COLOR_COUNT", -1);
+        if (numColors != -1)
+            mComparisonEquityColors = new ArrayList<Integer>(numColors);
 
         for (int i = 0; i < numColors; i++)
             mComparisonEquityColors.add(mSharedPreferences.getInt(COMPARISON_PREFIX + "_COLOR_" + Integer.toString(i), 0));
 
         if (mComparisonEquities == null)
         {
-            Assert.assertEquals(mComparisonEquityColors, null);
+            if (BuildConfig.DEBUG) {
+                Assert.assertEquals(mComparisonEquityColors, null);
+            }
 
             // if no comparison equities have been saved yet show the S&P 500, Dow Jones, and NASDAQ Composite
             mComparisonEquities = new ArrayList<Equity>();
@@ -142,7 +144,11 @@ public class ApplicationContext {
             mComparisonEquityColors.add(Color.parseColor("#ff8d28"));
             mComparisonEquityColors.add(Color.parseColor("#d428ff"));
         }
-        Assert.assertNotSame(mComparisonEquityColors, null);
+
+        if (BuildConfig.DEBUG) {
+            if (mComparisonEquities != null)
+                Assert.assertNotSame(mComparisonEquityColors, null);
+        }
 
         if (mWatchList == null)
         {
