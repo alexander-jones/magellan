@@ -36,14 +36,13 @@
         android:id="@+id/progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone"/>
+        android:layout_centerInParent="true"/>
 
     <TextView
         android:id="@+id/value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="$1.24"
+        android:text="$--.--"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:textSize="@dimen/medium_header_text_size"

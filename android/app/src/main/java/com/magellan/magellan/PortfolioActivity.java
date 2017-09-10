@@ -1,8 +1,6 @@
 package com.magellan.magellan;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
@@ -23,24 +21,16 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.data.CombinedData;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.magellan.magellan.metric.ILineDataSetStyler;
 import com.magellan.magellan.metric.price.PriceLineLayer;
-import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
 import com.magellan.magellan.quote.QuoteQueryTask;
 import com.magellan.magellan.equity.Equity;
-
 import org.joda.time.Duration;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,49 +38,17 @@ import java.util.List;
 
 public class PortfolioActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, IQuoteQueryListener {
 
-
-    public class LineDataSetStyler implements ILineDataSetStyler {
-
-        private int mLineColor;
-        public LineDataSetStyler(int color)
-        {
-            mLineColor = color;
-        }
-
-        @Override
-        public void onApply(LineDataSet lineSet) {
-            lineSet.setDrawCircles(false);
-            lineSet.setDrawValues(false);
-            lineSet.setDrawFilled(false);
-            lineSet.setDrawIcons(false);
-            lineSet.setHighlightEnabled(false);
-            lineSet.disableDashedLine();
-            lineSet.setColor(mLineColor);
-            lineSet.setLineWidth(1f);
-        }
-    }
-
-    private LineDataSetStyler mPriceUpLineStyler;
-    private LineDataSetStyler mPriceDownLineStyler;
-
     private int mWachListGeneration;
-    private int mComparisonGeneration;
-    private int mLastMissingStartSteps;
-    private int mLastMissingEndSteps;
-
-    private DrawerLayout mDrawerLayout;
-    ActionBarDrawerToggle mDrawerToggle;
     private RecyclerView mWatchListContainer;
-    private WatchlistStockAdapter mWatchListAdapter;
-    private List<Equity> mWatchListItems = new ArrayList<Equity>();
-    private List<WatchListStockContext> mWatchListWatchListStockContexts = new ArrayList<WatchListStockContext>();
-    private HashMap<QuoteQuery, Equity> stockQueriesInFlight = new HashMap<QuoteQuery, Equity>();
-    private HashMap<QuoteQuery, Equity> indexQueriesInFlight = new HashMap<QuoteQuery, Equity>();
+    private WatchListRowAdapter mWatchListAdapter;
+    private List<WatchListRowAdapter.DataHolder> mWatchListItems = new ArrayList<WatchListRowAdapter.DataHolder>();
+    private HashMap<QuoteQuery, WatchListRowAdapter.DataHolder> watchListQueriesInFlight = new HashMap<QuoteQuery, WatchListRowAdapter.DataHolder>();
+    private HashMap<QuoteQuery, Equity> comparisonQueriesInFlight = new HashMap<QuoteQuery, Equity>();
 
     private List<Integer> mComparisonColors = new ArrayList<Integer>();
     private List<Equity> mComparisonEquities = new ArrayList<Equity>();
     private List<String> mComparisonItemLabels = new ArrayList<String>();
-    private List<ComparisonContext> mComparisonContexts = new ArrayList<ComparisonContext>();
+    private List<ComparisonLayerHolder> mComparisonLayerHolders = new ArrayList<ComparisonLayerHolder>();
 
     private int           mComparisonDisabledColor;
     private CombinedChart mComparisonChart;
@@ -99,27 +57,20 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private LinearLayout mComparisonPriceContainer;
     private RecyclerView mComparisonItemButtonContainer;
     private ButtonAdapter mComparisonItemButtonAdapter;
-    private ImageButton mEditLayersButton;
+    private ImageButton mComparisonEditLayersButton;
+    private int mComparisonGeneration;
+    private int mLastMissingStartSteps;
+    private int mLastMissingEndSteps;
 
-    private class WatchListStockContext
-    {
-        public WatchListStockContext()
-        {
-            layer = new PriceLineLayer(mPriceUpLineStyler);
-            allData = new CombinedData();
-            quotes = null;
-        }
-        PriceLineLayer layer;
-        CombinedData allData;
-        List<Quote> quotes;
-    }
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mDrawerToggle;
 
-    private class ComparisonContext
+    private class ComparisonLayerHolder
     {
-        public ComparisonContext(TextView priceTextView, int c)
+        public ComparisonLayerHolder(TextView priceTextView, int c)
         {
             price = priceTextView;
-            layer = new PriceLineLayer(new LineDataSetStyler(c));
+            layer = new PriceLineLayer(new SolidLineDataSetStyler(c));
             original_quotes = null;
             percent_difference_quotes = null;
             enabled = true;
@@ -163,8 +114,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             mComparisonItemLabels.add(mComparisonEquities.get(i).getSymbol());
 
         mComparisonGeneration = ApplicationContext.getComparisonEquityGeneration();
-        mEditLayersButton = (ImageButton) findViewById(R.id.edit_layers);
-        mEditLayersButton.setOnClickListener(this);
+        mComparisonEditLayersButton = (ImageButton) findViewById(R.id.edit_layers);
+        mComparisonEditLayersButton.setOnClickListener(this);
         mComparisonPriceContainer = (LinearLayout) findViewById(R.id.price_container);
         mComparisonItemButtonContainer = (RecyclerView) findViewById(R.id.comparison_layers);
         mComparisonItemButtonAdapter = new ComparisonButtonAdapter(mComparisonItemLabels, mComparisonColors);
@@ -176,69 +127,63 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             Equity index = mComparisonEquities.get(i);
             TextView textView = createPriceTextView(mComparisonColors.get(i));
             mComparisonPriceContainer.addView(textView, mComparisonPriceLayoutParams);
-            mComparisonContexts.add(new ComparisonContext(textView, mComparisonColors.get(i)));
+            mComparisonLayerHolders.add(new ComparisonLayerHolder(textView, mComparisonColors.get(i)));
             QuoteQuery query = new QuoteQuery(index.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
-            indexQueriesInFlight.put(query, index);
+            comparisonQueriesInFlight.put(query, index);
             QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
             task.execute(query);
         }
 
         ApplicationContext.initializeSimpleChart(this, mComparisonChart);
 
-        mPriceUpLineStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPriceUp));
-        mPriceDownLineStyler = new LineDataSetStyler(ContextCompat.getColor(PortfolioActivity.this, R.color.colorPriceDown));
-        mWatchListItems.addAll(ApplicationContext.getWatchList());
-        for (int i =0; i < mWatchListItems.size(); ++i)
-            mWatchListWatchListStockContexts.add(new WatchListStockContext());
-
+        List<Equity> watchList = ApplicationContext.getWatchList();
+        for (Equity e : watchList)
+            mWatchListItems.add(new WatchListRowAdapter.DataHolder(e));
         mWachListGeneration = ApplicationContext.getWatchListGeneration();
         mWatchListContainer = (RecyclerView)findViewById(R.id.watchlist_container);
-        mWatchListAdapter = new WatchlistStockAdapter(mWatchListItems, this);
+        mWatchListAdapter = new WatchListRowAdapter(this, mWatchListItems, this);
         mWatchListContainer.setAdapter(mWatchListAdapter);
 
+        onLoadInstanceState(savedInstanceState);
+        for (WatchListRowAdapter.DataHolder dh : mWatchListItems)
+            launchWatchlistTask(dh);
+
         ItemTouchHelper ith = new ItemTouchHelper(
-            new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
-                int dragFrom = -1;
-                int dragTo = -1;
-                public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                    final int fromPos = viewHolder.getAdapterPosition();
-                    final int toPos = target.getAdapterPosition();
+                new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
+                    int dragFrom = -1;
+                    int dragTo = -1;
+                    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                        final int fromPos = viewHolder.getAdapterPosition();
+                        final int toPos = target.getAdapterPosition();
 
-                    if(dragFrom == -1) {
-                        dragFrom =  fromPos;
+                        if(dragFrom == -1) {
+                            dragFrom =  fromPos;
+                        }
+                        dragTo = toPos;
+                        Collections.swap(mWatchListItems, fromPos, toPos);
+                        mWatchListAdapter.notifyItemMoved(fromPos, toPos);
+                        return true;
                     }
-                    dragTo = toPos;
-                    Collections.swap(mWatchListItems, fromPos, toPos);
-                    Collections.swap(mWatchListWatchListStockContexts, fromPos, toPos);
-                    mWatchListAdapter.notifyItemMoved(fromPos, toPos);
-                    return true;
-                }
-                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                    int position = viewHolder.getAdapterPosition();
-                    ApplicationContext.removeFromWatchList(position);
-                    mWatchListItems.remove(position);
-                    mWatchListWatchListStockContexts.remove(position);
-                    mWatchListAdapter.notifyItemRemoved(position);
-                }
-
-                @Override
-                public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                    super.clearView(recyclerView, viewHolder);
-
-                    if(dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
-                        ApplicationContext.moveItemInWatchlist(dragFrom, dragTo);
+                    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                        int position = viewHolder.getAdapterPosition();
+                        ApplicationContext.removeFromWatchList(position);
+                        mWatchListItems.remove(position);
+                        mWatchListAdapter.notifyItemRemoved(position);
                     }
 
-                    dragFrom = dragTo = -1;
-                }
-            });
+                    @Override
+                    public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                        super.clearView(recyclerView, viewHolder);
+
+                        if(dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
+                            ApplicationContext.moveItemInWatchlist(dragFrom, dragTo);
+                        }
+
+                        dragFrom = dragTo = -1;
+                    }
+                });
 
         ith.attachToRecyclerView(mWatchListContainer);
-
-        onLoadInstanceState(savedInstanceState);
-        for (Equity equity : mWatchListItems)
-            lanchTaskForStock(equity);
-
     }
 
     public void onLoadInstanceState(Bundle inState)
@@ -252,7 +197,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         {
             associatedIndex = inState.getInt("DISABLED_" + Integer.toString(disabledIndex), -1);
             if (associatedIndex != -1) {
-                mComparisonContexts.get(associatedIndex).enabled = false;
+                mComparisonLayerHolders.get(associatedIndex).enabled = false;
                 mComparisonColors.set(associatedIndex, mComparisonDisabledColor);
             }
             else
@@ -266,10 +211,10 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     public void onSaveInstanceState(Bundle outState)
     {
         int disabledIndex = 0;
-        for (int i =0; i < mComparisonContexts.size(); ++i)
+        for (int i =0; i < mComparisonLayerHolders.size(); ++i)
         {
-            ComparisonContext ctx = mComparisonContexts.get(i);
-            if (!ctx.enabled) {
+            ComparisonLayerHolder lh = mComparisonLayerHolders.get(i);
+            if (!lh.enabled) {
                 outState.putInt("DISABLED_" + Integer.toString(disabledIndex), i);
                 ++disabledIndex;
             }
@@ -295,105 +240,49 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             }
 
             QuoteQuery query = queries.get(i);
-            Duration intervalDuration = query.getIntervalAsDuration();
-
-            Quote initialQuote = quotes.get(0);
-            Quote finalQuote = quotes.get(quotes.size() -1);
-
-            Duration missingStartDuration = new Duration(query.start, initialQuote.time);
-            Duration missingEndDuration = new Duration(finalQuote.time, query.end);
-
-            int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
-            int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
-
-            float startingOpen = initialQuote.open;
-            mLastMissingStartSteps = missingStartSteps;
-            mLastMissingEndSteps = missingEndSteps;
-            Equity equity = indexQueriesInFlight.remove(query);
+            Equity equity = comparisonQueriesInFlight.remove(query);
             if (equity == null)
             {
-                equity = stockQueriesInFlight.remove(query);
-                int position = mWatchListItems.indexOf(equity);
-                WatchListStockContext chartCtx = mWatchListWatchListStockContexts.get(position);
-                chartCtx.quotes = quotes;
-                if (chartCtx.allData.getLineData() != null)
-                    chartCtx.allData.getLineData().clearValues();
+                WatchListRowAdapter.DataHolder dh = watchListQueriesInFlight.remove(query);
+                dh.quotes = quotes;
 
-                WatchlistStockAdapter.ViewHolder vh = (WatchlistStockAdapter.ViewHolder)mWatchListContainer.findViewHolderForAdapterPosition(position);
-                vh.value.setText(PriceMetric.valueToString(finalQuote.close));
-                if (finalQuote.close > initialQuote.open) {
-                    chartCtx.layer.setStyler(mPriceUpLineStyler);
-                    vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceUp));
-                }
-                else {
-                    chartCtx.layer.setStyler(mPriceDownLineStyler);
-                    vh.value.setTextColor(ContextCompat.getColor(this, R.color.colorPriceDown));
-                }
-
-                // draw center line
-                ArrayList<Entry> centerLineValues = new ArrayList<Entry>();
-                centerLineValues.add(new Entry(0, startingOpen, null));
-                centerLineValues.add(new Entry(quotes.size() + missingStartSteps + missingEndSteps - 1, startingOpen, null));
-
-                LineDataSet centerLineSet = new LineDataSet(centerLineValues, "");
-                centerLineSet.setDrawIcons(false);
-                centerLineSet.setHighlightEnabled(false);
-                centerLineSet.enableDashedLine(10f, 10f, 0f);
-                centerLineSet.setColor(ContextCompat.getColor(this, R.color.colorPrimary));
-                centerLineSet.setFillColor(ContextCompat.getColor(this, R.color.colorPrimary));
-                centerLineSet.setLineWidth(1f);
-                centerLineSet.setDrawCircles(false);
-                centerLineSet.setDrawValues(false);
-
-                LineData data = chartCtx.allData.getLineData();
-                if (data == null){
-                    ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
-                    priceDataSets.add(centerLineSet);
-                    data = new LineData(priceDataSets);
-                }
-                else
-                    data.addDataSet(centerLineSet);
-                chartCtx.allData.setData(data);
-
-                chartCtx.layer.onDrawQuotes(quotes, 0, 0, chartCtx.allData); // don't draw missing start / end steps when center line will pad data for us
-
-                float lowestPrice = Float.MAX_VALUE;
-                float highestPrice = -Float.MAX_VALUE;
-                for (Quote q : quotes)
-                {
-                    if (lowestPrice > q.low)
-                        lowestPrice = q.low;
-
-                    if (highestPrice < q.high)
-                        highestPrice = q.high;
-                }
-
-                float fromCenterToExtent = Math.max(highestPrice - startingOpen, startingOpen - lowestPrice);
-                vh.chart.getAxisLeft().setAxisMaximum(startingOpen + fromCenterToExtent);
-                vh.chart.getAxisLeft().setAxisMinimum(startingOpen - fromCenterToExtent);
-                vh.chart.setData(chartCtx.allData);
-                vh.chart.notifyDataSetChanged();
-                vh.chart.fitScreen();
+                int position = mWatchListItems.indexOf(dh);
+                mWatchListAdapter.notifyItemChanged(position);
             }
             else
             {
-                int position = mComparisonEquities.indexOf(equity);
-                ComparisonContext chartCtx = mComparisonContexts.get(position);
+                Duration intervalDuration = query.getIntervalAsDuration();
 
-                chartCtx.percent_difference_quotes = new ArrayList<Quote>(quotes.size());
-                chartCtx.original_quotes = quotes;
+                Quote initialQuote = quotes.get(0);
+                Quote finalQuote = quotes.get(quotes.size() -1);
+
+                Duration missingStartDuration = new Duration(query.start, initialQuote.time);
+                Duration missingEndDuration = new Duration(finalQuote.time, query.end);
+
+                int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
+                int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
+
+                float startingOpen = initialQuote.open;
+                mLastMissingStartSteps = missingStartSteps;
+                mLastMissingEndSteps = missingEndSteps;
+
+                int position = mComparisonEquities.indexOf(equity);
+                ComparisonLayerHolder lh = mComparisonLayerHolders.get(position);
+                lh.percent_difference_quotes = new ArrayList<Quote>(quotes.size());
+                lh.original_quotes = quotes;
                 for (Quote q : quotes)
                 {
                     float open = (q.open / startingOpen) - 1.0f;
                     float close =  (q.close / startingOpen) - 1.0f;
                     float low =(q.low / startingOpen) - 1.0f;
                     float high =  (q.high / startingOpen) - 1.0f;
-                    chartCtx.percent_difference_quotes.add(new Quote(q.time, open, close, low, high, q.volume));
+                    lh.percent_difference_quotes.add(new Quote(q.time, open, close, low, high, q.volume));
                 }
-                float finalPercentageDifference = chartCtx.percent_difference_quotes.get(chartCtx.percent_difference_quotes.size() -1).close;
-                chartCtx.price.setText(String.format("%.2f%%", finalPercentageDifference * 100));
-                if (chartCtx.enabled)
-                    chartCtx.layer.onDrawQuotes(chartCtx.percent_difference_quotes, missingStartSteps, missingEndSteps, mComparisonData);
+
+                float finalPercentageDifference = lh.percent_difference_quotes.get(lh.percent_difference_quotes.size() -1).close;
+                lh.price.setText(String.format("%.2f%%", finalPercentageDifference * 100));
+                if (lh.enabled)
+                    lh.layer.onDrawQuotes(lh.percent_difference_quotes, missingStartSteps, missingEndSteps, mComparisonData);
 
                 mComparisonChart.setData(mComparisonData);
                 mComparisonChart.notifyDataSetChanged();
@@ -410,20 +299,19 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         {
             List<Equity> newWatchList = ApplicationContext.getWatchList();
             for (int i =0; i < mWatchListItems.size(); ++i) {
-                if (i >= newWatchList.size() || !mWatchListItems.get(i).equals(newWatchList.get(i)))
+                if (i >= newWatchList.size() || !mWatchListItems.get(i).equity.equals(newWatchList.get(i)))
                 {
                     mWatchListItems.remove(i);
-                    mWatchListWatchListStockContexts.remove(i);
                     mWatchListAdapter.notifyItemRemoved(i);
                 }
             }
 
             for (int i = mWatchListItems.size(); i < newWatchList.size(); ++i) {
                 Equity equity = newWatchList.get(i);
-                mWatchListItems.add(equity);
-                mWatchListWatchListStockContexts.add(new WatchListStockContext());
+                WatchListRowAdapter.DataHolder dh = new WatchListRowAdapter.DataHolder(equity);
+                mWatchListItems.add(dh);
                 mWatchListAdapter.notifyItemRangeInserted(mWatchListItems.size() -1, 1);
-                lanchTaskForStock(equity);
+                launchWatchlistTask(dh);
             }
         }
 
@@ -440,7 +328,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         {
             List<Equity> equities = ApplicationContext.getComparisonEquities();
             List<Integer> colors = ApplicationContext.getComparisonEquityColors();
-            HashMap<Integer, ComparisonContext> commonContexts = new HashMap<Integer, ComparisonContext>();
+            HashMap<Integer, ComparisonLayerHolder> commonContexts = new HashMap<Integer, ComparisonLayerHolder>();
 
             for (int i = 0; i < mComparisonEquities.size(); )
             {
@@ -459,17 +347,17 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 if (newIndex == -1)
                 {
                     mComparisonPriceContainer.removeViewAt(i);
-                    mComparisonEquities.remove(i);
+                    mComparisonEquities.remove(i); // this is only neccessary so layer lookup doesn't disconnect
                 }
                 else
                 {
-                    commonContexts.put(newIndex, mComparisonContexts.get(i));
+                    commonContexts.put(newIndex, mComparisonLayerHolders.get(i));
                     ++i;
                 }
             }
 
             mComparisonItemLabels.clear();
-            mComparisonContexts.clear();
+            mComparisonLayerHolders.clear();
             mComparisonEquities.clear();
             mComparisonEquities.addAll(equities);
             mComparisonColors.clear();
@@ -481,23 +369,23 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             for (int i = 0; i < mComparisonEquities.size(); ++i)
             {
                 Equity equity = mComparisonEquities.get(i);
-                ComparisonContext existingContext = commonContexts.get(i);
+                ComparisonLayerHolder existingContext = commonContexts.get(i);
                 mComparisonItemLabels.add(equity.getSymbol());
                 if (existingContext == null)
                 {
                     int color = mComparisonColors.get(i);
                     TextView textView = createPriceTextView(color);
                     mComparisonPriceContainer.addView(textView, i, mComparisonPriceLayoutParams);
-                    mComparisonContexts.add(new ComparisonContext(textView, color));
+                    mComparisonLayerHolders.add(new ComparisonLayerHolder(textView, color));
                     QuoteQuery query = new QuoteQuery(equity.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
-                    indexQueriesInFlight.put(query, equity);
+                    comparisonQueriesInFlight.put(query, equity);
                     QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
                     task.execute(query);
                 }
                 else
                 {
-                    existingContext.layer.setStyler(new LineDataSetStyler(mComparisonColors.get(i)));
-                    mComparisonContexts.add(existingContext);
+                    existingContext.layer.setStyler(new SolidLineDataSetStyler(mComparisonColors.get(i)));
+                    mComparisonLayerHolders.add(existingContext);
                     if (existingContext.enabled)
                         existingContext.layer.onDrawQuotes(existingContext.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
                     else
@@ -551,7 +439,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
     @Override
     public void onClick(View view) {
-        if (view == mEditLayersButton)
+        if (view == mComparisonEditLayersButton)
         {
             Intent intent = new Intent(this, EditComparisonEquitiesActivity.class);
             startActivityForResult(intent, 1);
@@ -564,13 +452,13 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         }
     }
 
-    private void lanchTaskForStock(Equity equity)
+    private void launchWatchlistTask(WatchListRowAdapter.DataHolder dh)
     {
-        QuoteQuery query = new QuoteQuery(equity.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
-        stockQueriesInFlight.put(query, equity);
+        dh.query = new QuoteQuery(dh.equity.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
+        watchListQueriesInFlight.put(dh.query, dh);
 
         QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
-        task.execute(query);
+        task.execute(dh.query);
     }
 
     private void redrawComparisonChart()
@@ -580,9 +468,9 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             ld.clearValues();
         for (int i = 0; i < mComparisonEquities.size(); ++i)
         {
-            ComparisonContext ctx = mComparisonContexts.get(i);
-            if (ctx.enabled)
-                ctx.layer.onDrawQuotes(ctx.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+            ComparisonLayerHolder lh = mComparisonLayerHolders.get(i);
+            if (lh.enabled)
+                lh.layer.onDrawQuotes(lh.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
         }
         mComparisonItemButtonAdapter.notifyDataSetChanged();
         mComparisonChart.setData(mComparisonData);
@@ -611,16 +499,16 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 }
             }
 
-            ComparisonContext ctx = mComparisonContexts.get(index);
-            if (ctx.enabled)
+            ComparisonLayerHolder lh = mComparisonLayerHolders.get(index);
+            if (lh.enabled)
             {
                 mComparisonColors.set(index, mComparisonDisabledColor);
-                ctx.enabled = false;
+                lh.enabled = false;
             }
             else
             {
-                mComparisonColors.set(index, ctx.color);
-                ctx.enabled = true;
+                mComparisonColors.set(index, lh.color);
+                lh.enabled = true;
             }
 
             notifyItemChanged(index);
