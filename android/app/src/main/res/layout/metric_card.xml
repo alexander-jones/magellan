@@ -1,70 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView  xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardUseCompatPadding="true"
-    app:elevation="@dimen/elevation"
-    app:cardCornerRadius="@dimen/corner_rounding">
+    android:background="@color/colorSecondaryDark">
 
-    <RelativeLayout
+    <TextView
+        android:id="@+id/value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/spacing_internal"
+        android:gravity="center_horizontal"
+        android:text="$0.00"
+        android:textSize="@dimen/small_header_text_size"
+        android:textColor="@color/colorTextSecondary"
+        android:background="@color/colorSecondaryDarkAlpha"/>
+
+    <com.github.mikephil.charting.charts.CombinedChart
+        android:id="@+id/chart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorSecondaryDark">
+        android:layout_below="@+id/value"
+        android:layout_above="@+id/layers_container"/>
 
-        <com.github.mikephil.charting.charts.CombinedChart
-            android:id="@+id/chart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_above="@+id/layers_container"/>
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"/>
 
-        <ProgressBar
-            android:id="@+id/progress"
+    <RelativeLayout
+        android:id="@+id/layers_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="@dimen/spacing_internal"
+        android:layout_marginRight="@dimen/spacing_internal">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/layers"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:visibility="gone"/>
+            android:layout_height="@dimen/button_height"
+            android:layout_marginRight="@dimen/spacing_internal"
+            android:layout_marginBottom="@dimen/spacing_internal"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/add_layer"
+            android:orientation="horizontal"/>
 
-        <TextView
-            android:id="@+id/value"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/spacing_internal"
-            android:gravity="center_horizontal"
-            android:text="$0.00"
-            android:textSize="@dimen/small_header_text_size"
-            android:textColor="@color/colorTextSecondary"
-            android:background="@color/colorSecondaryDarkAlpha"/>
-
-        <RelativeLayout
-            android:id="@+id/layers_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginLeft="@dimen/spacing_internal"
-            android:layout_marginRight="@dimen/spacing_internal">
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/layers"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"
-                android:layout_marginRight="@dimen/spacing_internal"
-                android:layout_marginBottom="@dimen/spacing_internal"
-                android:layout_alignParentLeft="true"
-                android:layout_toLeftOf="@+id/add_layer"
-                android:orientation="horizontal"/>
-
-            <ImageButton
-                android:id="@+id/add_layer"
-                android:layout_width="@dimen/button_height"
-                android:layout_height="@dimen/button_height"
-                android:layout_alignParentRight="true"
-                android:layout_marginBottom="@dimen/spacing_internal"
-                android:src="@drawable/ic_add_24dp"
-                android:background="@color/colorSecondaryDark"/>
-        </RelativeLayout>
+        <ImageButton
+            android:id="@+id/add_layer"
+            android:layout_width="@dimen/button_height"
+            android:layout_height="@dimen/button_height"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="@dimen/spacing_internal"
+            android:src="@drawable/ic_add_24dp"
+            android:background="@color/colorSecondaryDark"/>
     </RelativeLayout>
-</android.support.v7.widget.CardView>
+</RelativeLayout>

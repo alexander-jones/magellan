@@ -154,7 +154,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         navigationView.setNavigationItemSelectedListener(this);
 
         mComparisonPriceLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        mComparisonPriceLayoutParams.setMargins(0, (int)getResources().getDimension(R.dimen.spacing_internal), (int)getResources().getDimension(R.dimen.spacing_external),0);
+        mComparisonPriceLayoutParams.setMargins(0, 0, (int)getResources().getDimension(R.dimen.spacing_external),0);
 
         mComparisonDisabledColor = ContextCompat.getColor(PortfolioActivity.this, R.color.colorSecondaryDark);
         mComparisonEquities = new ArrayList<Equity>(ApplicationContext.getComparisonEquities());
@@ -435,7 +435,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             startActivityForResult(intent, 1);
         }
 
-        int newComparisonGeneration = ApplicationContext.getWatchListGeneration();
+        int newComparisonGeneration = ApplicationContext.getComparisonEquityGeneration();
         if (mComparisonGeneration != newComparisonGeneration)
         {
             List<Equity> equities = ApplicationContext.getComparisonEquities();

@@ -272,10 +272,16 @@ public class QuotesActivity extends AppCompatActivity
         Equity.saveTo(outState, equities);
     }
 
+    private void finishWithResult()
+    {
+        Intent returnIntent = new Intent();
+        setResult(Activity.RESULT_OK,returnIntent);
+        finish();
+    }
+
     @Override
     public void onBackPressed() {
-        setResult(Activity.RESULT_OK, new Intent());
-        finish();
+        finishWithResult();
         super.onBackPressed();
     }
 
@@ -294,8 +300,7 @@ public class QuotesActivity extends AppCompatActivity
     {
         switch (item.getItemId()) {
             case android.R.id.home:
-                setResult(Activity.RESULT_OK, new Intent());
-                finish();
+                finishWithResult();
                 break;
             case R.id.change_status:
                 Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();

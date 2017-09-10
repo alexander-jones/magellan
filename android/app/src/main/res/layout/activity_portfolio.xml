@@ -83,12 +83,6 @@
                             android:layout_height="wrap_content"
                             android:background="@color/colorSecondaryDark">
 
-                            <com.github.mikephil.charting.charts.CombinedChart
-                                android:id="@+id/comparison_chart"
-                                android:layout_width="match_parent"
-                                android:layout_height="300dp"
-                                android:layout_below="@+id/value"/>
-
                             <LinearLayout
                                 android:id="@+id/price_container"
                                 android:layout_width="wrap_content"
@@ -98,10 +92,13 @@
                                 android:layout_marginTop="@dimen/spacing_internal"
                                 android:layout_marginLeft="@dimen/spacing_external"
                                 android:layout_marginRight="@dimen/spacing_external"
-                                android:background="@color/colorSecondaryDarkAlpha"
-                                android:orientation="horizontal">
+                                android:orientation="horizontal"/>
 
-                            </LinearLayout>
+                            <com.github.mikephil.charting.charts.CombinedChart
+                                android:id="@+id/comparison_chart"
+                                android:layout_width="match_parent"
+                                android:layout_height="300dp"
+                                android:layout_below="@+id/price_container"/>
 
                             <ProgressBar
                                 android:id="@+id/comparison_chart_progress"
