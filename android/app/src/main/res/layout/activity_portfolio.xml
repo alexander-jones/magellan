@@ -35,7 +35,7 @@
             android:id="@+id/scroll_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorSecondary"
+            android:background="@color/colorBackgroundDark"
             app:layout_anchor="@id/app_bar"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -81,7 +81,7 @@
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:background="@color/colorSecondaryDark">
+                            android:background="@color/colorCardBackgroundDark">
 
                             <LinearLayout
                                 android:id="@+id/price_container"
@@ -134,7 +134,7 @@
                                     android:layout_alignParentRight="true"
                                     android:layout_marginBottom="@dimen/spacing_internal"
                                     android:src="@drawable/ic_edit_24dp"
-                                    android:background="@color/colorSecondaryDark"/>
+                                    android:background="@color/colorCardBackgroundDark"/>
                             </RelativeLayout>
                         </RelativeLayout>
                     </android.support.v7.widget.CardView>
@@ -156,15 +156,15 @@
                         android:layout_centerVertical="true"
                         android:text="Watchlist"
                         android:textSize="@dimen/small_header_text_size"
-                        android:textColor="@color/colorPrimaryDark"/>
+                        android:textColor="@color/colorTextPrimaryLight"/>
 
                     <ImageButton
                         android:id="@+id/watch_list_options_button"
                         android:layout_width="@dimen/button_height"
                         android:layout_height="@dimen/button_height"
                         android:layout_alignParentRight="true"
-                        android:background="@color/colorSecondary"
-                        android:tint="@color/colorPrimaryDark"
+                        android:background="@color/colorBackgroundDark"
+                        android:tint="@color/colorTextSecondaryLight"
                         style="?android:attr/actionOverflowButtonStyle"/>
                 </RelativeLayout>
 
@@ -202,8 +202,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        android:background="@color/colorSecondary"
-        app:itemTextColor="@color/colorPrimary"
+        android:background="@color/colorBackgroundDark"
+        app:itemTextColor="@color/colorTextPrimaryLight"
         app:headerLayout="@layout/nav_header_portfolio"
         app:menu="@menu/activity_portfolio_drawer" />
 

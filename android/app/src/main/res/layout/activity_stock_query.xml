@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/spacing_dialog"
-    android:background="@color/colorSecondaryAlpha">
+    android:background="@color/colorBackgroundDarkAlpha">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
@@ -17,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorSecondary"
+            android:background="@color/colorBackgroundDark"
             app:popupTheme="@style/AppTheme.Overlay.PopupOverlay"
             app:theme="@style/AppTheme.Overlay" />
 
@@ -27,7 +27,7 @@
         android:id="@+id/search_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@color/colorSecondaryDark"
+        android:divider="@color/colorBackgroundDark"
         android:dividerHeight="1dp"
         app:layout_anchor="@id/app_bar"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>

@@ -130,8 +130,8 @@ public class WatchListRowAdapter extends RecyclerView.Adapter<WatchListRowAdapte
             centerLineSet.setDrawIcons(false);
             centerLineSet.setHighlightEnabled(false);
             centerLineSet.enableDashedLine(10f, 10f, 0f);
-            centerLineSet.setColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
-            centerLineSet.setFillColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
+            centerLineSet.setColor(ContextCompat.getColor(mContext, R.color.colorTextPrimaryLight));
+            centerLineSet.setFillColor(ContextCompat.getColor(mContext, R.color.colorTextPrimaryLight));
             centerLineSet.setLineWidth(1f);
             centerLineSet.setDrawCircles(false);
             centerLineSet.setDrawValues(false);
@@ -165,6 +165,10 @@ public class WatchListRowAdapter extends RecyclerView.Adapter<WatchListRowAdapte
             vh.chart.setData(vh.allData);
             vh.chart.notifyDataSetChanged();
             vh.chart.fitScreen();
+        }
+        else {
+            vh.progress.setVisibility(View.VISIBLE);
+            vh.chart.clear();
         }
     }
 

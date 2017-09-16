@@ -107,7 +107,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         mComparisonPriceLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         mComparisonPriceLayoutParams.setMargins(0, 0, (int)getResources().getDimension(R.dimen.spacing_external),0);
 
-        mComparisonDisabledColor = ContextCompat.getColor(PortfolioActivity.this, R.color.colorSecondaryDark);
+        mComparisonDisabledColor = ContextCompat.getColor(PortfolioActivity.this, R.color.colorCardBackgroundDark);
         mComparisonEquities = new ArrayList<Equity>(ApplicationContext.getComparisonEquities());
         mComparisonColors = new ArrayList<Integer>(ApplicationContext.getComparisonEquityColors());
         for (int i =0; i < mComparisonEquities.size(); ++i)

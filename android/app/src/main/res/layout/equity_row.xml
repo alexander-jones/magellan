@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorSecondary"
+    android:background="@color/colorBackgroundDark"
     android:descendantFocusability="blocksDescendants">
 
     <LinearLayout
@@ -22,7 +22,7 @@
             android:layout_marginBottom="@dimen/spacing_internal"
             android:text="QQQQ"
             android:textSize="@dimen/large_header_text_size"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorTextPrimaryLight"
             android:textStyle="bold"/>
 
         <TextView
@@ -32,7 +32,7 @@
             android:layout_below="@+id/symbol"
             android:text="QQQQ"
             android:textSize="@dimen/small_header_text_size"
-            android:textColor="@color/colorPrimaryDark"/>
+            android:textColor="@color/colorTextSecondaryLight"/>
     </LinearLayout>
 
     <ImageButton
@@ -44,6 +44,6 @@
         android:layout_centerVertical="true"
         android:layout_margin="@dimen/spacing_external"
         android:textSize="@dimen/small_header_text_size"
-        android:background="@color/colorSecondary"/>
+        android:background="@color/colorBackgroundDark"/>
 
 </RelativeLayout>

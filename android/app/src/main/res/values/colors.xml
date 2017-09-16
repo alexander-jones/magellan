@@ -19,4 +19,21 @@
     <color name="colorPriceUp">#01cd98</color>
     <color name="colorPriceDown">#ff3b3f</color>
     <color name="colorHighlight">#22ffffff</color>
+
+
+    <!-- Light theme colors. -->
+    <color name="colorTextPrimaryDark">#212124</color>
+    <color name="colorTextSecondaryDark">#303032</color>
+    <color name="colorBackgroundLight">#f4f4f7</color>
+    <color name="colorBackgroundLightAlpha">#99f4f4f7</color>
+    <color name="colorCardBackgroundLight">#ffffff</color>
+    <color name="colorCardBackgroundLightAlpha">#99ffffff</color>'
+
+    <!-- Dark theme colors. -->
+    <color name="colorTextPrimaryLight">#ffffff</color>
+    <color name="colorTextSecondaryLight">#f4f4f7</color>
+    <color name="colorBackgroundDark">#212124</color>
+    <color name="colorBackgroundDarkAlpha">#99212124</color>
+    <color name="colorCardBackgroundDark">#303032</color>
+    <color name="colorCardBackgroundDarkAlpha">#99303032</color>
 </resources>

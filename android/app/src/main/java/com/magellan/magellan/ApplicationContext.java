@@ -10,7 +10,7 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.magellan.magellan.equity.Equity;
 import com.magellan.magellan.quote.IQuoteService;
-import com.magellan.magellan.service.alphavantage.AlphaVantageService;
+import com.magellan.magellan.service.barchart.BarChartService;
 
 import junit.framework.Assert;
 
@@ -41,7 +41,7 @@ public class ApplicationContext {
     private static List<Integer> mComparisonEquityColors = null;
 
     private static SharedPreferences mSharedPreferences;
-    private static IQuoteService mQuoteService = new AlphaVantageService();
+    private static IQuoteService mQuoteService = new BarChartService();
 
     public static IQuoteService getQuoteService()
     {

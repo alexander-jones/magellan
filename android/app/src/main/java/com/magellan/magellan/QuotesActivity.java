@@ -350,8 +350,8 @@ public class QuotesActivity extends AppCompatActivity
         leftAxis.setSpaceTop(0);
 
         YAxis rightAxis =  chart.getAxisRight();
-        rightAxis.setTextColor(ContextCompat.getColor(this, R.color.colorPrimary));
-        rightAxis.setGridColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+        rightAxis.setTextColor(ContextCompat.getColor(this, R.color.colorTextPrimaryLight));
+        rightAxis.setGridColor(ContextCompat.getColor(this, R.color.colorTextPrimaryLight));
         rightAxis.setDrawLabels(true);
         rightAxis.setDrawAxisLine(false);
         rightAxis.setDrawGridLines(false);

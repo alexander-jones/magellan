@@ -5,5 +5,5 @@
     android:layout_marginRight="@dimen/spacing_internal"
     android:layout_marginBottom="@dimen/spacing_internal"
     android:textSize="14dip"
-    android:background="@drawable/rounded_background"
-    android:textColor="@color/colorPrimary"/>
+    android:background="@drawable/rounded_background_dark"
+    android:textColor="@color/colorTextPrimaryLight"/>
