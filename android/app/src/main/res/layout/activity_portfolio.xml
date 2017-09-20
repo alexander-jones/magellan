@@ -105,13 +105,25 @@
                                     tools:listitem="@layout/comparison_item" />
 
                                 <ImageButton
-                                    android:id="@+id/edit_layers"
+                                    android:id="@+id/layer_options"
                                     android:layout_width="@dimen/button_height"
                                     android:layout_height="@dimen/button_height"
                                     android:layout_alignParentRight="true"
                                     android:layout_marginBottom="@dimen/spacing_internal"
+                                    android:background="@color/colorCardBackgroundDark"
+                                    android:tint="@color/colorAccentPrimaryLight"
+                                    style="?android:attr/actionOverflowButtonStyle"/>
+
+                                <ImageButton
+                                    android:id="@+id/edit_layers"
+                                    android:layout_width="@dimen/button_height"
+                                    android:layout_height="@dimen/button_height"
+                                    android:layout_below="@+id/layer_options"
+                                    android:layout_alignParentRight="true"
+                                    android:layout_marginBottom="@dimen/spacing_internal"
                                     android:src="@drawable/ic_edit_24dp"
-                                    android:background="@color/colorCardBackgroundDark"/>
+                                    android:background="@color/colorCardBackgroundDark"
+                                    android:tint="@color/colorAccentPrimaryLight"/>
                             </RelativeLayout>
 
 

@@ -397,7 +397,7 @@ public class QuotesActivity extends AppCompatActivity
                 interval = QuoteQuery.Interval.FifteenMinutes;
                 break;
             case OneMonth:
-                interval = QuoteQuery.Interval.ThirtyMinutes;
+                interval = QuoteQuery.Interval.OneDay;
                 break;
             case ThreeMonths:
                 interval = QuoteQuery.Interval.OneDay;

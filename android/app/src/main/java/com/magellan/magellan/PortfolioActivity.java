@@ -3,6 +3,7 @@ package com.magellan.magellan;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -64,6 +66,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private RecyclerView mComparisonItemButtonContainer;
     private PortfolioComparisonItemAdapter mComparisonItemButtonAdapter;
     private ImageButton mComparisonEditLayersButton;
+    private TabLayout mIntervalTabLayout;
     private int mComparisonGeneration;
     private int mLastMissingStartSteps;
     private int mLastMissingEndSteps;
@@ -125,39 +128,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         mComparisonGeneration = ApplicationContext.getComparisonEquityGeneration();
         mComparisonEditLayersButton = (ImageButton) findViewById(R.id.edit_layers);
         mComparisonEditLayersButton.setOnClickListener(this);
-        mComparisonItemButtonContainer = (RecyclerView) findViewById(R.id.comparison_layers);
-        mComparisonItemButtonAdapter = new PortfolioComparisonItemAdapter(mComparisonButtonLabels, mComparisonValueLabels, mComparisonColors);
-        mComparisonItemButtonContainer.setAdapter(mComparisonItemButtonAdapter);
-
-        mComparisonChart = (CombinedChart)findViewById(R.id.comparison_chart);
-        for (int i =0; i < mComparisonEquities.size(); ++i)
-        {
-            Equity index = mComparisonEquities.get(i);
-            mComparisonLayerHolders.add(new ComparisonLayerHolder(mComparisonColors.get(i)));
-            QuoteQuery query = new QuoteQuery(index.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
-            comparisonQueriesInFlight.put(query, index);
-            QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
-            task.execute(query);
-        }
-
-        ApplicationContext.initializeSimpleChart(this, mComparisonChart);
-
-        mComparisonCenterLineLayer = new CenterLineLayer(this);
-        mComparisonCenterLineLayer.setCenter(0.0f);
-
-        mWatchList = WatchList.getOrCreate(0);
-        mWatchList.load();
-        List<Equity> watchList = mWatchList.getItems();
-        for (Equity e : watchList)
-            mWatchListItems.add(new WatchListRowAdapter.DataHolder(e));
-        mWachListGeneration = mWatchList.getGeneration();
-        mWatchListContainer = (RecyclerView)findViewById(R.id.watchlist_container);
-        mWatchListAdapter = new WatchListRowAdapter(this, mWatchListItems, this);
-        mWatchListContainer.setAdapter(mWatchListAdapter);
-
-        onLoadInstanceState(savedInstanceState);
-        for (WatchListRowAdapter.DataHolder dh : mWatchListItems)
-            launchWatchlistTask(dh);
 
         ItemTouchHelper ith = new ItemTouchHelper(
                 new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT) {
@@ -195,6 +165,49 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 });
 
         ith.attachToRecyclerView(mWatchListContainer);
+        mComparisonItemButtonContainer = (RecyclerView) findViewById(R.id.comparison_layers);
+        mComparisonItemButtonAdapter = new PortfolioComparisonItemAdapter(mComparisonButtonLabels, mComparisonValueLabels, mComparisonColors);
+        mComparisonItemButtonContainer.setAdapter(mComparisonItemButtonAdapter);
+
+        mIntervalTabLayout = (TabLayout)findViewById(R.id.interval_tabs);
+
+        mIntervalTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                drawSelectedInterval();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+
+
+        mComparisonChart = (CombinedChart)findViewById(R.id.comparison_chart);
+        for (int i =0; i < mComparisonEquities.size(); ++i)
+            mComparisonLayerHolders.add(new ComparisonLayerHolder(mComparisonColors.get(i)));
+
+        ApplicationContext.initializeSimpleChart(this, mComparisonChart);
+
+        mComparisonCenterLineLayer = new CenterLineLayer(this);
+        mComparisonCenterLineLayer.setCenter(0.0f);
+
+        mWatchList = WatchList.getOrCreate(0);
+        mWatchList.load();
+        List<Equity> watchList = mWatchList.getItems();
+        for (Equity e : watchList)
+            mWatchListItems.add(new WatchListRowAdapter.DataHolder(e));
+        mWachListGeneration = mWatchList.getGeneration();
+        mWatchListContainer = (RecyclerView)findViewById(R.id.watchlist_container);
+        mWatchListAdapter = new WatchListRowAdapter(this, mWatchListItems, this);
+        mWatchListContainer.setAdapter(mWatchListAdapter);
+
+        onLoadInstanceState(savedInstanceState);
+        for (WatchListRowAdapter.DataHolder dh : mWatchListItems)
+            launchWatchlistTask(dh);
+        drawSelectedInterval();
     }
 
     public void onLoadInstanceState(Bundle inState)
@@ -206,6 +219,9 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         int associatedIndex = -1;
         do
         {
+            int selectedTab = inState.getInt("SELECTED_INTERVAL", -1);
+            if (selectedTab != -1)
+                mIntervalTabLayout.getTabAt(selectedTab).select();
             associatedIndex = inState.getInt("DISABLED_" + Integer.toString(disabledIndex), -1);
             if (associatedIndex != -1) {
                 mComparisonLayerHolders.get(associatedIndex).enabled = false;
@@ -230,8 +246,60 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 ++disabledIndex;
             }
         }
+
+        outState.putInt("SELECTED_INTERVAL", mIntervalTabLayout.getSelectedTabPosition());
     }
 
+
+    private void drawSelectedInterval()
+    {
+        int position = mIntervalTabLayout.getSelectedTabPosition();
+        QuoteQuery.Period [] quotePeriods = QuoteQuery.Period.values();
+        if (position <0 || position > quotePeriods.length)
+        {
+            Log.e("Magellan", "Encountered Unknown Duration Tab Index");
+            return;
+        }
+
+
+        QuoteQuery.Period period = quotePeriods[position];
+
+        QuoteQuery.Interval interval = QuoteQuery.Interval.FiveMinutes;
+        switch (period)
+        {
+            case OneDay:
+                interval = QuoteQuery.Interval.FiveMinutes;
+                break;
+            case OneWeek:
+                interval = QuoteQuery.Interval.FifteenMinutes;
+                break;
+            case OneMonth:
+                interval = QuoteQuery.Interval.OneDay;
+                break;
+            case ThreeMonths:
+                interval = QuoteQuery.Interval.OneDay;
+                break;
+            case OneYear:
+                interval = QuoteQuery.Interval.OneDay;
+                break;
+            case FiveYears:
+                interval = QuoteQuery.Interval.OneWeek;
+                break;
+            case TenYears:
+                interval = QuoteQuery.Interval.OneMonth;
+                break;
+        }
+
+        cleanComparisonContext();
+
+        for (Equity equity: mComparisonEquities)
+        {
+            QuoteQuery query = new QuoteQuery(equity.getSymbol(), period, interval);
+            comparisonQueriesInFlight.put(query, equity);
+            QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
+            task.execute(query);
+        }
+    }
     @Override
     public void onQuotesReceived(List<QuoteQuery> queries, List<List<Quote>> manyQuotes)
     {
@@ -262,8 +330,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 Duration missingStartDuration = new Duration(query.start, initialQuote.time);
                 Duration missingEndDuration = new Duration(finalQuote.time, query.end);
 
-                int missingStartSteps = (int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
-                int missingEndSteps = (int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes());
+                int missingStartSteps = Math.max((int)(missingStartDuration.getStandardMinutes() / intervalDuration.getStandardMinutes()), 0);
+                int missingEndSteps = Math.max((int)(missingEndDuration.getStandardMinutes() / intervalDuration.getStandardMinutes()), 0);
 
                 float startingOpen = initialQuote.open;
                 mLastMissingStartSteps = missingStartSteps;
@@ -291,12 +359,13 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 mComparisonValueLabels.set(position, String.format("%.2f%%", finalPercentageDifference * 100));
                 mComparisonItemButtonAdapter.notifyItemChanged(position);
 
-                if (!mComparisonCenterLineDrawn) {
-                    mComparisonCenterLineLayer.onDrawQuotes(quotes, 0, 0, mComparisonData);
-                    mComparisonCenterLineDrawn = true;
-                }
-                if (lh.enabled)
+                if (lh.enabled) {
+                    if (!mComparisonCenterLineDrawn) {
+                        mComparisonCenterLineLayer.onDrawQuotes(quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+                        mComparisonCenterLineDrawn = true;
+                    }
                     lh.layer.onDrawQuotes(lh.percent_difference_quotes, missingStartSteps, missingEndSteps, mComparisonData);
+                }
 
 
                 /*float absDiffFromHigh =  Math.abs(mHighestComparisonValue);
@@ -489,7 +558,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         task.execute(dh.query);
     }
 
-    private void redrawComparisonChart()
+    private void cleanComparisonContext()
     {
         mLowestComparisonValue = Float.MAX_VALUE;
         mHighestComparisonValue = Float.MIN_VALUE;
@@ -498,12 +567,16 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         if (ld != null) {
             ld.clearValues();
         }
+    }
+
+    private void redrawComparisonChart()
+    {
+        cleanComparisonContext();
 
         for (int i = 0; i < mComparisonEquities.size(); ++i)
         {
             ComparisonLayerHolder lh = mComparisonLayerHolders.get(i);
             if (lh.enabled) {
-                float startingOpen = lh.percent_difference_quotes.get(0).open;
                 for (Quote q : lh.percent_difference_quotes) {
                     if (q.low < mLowestComparisonValue)
                         mLowestComparisonValue = q.low;
@@ -513,7 +586,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
                 if (!mComparisonCenterLineDrawn)
                 {
-                    mComparisonCenterLineLayer.onDrawQuotes(lh.percent_difference_quotes, 0, 0, mComparisonData);
+                    mComparisonCenterLineLayer.onDrawQuotes(lh.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
                     mComparisonCenterLineDrawn = true;
                 }
 

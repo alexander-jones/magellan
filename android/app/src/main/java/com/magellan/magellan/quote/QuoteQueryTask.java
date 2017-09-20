@@ -56,8 +56,9 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
                     try {
                         if (quotes != null && !quotes.isEmpty())
                         {
+                            Quote firstQuote = quotes.get(0);
                             Quote lastQuote = quotes.get(quotes.size() -1);
-                            if (lastQuote.time.isEqual(query.end)) {
+                            if (firstQuote.time.isEqual(query.start) && lastQuote.time.isEqual(query.end)) {
                                 endOfPeriodCachedFile.createNewFile();
                                 Quote.saveTo(endOfPeriodCachedFile, quotes);
                             }

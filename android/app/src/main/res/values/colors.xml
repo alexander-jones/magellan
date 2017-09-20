@@ -30,7 +30,7 @@
 
     <!-- Dark theme colors. -->
     <color name="colorAccentPrimaryLight">#ffffff</color>
-    <color name="colorAccentSecondaryLight">#e6e8e6</color>
+    <color name="colorAccentSecondaryLight">#cfd2cf</color>
     <color name="colorBackgroundDark">#212124</color>
     <color name="colorBackgroundDarkAlpha">#99212124</color>
     <color name="colorCardBackgroundDark">#303032</color>

@@ -104,7 +104,6 @@ public class AlphaVantageService implements IQuoteService {
                     bReader.readLine(); // skip header
                     ret = new ArrayList<Quote>();
 
-                    DateTime lastDate = null;
                     while ((line = bReader.readLine()) != null) {
                         String [] parts = line.split(",");
                         DateTime date = formatter.parseDateTime(parts[0]);
@@ -118,7 +117,7 @@ public class AlphaVantageService implements IQuoteService {
                         float high = Float.parseFloat(parts[2]);
                         float low = Float.parseFloat(parts[3]);
                         float close = Float.parseFloat(parts[4]);
-                        int volume = Integer.parseInt(parts[5]);
+                        long volume = Long.parseLong(parts[5]);
 
                         ret.add(new Quote(date, open, close, low, high, volume));
                     }

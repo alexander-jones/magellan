@@ -124,7 +124,7 @@ public class WatchListRowAdapter extends RecyclerView.Adapter<WatchListRowAdapte
                 vh.value.setTextColor(ContextCompat.getColor(mContext, R.color.colorPriceDown));
             }
 
-            mCenterLineLayer.onDrawQuotes(dh.quotes, 0, 0, vh.allData);
+            mCenterLineLayer.onDrawQuotes(dh.quotes, missingStartSteps, missingEndSteps, vh.allData);
             vh.priceLineLayer.onDrawQuotes(dh.quotes, 0, 0, vh.allData); // don't draw missing start / end steps when center line will pad data for us
 
             float lowestPrice = Float.MAX_VALUE;
