@@ -22,7 +22,7 @@
             android:layout_marginBottom="@dimen/spacing_internal"
             android:text="QQQQ"
             android:textSize="@dimen/large_header_text_size"
-            android:textColor="@color/colorTextPrimaryLight"
+            android:textColor="@color/colorAccentPrimaryLight"
             android:textStyle="bold"/>
 
         <TextView
@@ -32,12 +32,13 @@
             android:layout_below="@+id/symbol"
             android:text="QQQQ"
             android:textSize="@dimen/small_header_text_size"
-            android:textColor="@color/colorTextSecondaryLight"/>
+            android:textColor="@color/colorAccentSecondaryLight"/>
     </LinearLayout>
 
     <ImageButton
         android:id="@+id/change_status"
         android:src="@drawable/ic_add_24dp"
+        android:tint="@color/colorAccentPrimaryLight"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentRight="true"

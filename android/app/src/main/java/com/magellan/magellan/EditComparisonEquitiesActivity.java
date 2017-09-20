@@ -25,7 +25,6 @@ import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.magellan.magellan.equity.Equity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class EditComparisonEquitiesActivity extends AppCompatActivity {
@@ -115,7 +114,9 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
         private EquityEditLayerRowAdapter mAdapter;
 
         public WatchListFragment() {
-            mEquities = ApplicationContext.getWatchList();
+            WatchList wl = WatchList.getOrCreate(0);
+            wl.load();
+            mEquities = wl.getItems();
         }
 
         @Override
@@ -187,7 +188,7 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
             int curIndex = ApplicationContext.getComparisonEquityIndex(equity);
             if (curIndex == -1) {
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_add_24dp));
-                changeColor(holder, ContextCompat.getColor(mContext, R.color.colorPrimary));
+                changeColor(holder, ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
             }
             else{
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_remove_24dp));
@@ -228,7 +229,7 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
             {
                 if (ApplicationContext.removeFromComparisonEquities(curIndex)) {
                     holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_add_24dp));
-                    changeColor(holder, ContextCompat.getColor(mContext, R.color.colorPrimary));
+                    changeColor(holder, ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
                 }
             }
         }

@@ -130,8 +130,8 @@ public class WatchListRowAdapter extends RecyclerView.Adapter<WatchListRowAdapte
             centerLineSet.setDrawIcons(false);
             centerLineSet.setHighlightEnabled(false);
             centerLineSet.enableDashedLine(10f, 10f, 0f);
-            centerLineSet.setColor(ContextCompat.getColor(mContext, R.color.colorTextPrimaryLight));
-            centerLineSet.setFillColor(ContextCompat.getColor(mContext, R.color.colorTextPrimaryLight));
+            centerLineSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
+            centerLineSet.setFillColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
             centerLineSet.setLineWidth(1f);
             centerLineSet.setDrawCircles(false);
             centerLineSet.setDrawValues(false);

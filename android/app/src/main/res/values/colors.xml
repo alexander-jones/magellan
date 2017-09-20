@@ -20,7 +20,6 @@
     <color name="colorPriceDown">#ff3b3f</color>
     <color name="colorHighlight">#22ffffff</color>
 
-
     <!-- Light theme colors. -->
     <color name="colorTextPrimaryDark">#212124</color>
     <color name="colorTextSecondaryDark">#303032</color>
@@ -30,8 +29,8 @@
     <color name="colorCardBackgroundLightAlpha">#99ffffff</color>'
 
     <!-- Dark theme colors. -->
-    <color name="colorTextPrimaryLight">#ffffff</color>
-    <color name="colorTextSecondaryLight">#f4f4f7</color>
+    <color name="colorAccentPrimaryLight">#ffffff</color>
+    <color name="colorAccentSecondaryLight">#e6e8e6</color>
     <color name="colorBackgroundDark">#212124</color>
     <color name="colorBackgroundDarkAlpha">#99212124</color>
     <color name="colorCardBackgroundDark">#303032</color>

@@ -112,6 +112,7 @@ public class QuotesActivity extends AppCompatActivity
     private List<IMetricLayer> mPriceLayers = new ArrayList<IMetricLayer>();
     private List<IMetricLayer> mVolumeLayers = new ArrayList<IMetricLayer>();
 
+    private WatchList mWatchList;
 
     private class QueryContext
     {
@@ -124,6 +125,9 @@ public class QuotesActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ApplicationContext.init(this);
+
+        mWatchList = WatchList.getOrCreate(0);
+        mWatchList.load();
 
         setContentView(R.layout.activity_quotes);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -236,7 +240,7 @@ public class QuotesActivity extends AppCompatActivity
             selection = intent.getIntExtra("WATCHLIST_ITEM", -1);
             useWatchlist = selection != -1;
             if (useWatchlist)
-                equities = ApplicationContext.getWatchList();
+                equities = mWatchList.getItems();
             else
             {
                 equities = Equity.loadFrom(intent);
@@ -304,15 +308,15 @@ public class QuotesActivity extends AppCompatActivity
                 break;
             case R.id.change_status:
                 Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
-                int watchListIndex = ApplicationContext.getWatchListIndex(equity);
+                int watchListIndex = mWatchList.getIndexOf(equity);
                 if (watchListIndex == -1)
                 {
-                    ApplicationContext.addToWatchList(equity);
+                    mWatchList.add(equity);
                     mChangeStatus.setIcon(R.drawable.ic_remove_secondary_24dp);
                 }
                 else
                 {
-                    ApplicationContext.removeFromWatchList(watchListIndex);
+                    mWatchList.remove(watchListIndex);
                     mChangeStatus.setIcon(R.drawable.ic_add_secondary_24dp);
                 }
                 break;
@@ -350,8 +354,8 @@ public class QuotesActivity extends AppCompatActivity
         leftAxis.setSpaceTop(0);
 
         YAxis rightAxis =  chart.getAxisRight();
-        rightAxis.setTextColor(ContextCompat.getColor(this, R.color.colorTextPrimaryLight));
-        rightAxis.setGridColor(ContextCompat.getColor(this, R.color.colorTextPrimaryLight));
+        rightAxis.setTextColor(ContextCompat.getColor(this, R.color.colorAccentPrimaryLight));
+        rightAxis.setGridColor(ContextCompat.getColor(this, R.color.colorAccentPrimaryLight));
         rightAxis.setDrawLabels(true);
         rightAxis.setDrawAxisLine(false);
         rightAxis.setDrawGridLines(false);
@@ -362,7 +366,7 @@ public class QuotesActivity extends AppCompatActivity
     private void updateChangeWatchListStatus()
     {
         Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
-        int watchListIndex = ApplicationContext.getWatchListIndex(equity);
+        int watchListIndex = mWatchList.getIndexOf(equity);
         if (watchListIndex == -1)
             mChangeStatus.setIcon(R.drawable.ic_add_secondary_24dp);
         else

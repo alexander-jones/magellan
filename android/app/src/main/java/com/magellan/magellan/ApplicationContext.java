@@ -10,6 +10,7 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.magellan.magellan.equity.Equity;
 import com.magellan.magellan.quote.IQuoteService;
+import com.magellan.magellan.service.alphavantage.AlphaVantageService;
 import com.magellan.magellan.service.barchart.BarChartService;
 
 import junit.framework.Assert;
@@ -33,15 +34,13 @@ public class ApplicationContext {
     private static List<Equity> mSectorIndices = null;
 
     private static Context mContext;
-    private static int mWatchListGeneration = 0;
-    private static List<Equity> mWatchList = null;
 
     private static int mComparisonEquityGeneration = 0;
     private static List<Equity> mComparisonEquities = null;
     private static List<Integer> mComparisonEquityColors = null;
 
     private static SharedPreferences mSharedPreferences;
-    private static IQuoteService mQuoteService = new BarChartService();
+    private static IQuoteService mQuoteService = new AlphaVantageService();
 
     public static IQuoteService getQuoteService()
     {
@@ -110,10 +109,9 @@ public class ApplicationContext {
 
     public static void init(Context context)
     {
+        WatchList.init(context);
         mContext = context;
         mSharedPreferences = mContext.getSharedPreferences(PREFERENCE_KEY, Context.MODE_PRIVATE);
-        mWatchList = Equity.loadFrom(mSharedPreferences, WATCHLIST_PREFIX);
-        mWatchListGeneration = mSharedPreferences.getInt(WATCHLIST_PREFIX + "_GENERATION", 0);
 
         mComparisonEquityGeneration = mSharedPreferences.getInt(COMPARISON_PREFIX + "_GENERATION", 0);
         mComparisonEquityColors = null;
@@ -148,12 +146,6 @@ public class ApplicationContext {
         if (BuildConfig.DEBUG) {
             if (mComparisonEquities != null)
                 Assert.assertNotSame(mComparisonEquityColors, null);
-        }
-
-        if (mWatchList == null)
-        {
-            mWatchList = new ArrayList<Equity>();
-            // TODO: set default equities if this is first boot
         }
     }
 
@@ -331,72 +323,6 @@ public class ApplicationContext {
         sp.commit();
     }
 
-    public static int getWatchListGeneration()
-    {
-        return mWatchListGeneration;
-    }
-
-    public static int getWatchListIndex(Equity equity)
-    {
-        int index = -1;
-        for (int i =0; i < mWatchList.size(); ++i){
-            if (equity.equals(mWatchList.get(i)))
-            {
-                index = i;
-                break;
-            }
-        }
-        return index;
-    }
-
-    public static boolean moveItemInWatchlist(int from, int to)
-    {
-        if (from < 0 || from >= mWatchList.size())
-            return false;
-
-        if (to < 0 || to >= mWatchList.size())
-            return false;
-
-        ++mWatchListGeneration;
-        mWatchList.add(to, mWatchList.remove(from));
-        saveWatchList();
-        return true;
-    }
-
-    public static boolean removeFromWatchList(int stock)
-    {
-        if (stock < 0 || stock >= mWatchList.size())
-            return false;
-
-        ++mWatchListGeneration;
-        mWatchList.remove(stock);
-        saveWatchList();
-        return true;
-    }
-
-    public static boolean addToWatchList(Equity equity)
-    {
-        if (getWatchListIndex(equity) != -1)
-            return false;
-
-        ++mWatchListGeneration;
-        mWatchList.add(equity);
-        saveWatchList();
-        return true;
-    }
-
-    public static List<Equity> getWatchList()
-    {
-        return Collections.unmodifiableList(mWatchList);
-    }
-
-    private static void saveWatchList()
-    {
-        SharedPreferences.Editor sp = mSharedPreferences.edit();
-        sp.putInt(WATCHLIST_PREFIX + "_GENERATION", mWatchListGeneration);
-        Equity.saveTo(sp, mWatchList, WATCHLIST_PREFIX);
-        sp.commit();
-    }
 
     // initialize default settins for any charts in this activity
     public static void initializeSimpleChart(Context context, CombinedChart chart)

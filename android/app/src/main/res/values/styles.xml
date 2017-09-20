@@ -21,10 +21,10 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
         <item name="android:itemTextAppearance">@style/MenuItemTextAppearance</item>
-        <item name="android:editTextColor">@color/colorPrimary</item>>
-        <item name="android:textColorPrimary">@color/colorPrimary</item>
-        <item name="android:textColorSecondary">@color/colorPrimary</item>
-        <item name="android:textColorHint">@color/colorPrimaryDark</item>
+        <item name="android:editTextColor">@color/colorAccentPrimaryLight</item>>
+        <item name="android:textColorPrimary">@color/colorAccentPrimaryLight</item>
+        <item name="android:textColorSecondary">@color/colorAccentPrimaryLight</item>
+        <item name="android:textColorHint">@color/colorAccentPrimaryLight</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>

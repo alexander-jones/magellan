@@ -64,7 +64,6 @@ public class BarChartService implements IQuoteService
             builder.end(query.end);
 
             HistoryRequest built = builder.build();
-            Map<String, Object> params = builder.build().parameters();
             final Collection<HistoryBar> rawQuotes = mClient.fetch(built).all();
             if (rawQuotes == null)
                 return null;

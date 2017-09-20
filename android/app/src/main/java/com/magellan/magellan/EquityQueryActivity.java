@@ -41,11 +41,15 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
     private String mSearchViewTextToSet = null;
     private boolean mRemoveSearchViewFocus = false;
 
+    private WatchList mWatchList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_query);
         ApplicationContext.init(this);
+
+        mWatchList = WatchList.getOrCreate(0);
+        mWatchList.load();
 
         setTitle("");
         mList =(ListView) findViewById(R.id.search_list_view);
@@ -198,7 +202,7 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
         @Override
         public void onInitialStatus(Equity equity, ViewHolder holder)
         {
-            if (ApplicationContext.getWatchListIndex(equity) == -1)
+            if (mWatchList.getIndexOf(equity) == -1)
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_add_24dp));
             else
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_remove_24dp));
@@ -207,15 +211,15 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
         @Override
         public void onChangeStatusPressed(Equity equity, ViewHolder holder)
         {
-            int curStockIndex = ApplicationContext.getWatchListIndex(equity);
+            int curStockIndex = mWatchList.getIndexOf(equity);
             if (curStockIndex == -1)
             {
-                if (ApplicationContext.addToWatchList(equity))
+                if (mWatchList.add(equity))
                     holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_remove_24dp));
             }
             else
             {
-                if (ApplicationContext.removeFromWatchList(curStockIndex))
+                if (mWatchList.remove(curStockIndex))
                     holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_add_24dp));
             }
         }

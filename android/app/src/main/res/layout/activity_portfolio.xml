@@ -156,7 +156,7 @@
                         android:layout_centerVertical="true"
                         android:text="Watchlist"
                         android:textSize="@dimen/small_header_text_size"
-                        android:textColor="@color/colorTextPrimaryLight"/>
+                        android:textColor="@color/colorAccentSecondaryLight"/>
 
                     <ImageButton
                         android:id="@+id/watch_list_options_button"
@@ -164,7 +164,7 @@
                         android:layout_height="@dimen/button_height"
                         android:layout_alignParentRight="true"
                         android:background="@color/colorBackgroundDark"
-                        android:tint="@color/colorTextSecondaryLight"
+                        android:tint="@color/colorAccentSecondaryLight"
                         style="?android:attr/actionOverflowButtonStyle"/>
                 </RelativeLayout>
 
@@ -203,7 +203,7 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         android:background="@color/colorBackgroundDark"
-        app:itemTextColor="@color/colorTextPrimaryLight"
+        app:itemTextColor="@color/colorAccentPrimaryLight"
         app:headerLayout="@layout/nav_header_portfolio"
         app:menu="@menu/activity_portfolio_drawer" />
 

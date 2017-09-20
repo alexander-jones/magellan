@@ -18,7 +18,7 @@
         android:layout_centerVertical="true"
         android:text="QQQQ"
         android:textSize="@dimen/medium_header_text_size"
-        android:textColor="@color/colorTextPrimaryLight"
+        android:textColor="@color/colorAccentPrimaryLight"
         android:clickable="false"/>
 
     <com.github.mikephil.charting.charts.CombinedChart

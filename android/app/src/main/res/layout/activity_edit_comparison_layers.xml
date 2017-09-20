@@ -27,8 +27,8 @@
                 app:tabMaxWidth="0dp"
                 app:tabGravity="fill"
                 app:tabMode="fixed"
-                app:tabIndicatorColor="@color/colorTextPrimaryLight"
-                app:tabSelectedTextColor="@color/colorTextPrimaryLight"
+                app:tabIndicatorColor="@color/colorAccentPrimaryLight"
+                app:tabSelectedTextColor="@color/colorAccentPrimaryLight"
                 app:tabTextColor="@color/colorPrimary" />
             </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>

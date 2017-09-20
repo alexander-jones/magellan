@@ -41,6 +41,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private int mWachListGeneration;
     private RecyclerView mWatchListContainer;
     private WatchListRowAdapter mWatchListAdapter;
+    private WatchList mWatchList;
     private List<WatchListRowAdapter.DataHolder> mWatchListItems = new ArrayList<WatchListRowAdapter.DataHolder>();
     private HashMap<QuoteQuery, WatchListRowAdapter.DataHolder> watchListQueriesInFlight = new HashMap<QuoteQuery, WatchListRowAdapter.DataHolder>();
     private HashMap<QuoteQuery, Equity> comparisonQueriesInFlight = new HashMap<QuoteQuery, Equity>();
@@ -136,10 +137,12 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
         ApplicationContext.initializeSimpleChart(this, mComparisonChart);
 
-        List<Equity> watchList = ApplicationContext.getWatchList();
+        mWatchList = WatchList.getOrCreate(0);
+        mWatchList.load();
+        List<Equity> watchList = mWatchList.getItems();
         for (Equity e : watchList)
             mWatchListItems.add(new WatchListRowAdapter.DataHolder(e));
-        mWachListGeneration = ApplicationContext.getWatchListGeneration();
+        mWachListGeneration = mWatchList.getGeneration();
         mWatchListContainer = (RecyclerView)findViewById(R.id.watchlist_container);
         mWatchListAdapter = new WatchListRowAdapter(this, mWatchListItems, this);
         mWatchListContainer.setAdapter(mWatchListAdapter);
@@ -166,7 +169,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     }
                     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                         int position = viewHolder.getAdapterPosition();
-                        ApplicationContext.removeFromWatchList(position);
+                        mWatchList.remove(position);
                         mWatchListItems.remove(position);
                         mWatchListAdapter.notifyItemRemoved(position);
                     }
@@ -176,7 +179,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                         super.clearView(recyclerView, viewHolder);
 
                         if(dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
-                            ApplicationContext.moveItemInWatchlist(dragFrom, dragTo);
+                            mWatchList.move(dragFrom, dragTo);
                         }
 
                         dragFrom = dragTo = -1;
@@ -294,20 +297,23 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        int newWatchListGen = ApplicationContext.getWatchListGeneration();
-        if (mWachListGeneration != newWatchListGen)
+        WatchList newWatchList = WatchList.get(0);
+        newWatchList.load();
+        int newWatchListGeneration = newWatchList.getGeneration();
+        if (mWachListGeneration != newWatchListGeneration)
         {
-            List<Equity> newWatchList = ApplicationContext.getWatchList();
+            mWachListGeneration = newWatchListGeneration;
+            List<Equity> newWatchListItems = newWatchList.getItems();
             for (int i =0; i < mWatchListItems.size(); ++i) {
-                if (i >= newWatchList.size() || !mWatchListItems.get(i).equity.equals(newWatchList.get(i)))
+                if (i >= newWatchListItems.size() || !mWatchListItems.get(i).equity.equals(newWatchListItems.get(i)))
                 {
                     mWatchListItems.remove(i);
                     mWatchListAdapter.notifyItemRemoved(i);
                 }
             }
 
-            for (int i = mWatchListItems.size(); i < newWatchList.size(); ++i) {
-                Equity equity = newWatchList.get(i);
+            for (int i = mWatchListItems.size(); i < newWatchListItems.size(); ++i) {
+                Equity equity = newWatchListItems.get(i);
                 WatchListRowAdapter.DataHolder dh = new WatchListRowAdapter.DataHolder(equity);
                 mWatchListItems.add(dh);
                 mWatchListAdapter.notifyItemRangeInserted(mWatchListItems.size() -1, 1);
@@ -326,6 +332,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         int newComparisonGeneration = ApplicationContext.getComparisonEquityGeneration();
         if (mComparisonGeneration != newComparisonGeneration)
         {
+            mComparisonGeneration = newComparisonGeneration;
             List<Equity> equities = ApplicationContext.getComparisonEquities();
             List<Integer> colors = ApplicationContext.getComparisonEquityColors();
             HashMap<Integer, ComparisonLayerHolder> commonContexts = new HashMap<Integer, ComparisonLayerHolder>();

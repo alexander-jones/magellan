@@ -144,8 +144,8 @@
                             app:tabMaxWidth="0dp"
                             app:tabGravity="fill"
                             app:tabMode="fixed"
-                            app:tabIndicatorColor="@color/colorTextPrimaryLight"
-                            app:tabSelectedTextColor="@color/colorTextPrimaryLight"
+                            app:tabIndicatorColor="@color/colorAccentPrimaryLight"
+                            app:tabSelectedTextColor="@color/colorAccentPrimaryLight"
                             app:tabTextColor="@color/colorPrimary"
                             app:elevation="@dimen/elevation">
 
@@ -199,7 +199,7 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         android:background="@color/colorBackgroundDark"
-        app:itemTextColor="@color/colorTextPrimaryLight"
+        app:itemTextColor="@color/colorAccentPrimaryLight"
         app:headerLayout="@layout/nav_header_portfolio"
         app:menu="@menu/activity_portfolio_drawer" />
 

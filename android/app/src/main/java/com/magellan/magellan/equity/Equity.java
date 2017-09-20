@@ -46,89 +46,89 @@ public class Equity {
     public String getExchange() {return mExchange;}
     public String getType() {return mType;}
 
-    public static List<Equity> loadFrom(Intent inState)
+    public void saveTo(Bundle outState, int i) {saveTo(outState, i, "");}
+    public void saveTo(Bundle outState, int i, String prefix)
     {
-        return loadFrom(inState, "");
+        outState.putString(prefix + SYMBOL_KEY + Integer.toString(i), getSymbol());
+        outState.putString(prefix + NAME_KEY + Integer.toString(i), getName());
+        outState.putString(prefix + EXCHANGE_KEY + Integer.toString(i), getExchange());
+        outState.putString(prefix + TYPE_KEY + Integer.toString(i), getType());
     }
 
-    public static List<Equity> loadFrom(Intent inState, String prefix)
+    public void saveTo(Intent outState, int i) {saveTo(outState, i, "");}
+    public void saveTo(Intent outState, int i, String prefix)
     {
-        int numResults = inState.getIntExtra(prefix + COUNT_KEY , -1);
-        if (numResults == -1)
-            return null;
-
-        List<Equity> ret = new ArrayList<Equity>(numResults);
-        for (int i =0; i < numResults; ++i){
-
-            String symbol = inState.getStringExtra(prefix + SYMBOL_KEY + Integer.toString(i));
-            String company = inState.getStringExtra(prefix + NAME_KEY + Integer.toString(i));
-            String exchange = inState.getStringExtra(prefix + EXCHANGE_KEY + Integer.toString(i));
-            String type = inState.getStringExtra(prefix + TYPE_KEY + Integer.toString(i));
-            ret.add(new Equity(symbol, company, exchange, type));
-        }
-        return ret;
+        outState.putExtra(prefix + SYMBOL_KEY + Integer.toString(i), getSymbol());
+        outState.putExtra(prefix + NAME_KEY + Integer.toString(i), getName());
+        outState.putExtra(prefix + EXCHANGE_KEY + Integer.toString(i), getExchange());
+        outState.putExtra(prefix + TYPE_KEY + Integer.toString(i), getType());
     }
 
-    public static void saveTo(Intent outState, List<Equity> equities)
+
+    public void saveTo(SharedPreferences.Editor outState, int i) {saveTo(outState, i, ""); }
+    public void saveTo(SharedPreferences.Editor outState, int i, String prefix)
     {
-        saveTo(outState, equities, "");
+        outState.putString(prefix + SYMBOL_KEY + Integer.toString(i), getSymbol());
+        outState.putString(prefix + NAME_KEY + Integer.toString(i), getName());
+        outState.putString(prefix + EXCHANGE_KEY + Integer.toString(i), getExchange());
+        outState.putString(prefix + TYPE_KEY + Integer.toString(i), getType());
     }
 
+    public static void saveTo(Intent outState, List<Equity> equities) {saveTo(outState, equities, ""); }
     public static void saveTo(Intent outState, List<Equity> equities, String prefix)
     {
         outState.putExtra(prefix + COUNT_KEY, equities.size());
-        for (int i = 0; i < equities.size(); ++i){
-            outState.putExtra(prefix + SYMBOL_KEY + Integer.toString(i), equities.get(i).getSymbol());
-            outState.putExtra(prefix + NAME_KEY + Integer.toString(i), equities.get(i).getName());
-            outState.putExtra(prefix + EXCHANGE_KEY + Integer.toString(i), equities.get(i).getExchange());
-            outState.putExtra(prefix + TYPE_KEY + Integer.toString(i), equities.get(i).getType());
-        }
+        for (int i = 0; i < equities.size(); ++i)
+            equities.get(i).saveTo(outState, i, prefix);
     }
 
-    public static List<Equity> loadFrom(SharedPreferences inState)
-    {
-        return loadFrom(inState, "");
-    }
-
-    public static List<Equity> loadFrom(SharedPreferences inState, String prefix)
-    {
-        int numResults = inState.getInt(prefix + COUNT_KEY , -1);
-        if (numResults == -1)
-            return null;
-
-        List<Equity> ret = new ArrayList<Equity>(numResults);
-        for (int i =0; i < numResults; ++i){
-
-            String symbol = inState.getString(prefix + SYMBOL_KEY + Integer.toString(i), null);
-            String company = inState.getString(prefix + NAME_KEY + Integer.toString(i), null);
-            String exchange = inState.getString(prefix + EXCHANGE_KEY + Integer.toString(i), null);
-            String type = inState.getString(prefix + TYPE_KEY + Integer.toString(i), null);
-            ret.add(new Equity(symbol, company, exchange, type));
-        }
-        return ret;
-    }
-
-    public static void saveTo(SharedPreferences.Editor outState, List<Equity> equities)
-    {
-        saveTo(outState, equities, "");
-    }
-
+    public static void saveTo(SharedPreferences.Editor outState, List<Equity> equities) {saveTo(outState, equities, ""); }
     public static void saveTo(SharedPreferences.Editor outState, List<Equity> equities, String prefix)
     {
         outState.putInt(prefix + COUNT_KEY, equities.size());
-        for (int i = 0; i < equities.size(); ++i){
-            outState.putString(prefix + SYMBOL_KEY + Integer.toString(i), equities.get(i).getSymbol());
-            outState.putString(prefix + NAME_KEY + Integer.toString(i), equities.get(i).getName());
-            outState.putString(prefix + EXCHANGE_KEY + Integer.toString(i), equities.get(i).getExchange());
-            outState.putString(prefix + TYPE_KEY + Integer.toString(i), equities.get(i).getType());
-        }
+        for (int i = 0; i < equities.size(); ++i)
+            equities.get(i).saveTo(outState, i, prefix);
+    }
+
+    public static void saveTo(Bundle outState, List<Equity> equities) {saveTo(outState, equities, ""); }
+    public static void saveTo(Bundle outState, List<Equity> equities, String prefix)
+    {
+        outState.putInt(prefix + COUNT_KEY, equities.size());
+        for (int i = 0; i < equities.size(); ++i)
+            equities.get(i).saveTo(outState, i, prefix);
+    }
+
+    public static Equity loadFrom(Bundle inState, int i) {return loadFrom(inState, i, "");}
+    public static Equity loadFrom(Bundle inState, int i, String prefix)
+    {
+        String symbol = inState.getString(prefix + SYMBOL_KEY + Integer.toString(i), null);
+        if (symbol == null)
+            return null;
+        String company = inState.getString(prefix + NAME_KEY + Integer.toString(i), null);
+        String exchange = inState.getString(prefix + EXCHANGE_KEY + Integer.toString(i), null);
+        String type = inState.getString(prefix + TYPE_KEY + Integer.toString(i), null);
+        return new Equity(symbol, company, exchange, type);
+    }
+
+    public static Equity loadFrom(Intent inState, int i) {return loadFrom(inState, i, "");}
+    public static Equity loadFrom(Intent inState, int i, String prefix) { return loadFrom(inState.getExtras(), i, prefix); }
+
+    public static Equity loadFrom(SharedPreferences inState, int i) {return loadFrom(inState, i, "");}
+    public static Equity loadFrom(SharedPreferences inState, int i, String prefix)
+    {
+        String symbol = inState.getString(prefix + SYMBOL_KEY + Integer.toString(i), null);
+        if (symbol == null)
+            return null;
+        String company = inState.getString(prefix + NAME_KEY + Integer.toString(i), null);
+        String exchange = inState.getString(prefix + EXCHANGE_KEY + Integer.toString(i), null);
+        String type = inState.getString(prefix + TYPE_KEY + Integer.toString(i), null);
+        return new Equity(symbol, company, exchange, type);
     }
 
     public static List<Equity> loadFrom(Bundle inState)
     {
         return loadFrom(inState, "");
     }
-
     public static List<Equity> loadFrom(Bundle inState, String prefix)
     {
         int numResults = inState.getInt(prefix + COUNT_KEY , -1);
@@ -136,30 +136,41 @@ public class Equity {
             return null;
 
         List<Equity> ret = new ArrayList<Equity>(numResults);
-        for (int i =0; i < numResults; ++i){
-
-            String symbol = inState.getString(prefix + SYMBOL_KEY + Integer.toString(i), null);
-            String company = inState.getString(prefix + NAME_KEY + Integer.toString(i), null);
-            String exchange = inState.getString(prefix + EXCHANGE_KEY + Integer.toString(i), null);
-            String type = inState.getString(prefix + TYPE_KEY + Integer.toString(i), null);
-            ret.add(new Equity(symbol, company, exchange, type));
-        }
+        for (int i =0; i < numResults; ++i)
+            ret.add(loadFrom(inState, i, prefix));
         return ret;
     }
 
-    public static void saveTo(Bundle outState, List<Equity> equities)
+    public static List<Equity> loadFrom(Intent inState)
     {
-        saveTo(outState, equities, "");
+        return loadFrom(inState, "");
+    }
+    public static List<Equity> loadFrom(Intent inState, String prefix)
+    {
+        int numResults = inState.getIntExtra(prefix + COUNT_KEY , -1);
+        if (numResults == -1)
+            return null;
+
+        List<Equity> ret = new ArrayList<Equity>(numResults);
+        for (int i =0; i < numResults; ++i)
+            ret.add(loadFrom(inState, i, prefix));
+        return ret;
     }
 
-    public static void saveTo(Bundle outState, List<Equity> equities, String prefix)
+    public static List<Equity> loadFrom(SharedPreferences inState)
     {
-        outState.putInt(prefix + COUNT_KEY, equities.size());
-        for (int i = 0; i < equities.size(); ++i){
-            outState.putString(prefix + SYMBOL_KEY + Integer.toString(i), equities.get(i).getSymbol());
-            outState.putString(prefix + NAME_KEY + Integer.toString(i), equities.get(i).getName());
-            outState.putString(prefix + EXCHANGE_KEY + Integer.toString(i), equities.get(i).getExchange());
-            outState.putString(prefix + TYPE_KEY + Integer.toString(i), equities.get(i).getType());
-        }
+        return loadFrom(inState, "");
     }
+    public static List<Equity> loadFrom(SharedPreferences inState, String prefix)
+    {
+        int numResults = inState.getInt(prefix + COUNT_KEY , -1);
+        if (numResults == -1)
+            return null;
+
+        List<Equity> ret = new ArrayList<Equity>(numResults);
+        for (int i =0; i < numResults; ++i)
+            ret.add(loadFrom(inState, i, prefix));
+        return ret;
+    }
+
 }
