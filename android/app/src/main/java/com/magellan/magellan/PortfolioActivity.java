@@ -22,9 +22,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.github.mikephil.charting.charts.CombinedChart;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.LineData;
+import com.magellan.magellan.metric.CenterLineLayer;
 import com.magellan.magellan.metric.price.PriceLineLayer;
+import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.quote.IQuoteQueryListener;
 import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
@@ -48,29 +51,32 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
     private List<Integer> mComparisonColors = new ArrayList<Integer>();
     private List<Equity> mComparisonEquities = new ArrayList<Equity>();
-    private List<String> mComparisonItemLabels = new ArrayList<String>();
+    private List<String> mComparisonButtonLabels = new ArrayList<String>();
+    private List<String> mComparisonValueLabels = new ArrayList<String>();
     private List<ComparisonLayerHolder> mComparisonLayerHolders = new ArrayList<ComparisonLayerHolder>();
 
+    private boolean mComparisonCenterLineDrawn = false;
+    private CenterLineLayer mComparisonCenterLineLayer;
     private int           mComparisonDisabledColor;
     private CombinedChart mComparisonChart;
     private CombinedData mComparisonData = new CombinedData();
     private LinearLayout.LayoutParams mComparisonPriceLayoutParams;
-    private LinearLayout mComparisonPriceContainer;
     private RecyclerView mComparisonItemButtonContainer;
-    private ButtonAdapter mComparisonItemButtonAdapter;
+    private PortfolioComparisonItemAdapter mComparisonItemButtonAdapter;
     private ImageButton mComparisonEditLayersButton;
     private int mComparisonGeneration;
     private int mLastMissingStartSteps;
     private int mLastMissingEndSteps;
+    private float mLowestComparisonValue = Float.MAX_VALUE;
+    private float mHighestComparisonValue = Float.MIN_VALUE;
 
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
 
     private class ComparisonLayerHolder
     {
-        public ComparisonLayerHolder(TextView priceTextView, int c)
+        public ComparisonLayerHolder(int c)
         {
-            price = priceTextView;
             layer = new PriceLineLayer(new SolidLineDataSetStyler(c));
             original_quotes = null;
             percent_difference_quotes = null;
@@ -78,7 +84,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             color = c;
         }
 
-        TextView price;
         PriceLineLayer layer;
         List<Quote> original_quotes;
         List<Quote> percent_difference_quotes;
@@ -112,23 +117,23 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         mComparisonEquities = new ArrayList<Equity>(ApplicationContext.getComparisonEquities());
         mComparisonColors = new ArrayList<Integer>(ApplicationContext.getComparisonEquityColors());
         for (int i =0; i < mComparisonEquities.size(); ++i)
-            mComparisonItemLabels.add(mComparisonEquities.get(i).getSymbol());
+        {
+            mComparisonValueLabels.add("0.0%");
+            mComparisonButtonLabels.add(mComparisonEquities.get(i).getSymbol());
+        }
 
         mComparisonGeneration = ApplicationContext.getComparisonEquityGeneration();
         mComparisonEditLayersButton = (ImageButton) findViewById(R.id.edit_layers);
         mComparisonEditLayersButton.setOnClickListener(this);
-        mComparisonPriceContainer = (LinearLayout) findViewById(R.id.price_container);
         mComparisonItemButtonContainer = (RecyclerView) findViewById(R.id.comparison_layers);
-        mComparisonItemButtonAdapter = new ComparisonButtonAdapter(mComparisonItemLabels, mComparisonColors);
+        mComparisonItemButtonAdapter = new PortfolioComparisonItemAdapter(mComparisonButtonLabels, mComparisonValueLabels, mComparisonColors);
         mComparisonItemButtonContainer.setAdapter(mComparisonItemButtonAdapter);
 
         mComparisonChart = (CombinedChart)findViewById(R.id.comparison_chart);
         for (int i =0; i < mComparisonEquities.size(); ++i)
         {
             Equity index = mComparisonEquities.get(i);
-            TextView textView = createPriceTextView(mComparisonColors.get(i));
-            mComparisonPriceContainer.addView(textView, mComparisonPriceLayoutParams);
-            mComparisonLayerHolders.add(new ComparisonLayerHolder(textView, mComparisonColors.get(i)));
+            mComparisonLayerHolders.add(new ComparisonLayerHolder(mComparisonColors.get(i)));
             QuoteQuery query = new QuoteQuery(index.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
             comparisonQueriesInFlight.put(query, index);
             QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
@@ -136,6 +141,9 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         }
 
         ApplicationContext.initializeSimpleChart(this, mComparisonChart);
+
+        mComparisonCenterLineLayer = new CenterLineLayer(this);
+        mComparisonCenterLineLayer.setCenter(0.0f);
 
         mWatchList = WatchList.getOrCreate(0);
         mWatchList.load();
@@ -224,14 +232,6 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         }
     }
 
-    private TextView createPriceTextView(int color)
-    {
-        TextView ret = new TextView(this);
-        ret.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.small_header_text_size));
-        ret.setTextColor(color);
-        return ret;
-    }
-
     @Override
     public void onQuotesReceived(List<QuoteQuery> queries, List<List<Quote>> manyQuotes)
     {
@@ -279,14 +279,34 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     float close =  (q.close / startingOpen) - 1.0f;
                     float low =(q.low / startingOpen) - 1.0f;
                     float high =  (q.high / startingOpen) - 1.0f;
+
+                    if (low < mLowestComparisonValue)
+                        mLowestComparisonValue = low;
+                    if (high > mHighestComparisonValue)
+                        mHighestComparisonValue = high;
                     lh.percent_difference_quotes.add(new Quote(q.time, open, close, low, high, q.volume));
                 }
 
                 float finalPercentageDifference = lh.percent_difference_quotes.get(lh.percent_difference_quotes.size() -1).close;
-                lh.price.setText(String.format("%.2f%%", finalPercentageDifference * 100));
+                mComparisonValueLabels.set(position, String.format("%.2f%%", finalPercentageDifference * 100));
+                mComparisonItemButtonAdapter.notifyItemChanged(position);
+
+                if (!mComparisonCenterLineDrawn) {
+                    mComparisonCenterLineLayer.onDrawQuotes(quotes, 0, 0, mComparisonData);
+                    mComparisonCenterLineDrawn = true;
+                }
                 if (lh.enabled)
                     lh.layer.onDrawQuotes(lh.percent_difference_quotes, missingStartSteps, missingEndSteps, mComparisonData);
 
+
+                /*float absDiffFromHigh =  Math.abs(mHighestComparisonValue);
+                float diffFromCenter = Math.abs(mLowestComparisonValue);
+                if (diffFromCenter < absDiffFromHigh)
+                    diffFromCenter = absDiffFromHigh;*/
+
+                YAxis axis = mComparisonChart.getAxisLeft();
+                axis.setAxisMinimum(mLowestComparisonValue);
+                axis.setAxisMaximum(mHighestComparisonValue);
                 mComparisonChart.setData(mComparisonData);
                 mComparisonChart.notifyDataSetChanged();
                 mComparisonChart.fitScreen();
@@ -353,7 +373,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
                 if (newIndex == -1)
                 {
-                    mComparisonPriceContainer.removeViewAt(i);
+                    mComparisonValueLabels.remove(i);
                     mComparisonEquities.remove(i); // this is only neccessary so layer lookup doesn't disconnect
                 }
                 else
@@ -363,7 +383,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 }
             }
 
-            mComparisonItemLabels.clear();
+            mComparisonButtonLabels.clear();
             mComparisonLayerHolders.clear();
             mComparisonEquities.clear();
             mComparisonEquities.addAll(equities);
@@ -371,19 +391,20 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             mComparisonColors.addAll(colors);
 
             LineData ld = mComparisonData.getLineData();
-            if (ld != null)
+            if (ld != null) {
                 ld.clearValues();
+                mComparisonCenterLineDrawn = false;
+            }
             for (int i = 0; i < mComparisonEquities.size(); ++i)
             {
                 Equity equity = mComparisonEquities.get(i);
                 ComparisonLayerHolder existingContext = commonContexts.get(i);
-                mComparisonItemLabels.add(equity.getSymbol());
+                mComparisonButtonLabels.add(equity.getSymbol());
                 if (existingContext == null)
                 {
                     int color = mComparisonColors.get(i);
-                    TextView textView = createPriceTextView(color);
-                    mComparisonPriceContainer.addView(textView, i, mComparisonPriceLayoutParams);
-                    mComparisonLayerHolders.add(new ComparisonLayerHolder(textView, color));
+                    mComparisonValueLabels.add("0.00%");
+                    mComparisonLayerHolders.add(new ComparisonLayerHolder(color));
                     QuoteQuery query = new QuoteQuery(equity.getSymbol(), QuoteQuery.Period.OneDay, QuoteQuery.Interval.FiveMinutes);
                     comparisonQueriesInFlight.put(query, equity);
                     QuoteQueryTask task = new QuoteQueryTask(this, ApplicationContext.getQuoteService(), this);
@@ -470,30 +491,58 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
     private void redrawComparisonChart()
     {
+        mLowestComparisonValue = Float.MAX_VALUE;
+        mHighestComparisonValue = Float.MIN_VALUE;
+        mComparisonCenterLineDrawn = false;
         LineData ld = mComparisonData.getLineData();
-        if (ld != null)
+        if (ld != null) {
             ld.clearValues();
+        }
+
         for (int i = 0; i < mComparisonEquities.size(); ++i)
         {
             ComparisonLayerHolder lh = mComparisonLayerHolders.get(i);
-            if (lh.enabled)
+            if (lh.enabled) {
+                float startingOpen = lh.percent_difference_quotes.get(0).open;
+                for (Quote q : lh.percent_difference_quotes) {
+                    if (q.low < mLowestComparisonValue)
+                        mLowestComparisonValue = q.low;
+                    if (q.high > mHighestComparisonValue)
+                        mHighestComparisonValue = q.high;
+                }
+
+                if (!mComparisonCenterLineDrawn)
+                {
+                    mComparisonCenterLineLayer.onDrawQuotes(lh.percent_difference_quotes, 0, 0, mComparisonData);
+                    mComparisonCenterLineDrawn = true;
+                }
+
                 lh.layer.onDrawQuotes(lh.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+            }
         }
-        mComparisonItemButtonAdapter.notifyDataSetChanged();
+
+        /*float absDiffFromHigh =  Math.abs(mHighestComparisonValue);
+        float diffFromCenter = Math.abs(mLowestComparisonValue);
+        if (diffFromCenter < absDiffFromHigh)
+            diffFromCenter = absDiffFromHigh;*/
+
         mComparisonChart.setData(mComparisonData);
+        YAxis axis = mComparisonChart.getAxisLeft();
+        axis.setAxisMinimum(mLowestComparisonValue);
+        axis.setAxisMaximum(mHighestComparisonValue);
         mComparisonChart.notifyDataSetChanged();
         mComparisonChart.fitScreen();
     }
 
-    private class ComparisonButtonAdapter extends ButtonAdapter
+    private class PortfolioComparisonItemAdapter extends ComparisonItemAdapter
     {
-        ComparisonButtonAdapter(List<String> labels, List<Integer> colors)
+        PortfolioComparisonItemAdapter(List<String> labels, List<String> values, List<Integer> colors)
         {
-            super(labels, colors);
+            super(labels, values, colors);
         }
 
         @Override
-        public void onButtonPressed(Button button)
+        public void onButtonPressed(TextView button)
         {
             CharSequence symbol = button.getText();
             int index = -1;

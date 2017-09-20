@@ -18,6 +18,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.magellan.magellan.equity.Equity;
+import com.magellan.magellan.metric.CenterLineLayer;
 import com.magellan.magellan.metric.price.PriceLineLayer;
 import com.magellan.magellan.metric.price.PriceMetric;
 import com.magellan.magellan.quote.Quote;
@@ -67,12 +68,14 @@ public class WatchListRowAdapter extends RecyclerView.Adapter<WatchListRowAdapte
         }
     }
 
+    private CenterLineLayer mCenterLineLayer;
     private SolidLineDataSetStyler mPriceUpLineStyler;
     private SolidLineDataSetStyler mPriceDownLineStyler;
     private AdapterView.OnClickListener mListener;
     private List<DataHolder> mData;
     private Context mContext;
     public WatchListRowAdapter(Context context, List<DataHolder> data, AdapterView.OnClickListener listener) {
+        mCenterLineLayer = new CenterLineLayer(context);
         mContext = context;
         mData = data;
         mListener = listener;
@@ -121,31 +124,7 @@ public class WatchListRowAdapter extends RecyclerView.Adapter<WatchListRowAdapte
                 vh.value.setTextColor(ContextCompat.getColor(mContext, R.color.colorPriceDown));
             }
 
-            // draw center line
-            ArrayList<Entry> centerLineValues = new ArrayList<Entry>();
-            centerLineValues.add(new Entry(0, startingOpen, null));
-            centerLineValues.add(new Entry(dh.quotes.size() + missingStartSteps + missingEndSteps - 1, startingOpen, null));
-
-            LineDataSet centerLineSet = new LineDataSet(centerLineValues, "");
-            centerLineSet.setDrawIcons(false);
-            centerLineSet.setHighlightEnabled(false);
-            centerLineSet.enableDashedLine(10f, 10f, 0f);
-            centerLineSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
-            centerLineSet.setFillColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
-            centerLineSet.setLineWidth(1f);
-            centerLineSet.setDrawCircles(false);
-            centerLineSet.setDrawValues(false);
-
-            LineData data = vh.allData.getLineData();
-            if (data == null){
-                ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
-                priceDataSets.add(centerLineSet);
-                data = new LineData(priceDataSets);
-            }
-            else
-                data.addDataSet(centerLineSet);
-            vh.allData.setData(data);
-
+            mCenterLineLayer.onDrawQuotes(dh.quotes, 0, 0, vh.allData);
             vh.priceLineLayer.onDrawQuotes(dh.quotes, 0, 0, vh.allData); // don't draw missing start / end steps when center line will pad data for us
 
             float lowestPrice = Float.MAX_VALUE;

@@ -83,49 +83,26 @@
                             android:layout_height="wrap_content"
                             android:background="@color/colorCardBackgroundDark">
 
-                            <LinearLayout
-                                android:id="@+id/price_container"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignParentTop="true"
-                                android:layout_centerHorizontal="true"
-                                android:layout_marginTop="@dimen/spacing_internal"
-                                android:layout_marginLeft="@dimen/spacing_external"
-                                android:layout_marginRight="@dimen/spacing_external"
-                                android:orientation="horizontal"/>
-
-                            <com.github.mikephil.charting.charts.CombinedChart
-                                android:id="@+id/comparison_chart"
-                                android:layout_width="match_parent"
-                                android:layout_height="300dp"
-                                android:layout_below="@+id/price_container"/>
-
-                            <ProgressBar
-                                android:id="@+id/comparison_chart_progress"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_centerInParent="true"
-                                android:visibility="gone"/>
-
                             <RelativeLayout
                                 android:id="@+id/layers_container"
+                                android:layout_alignParentTop="true"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_below="@+id/comparison_chart"
-                                android:layout_alignParentBottom="true"
+                                android:layout_marginTop="@dimen/spacing_internal"
                                 android:layout_marginLeft="@dimen/spacing_internal"
                                 android:layout_marginRight="@dimen/spacing_internal">
 
                                 <android.support.v7.widget.RecyclerView
                                     android:id="@+id/comparison_layers"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="@dimen/button_height"
+                                    android:layout_height="wrap_content"
                                     android:layout_marginRight="@dimen/spacing_internal"
                                     android:layout_marginBottom="@dimen/spacing_internal"
                                     android:layout_alignParentLeft="true"
-                                    android:layout_toLeftOf="@+id/add_layer"
+                                    android:layout_toLeftOf="@+id/edit_layers"
                                     android:orientation="horizontal"
-                                    app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
+                                    app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                                    tools:listitem="@layout/comparison_item" />
 
                                 <ImageButton
                                     android:id="@+id/edit_layers"
@@ -136,6 +113,73 @@
                                     android:src="@drawable/ic_edit_24dp"
                                     android:background="@color/colorCardBackgroundDark"/>
                             </RelativeLayout>
+
+
+                            <com.github.mikephil.charting.charts.CombinedChart
+                                android:id="@+id/comparison_chart"
+                                android:layout_width="match_parent"
+                                android:layout_height="300dp"
+                                android:layout_marginTop="@dimen/spacing_internal"
+                                android:layout_below="@+id/layers_container"/>
+
+                            <android.support.design.widget.TabLayout
+                                android:id="@+id/interval_tabs"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/comparison_chart"
+                                android:layout_alignParentBottom="true"
+                                android:background="@drawable/rounded_card_background_dark"
+                                app:tabMaxWidth="0dp"
+                                app:tabGravity="fill"
+                                app:tabMode="fixed"
+                                app:tabIndicatorColor="@color/colorAccentPrimaryLight"
+                                app:tabSelectedTextColor="@color/colorAccentPrimaryLight"
+                                app:tabTextColor="@color/colorPrimary">
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="1D"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="1W"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="1M"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="3M"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="1Y"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="5Y"/>
+
+                                <android.support.design.widget.TabItem
+                                    android:layout_height="wrap_content"
+                                    android:layout_width="wrap_content"
+                                    android:text="10Y"/>
+
+                            </android.support.design.widget.TabLayout>
+
+                            <ProgressBar
+                                android:id="@+id/progress"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerInParent="true"
+                                android:visibility="gone"/>
+
                         </RelativeLayout>
                     </android.support.v7.widget.CardView>
                 </RelativeLayout>
