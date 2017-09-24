@@ -183,10 +183,10 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
         {
             holder.symbol.setTextColor(color);
 
-            // draw name at 50% brightness
+            // draw name at 75% brightness
             float hsv[] =  new float[3];
             Color.colorToHSV(color, hsv);
-            hsv[2] *= 0.5;
+            hsv[2] *= 0.75;
             holder.name.setTextColor(Color.HSVToColor(hsv));
         }
 
