@@ -181,9 +181,13 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
 
         private void changeColor(ViewHolder holder, int color)
         {
-            holder.changeStatus.setColorFilter(color, PorterDuff.Mode.SRC_IN);
             holder.symbol.setTextColor(color);
-            holder.name.setTextColor(color);
+
+            // draw name at 50% brightness
+            float hsv[] =  new float[3];
+            Color.colorToHSV(color, hsv);
+            hsv[2] *= 0.5;
+            holder.name.setTextColor(Color.HSVToColor(hsv));
         }
 
         @Override
