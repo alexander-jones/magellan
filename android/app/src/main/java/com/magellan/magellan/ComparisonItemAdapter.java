@@ -23,21 +23,13 @@ public abstract class ComparisonItemAdapter extends RecyclerView.Adapter<Compari
     }
 
 
-    private List<Integer> mColors;
-    private List<String> mValueTexts;
-    private List<String> mButtonTexts;
+    private List<String> mValueTexts = null;
+    private List<ComparisonList.Item> mItems;
 
-    public ComparisonItemAdapter(List<String> labels, List<String> texts)
+    public ComparisonItemAdapter(List<ComparisonList.Item> items, List<String> texts)
     {
-        mButtonTexts = labels;
         mValueTexts = texts;
-    }
-
-    public ComparisonItemAdapter(List<String> labels, List<String> texts, List<Integer> colors)
-    {
-        mButtonTexts = labels;
-        mValueTexts = texts;
-        mColors = colors;
+        mItems = items;
     }
 
     @Override
@@ -50,26 +42,24 @@ public abstract class ComparisonItemAdapter extends RecyclerView.Adapter<Compari
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.button.setText(mButtonTexts.get(position));
+        ComparisonList.Item item = mItems.get(position);
+        holder.button.setTag(item);
+        holder.button.setText(item.equity.getSymbol());
         holder.value.setText(mValueTexts.get(position));
-        if (mColors != null)
-        {
-            int color = mColors.get(position);
-            holder.button.setTextColor(color);
-            holder.value.setTextColor(color);
-        }
+        holder.button.setTextColor(item.color);
+        holder.value.setTextColor(item.color);
     }
 
     @Override
     public int getItemCount()
     {
-        return mButtonTexts.size();
+        return mItems.size();
     }
 
     @Override
     public void onClick(View view) {
-        onButtonPressed((TextView)view);
+        onItemSelected((ComparisonList.Item)view.getTag());
     }
 
-    public abstract void onButtonPressed(TextView textView);
+    public abstract void onItemSelected(ComparisonList.Item item);
 }

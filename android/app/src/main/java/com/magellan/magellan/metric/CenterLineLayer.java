@@ -14,8 +14,8 @@ import com.magellan.magellan.quote.Quote;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CenterLineLayer implements IMetricLayer {
-    private Float mCenter = null;
+public class CenterLineLayer{
+    private float mCenter = 0.0f;
     private Context mContext;
     public CenterLineLayer(Context context)
     {
@@ -27,21 +27,11 @@ public class CenterLineLayer implements IMetricLayer {
         mCenter = center;
     }
 
-    public void onDrawQuotes(List<Quote> quotes, int missingStartSteps, int missingEndSteps, CombinedData chartData)
+    public void draw(int steps, CombinedData chartData)
     {
         ArrayList<Entry> centerLineValues = new ArrayList<Entry>();
-        if (mCenter == null)
-        {
-            Quote initialQuote = quotes.get(0);
-            float startingOpen = initialQuote.open;
-            centerLineValues.add(new Entry(0, startingOpen, null));
-            centerLineValues.add(new Entry((quotes.size() + missingStartSteps + missingEndSteps) - 1, startingOpen, null));
-        }
-        else
-        {
-            centerLineValues.add(new Entry(0, mCenter, null));
-            centerLineValues.add(new Entry((quotes.size() + missingStartSteps + missingEndSteps) - 1, mCenter, null));
-        }
+        centerLineValues.add(new Entry(0, mCenter, null));
+        centerLineValues.add(new Entry(steps - 1, mCenter, null));
 
         LineDataSet centerLineSet = new LineDataSet(centerLineValues, "");
         centerLineSet.setDrawIcons(false);
@@ -54,14 +44,9 @@ public class CenterLineLayer implements IMetricLayer {
         centerLineSet.setDrawValues(false);
 
         LineData data = chartData.getLineData();
-        if (data == null){
-            ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
-            priceDataSets.add(centerLineSet);
-            data = new LineData(priceDataSets);
-        }
-        else {
-            data.addDataSet(centerLineSet);
-        }
+        if (data == null)
+            data = new LineData();
+        data.addDataSet(centerLineSet);
         chartData.setData(data);
     }
 

@@ -3,6 +3,7 @@ package com.magellan.magellan.service.alphavantage;
 import android.util.Log;
 
 import com.magellan.magellan.ApplicationContext;
+import com.magellan.magellan.market.Market;
 import com.magellan.magellan.quote.IQuoteService;
 import com.magellan.magellan.quote.Quote;
 import com.magellan.magellan.quote.QuoteQuery;
@@ -24,8 +25,8 @@ import java.util.List;
 
 public class AlphaVantageService implements IQuoteService {
 
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(ApplicationContext.getTradingTimeZone());
-    private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(ApplicationContext.getTradingTimeZone());
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(Market.getTradingTimeZone());
+    private static DateTimeFormatter dateFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(Market.getTradingTimeZone());
     public List<Quote> execute(QuoteQuery query) {
 
         String function;

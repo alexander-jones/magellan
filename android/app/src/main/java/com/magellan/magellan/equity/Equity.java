@@ -27,8 +27,13 @@ public class Equity {
         mType = type;
     }
 
-    public boolean equals(Equity equity)
+    @Override
+    public boolean equals(Object object)
     {
+        Equity equity = (Equity)object;
+        if (equity == null)
+            return false;
+
         if (!mSymbol.contentEquals(equity.mSymbol))
             return false;
         if (!mName.contentEquals(equity.mName))

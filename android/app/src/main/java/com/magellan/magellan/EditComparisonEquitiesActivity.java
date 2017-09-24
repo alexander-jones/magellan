@@ -34,7 +34,6 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_comparison_layers);
-        ApplicationContext.init(this);
 
         setTitle("");
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
@@ -110,13 +109,15 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
 
     public static class WatchListFragment extends Fragment {
 
-        private List<Equity> mEquities;
+        private WatchList mEquities;
         private EquityEditLayerRowAdapter mAdapter;
 
-        public WatchListFragment() {
-            WatchList wl = WatchList.getOrCreate(0);
-            wl.load();
-            mEquities = wl.getItems();
+        @Override
+        public void onAttach(Context context)
+        {
+            super.onAttach(context);
+            mEquities = new WatchList(context, 0);
+            mEquities.load();
         }
 
         @Override
@@ -169,10 +170,13 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
     private static class EquityEditLayerRowAdapter extends EquityRowAdapter
     {
         private Context mContext;
+        private ComparisonList mComparisonList;
         EquityEditLayerRowAdapter(Context context, List<Equity> equities)
         {
             super(context, equities);
             mContext = context;
+            mComparisonList = new ComparisonList(context, 0);
+            mComparisonList.load();
         }
 
         private void changeColor(ViewHolder holder, int color)
@@ -185,22 +189,41 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
         @Override
         public void onInitialStatus(Equity equity, ViewHolder holder)
         {
-            int curIndex = ApplicationContext.getComparisonEquityIndex(equity);
-            if (curIndex == -1) {
+            int currentIndex = -1;
+            ComparisonList.Item item = null;
+            for (int i = 0; i < mComparisonList.size(); ++i)
+            {
+                item = mComparisonList.get(i);;
+                if (item.equity.equals(equity)) {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            if (currentIndex == -1) {
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_add_24dp));
                 changeColor(holder, ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
             }
             else{
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_remove_24dp));
-                changeColor(holder, ApplicationContext.getComparisonEquityColors().get(curIndex));
+                changeColor(holder, item.color);
             }
         }
 
         @Override
         public void onChangeStatusPressed(Equity equity, ViewHolder holder)
         {
-            int curIndex = ApplicationContext.getComparisonEquityIndex(equity);
-            if (curIndex == -1)
+            int currentIndex = -1;
+            for (int i = 0; i < mComparisonList.size(); ++i)
+            {
+                ComparisonList.Item item = mComparisonList.get(i);;
+                if (item.equity.equals(equity)) {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            if (currentIndex == -1)
             {
                 final Equity givenEquity = equity;
                 final ViewHolder givenHolder = holder;
@@ -213,11 +236,11 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
                     .setPositiveButton("OK", new ColorPickerClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                            if (ApplicationContext.addToComparisonEquities(givenEquity, selectedColor))
-                            {
-                                givenHolder.changeStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_remove_24dp));
-                                changeColor(givenHolder, selectedColor);
-                            }
+                        if (mComparisonList.add(new ComparisonList.Item(givenEquity, selectedColor, true)))
+                        {
+                            givenHolder.changeStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_remove_24dp));
+                            changeColor(givenHolder, selectedColor);
+                        }
                         }
                     })
                     .setNegativeButton("CANCEL", null)
@@ -227,7 +250,7 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
             }
             else
             {
-                if (ApplicationContext.removeFromComparisonEquities(curIndex)) {
+                if (mComparisonList.remove(currentIndex) != null) {
                     holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.ic_add_24dp));
                     changeColor(holder, ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
                 }

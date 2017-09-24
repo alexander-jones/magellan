@@ -46,9 +46,8 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_query);
-        ApplicationContext.init(this);
 
-        mWatchList = WatchList.getOrCreate(0);
+        mWatchList = new WatchList(this, 0);
         mWatchList.load();
 
         setTitle("");
@@ -202,7 +201,7 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
         @Override
         public void onInitialStatus(Equity equity, ViewHolder holder)
         {
-            if (mWatchList.getIndexOf(equity) == -1)
+            if (mWatchList.indexOf(equity) == -1)
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_add_24dp));
             else
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_remove_24dp));
@@ -211,7 +210,7 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
         @Override
         public void onChangeStatusPressed(Equity equity, ViewHolder holder)
         {
-            int curStockIndex = mWatchList.getIndexOf(equity);
+            int curStockIndex = mWatchList.indexOf(equity);
             if (curStockIndex == -1)
             {
                 if (mWatchList.add(equity))
@@ -219,7 +218,7 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
             }
             else
             {
-                if (mWatchList.remove(curStockIndex))
+                if (mWatchList.remove(curStockIndex) != null)
                     holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_add_24dp));
             }
         }

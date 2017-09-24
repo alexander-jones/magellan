@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/button"
         android:layout_height="@dimen/button_height"
         android:layout_width="wrap_content"
-        android:minWidth="@dimen/button_width"
         android:layout_marginRight="@dimen/spacing_internal"
         android:layout_marginBottom="@dimen/spacing_internal"
-        android:padding="5dp"
+        android:layout_centerHorizontal="true"
         android:gravity="center_horizontal"
+        android:minWidth="@dimen/button_width"
+        android:padding="5dp"
         android:textSize="14dip"
+        android:text="SYM"
         android:background="@drawable/rounded_background_dark"
         android:textColor="@color/colorAccentPrimaryLight"/>
 
     <TextView
         android:id="@+id/value"
         android:layout_height="@dimen/button_height"
-        android:layout_width="match_parent"
-        android:padding="5dp"
-        android:layout_marginRight="@dimen/spacing_internal"
-        android:layout_marginBottom="@dimen/spacing_internal"
+        android:layout_width="wrap_content"
+        android:layout_centerHorizontal="true"
         android:gravity="center_horizontal"
+        android:padding="5dp"
         android:textSize="14dip"
         android:text="$0.00"
-        android:textColor="@color/colorSecondaryDark"/>
+        android:textColor="@color/colorSecondaryDark"
+        android:layout_below="@+id/button"/>
 
-</LinearLayout>
+</RelativeLayout>

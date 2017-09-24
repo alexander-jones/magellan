@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.magellan.magellan.ApplicationContext;
+import com.magellan.magellan.market.Market;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -24,7 +25,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
     private IQuoteService mQuoteService;
     private File mCacheDir;
 
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd_HH:mm").withZone(ApplicationContext.getTradingTimeZone());
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd_HH:mm").withZone(Market.getTradingTimeZone());
     public QuoteQueryTask(Context context, IQuoteService quoteService, IQuoteQueryListener listener)
     {
         super();
@@ -40,7 +41,7 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
         mQueries = new ArrayList<QuoteQuery>();
         for (int i = 0; i < count; i++) {
             QuoteQuery query = queries[i];
-            File endOfPeriodCachedFile = getCacheFile(query.symbol, query.period, query.interval, query.end);
+            File endOfPeriodCachedFile = query.getCacheFile(mCacheDir);
 
             List<Quote> quotes = null;
             if (endOfPeriodCachedFile.exists())
@@ -87,16 +88,6 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
             if (isCancelled()) break;
         }
         return result;
-    }
-
-    private File getCacheFile(String symbol, QuoteQuery.Period period, QuoteQuery.Interval interval, DateTime dateTime)
-    {
-        File endpointDir = new File(mCacheDir, dateTimeFormatter.print(dateTime));
-        if (!endpointDir.exists())
-            endpointDir.mkdir();
-
-        String queryCacheFilename = symbol + "_" + period.toString() + "_" + interval.toString();
-        return new File(endpointDir, queryCacheFilename);
     }
 
     protected void onProgressUpdate(Integer... progress) {

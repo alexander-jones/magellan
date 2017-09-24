@@ -124,9 +124,8 @@ public class QuotesActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ApplicationContext.init(this);
 
-        mWatchList = WatchList.getOrCreate(0);
+        mWatchList = new WatchList(this, 0);
         mWatchList.load();
 
         setContentView(R.layout.activity_quotes);
@@ -240,7 +239,7 @@ public class QuotesActivity extends AppCompatActivity
             selection = intent.getIntExtra("WATCHLIST_ITEM", -1);
             useWatchlist = selection != -1;
             if (useWatchlist)
-                equities = mWatchList.getItems();
+                equities = mWatchList;
             else
             {
                 equities = Equity.loadFrom(intent);
@@ -308,7 +307,7 @@ public class QuotesActivity extends AppCompatActivity
                 break;
             case R.id.change_status:
                 Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
-                int watchListIndex = mWatchList.getIndexOf(equity);
+                int watchListIndex = mWatchList.indexOf(equity);
                 if (watchListIndex == -1)
                 {
                     mWatchList.add(equity);
@@ -366,7 +365,7 @@ public class QuotesActivity extends AppCompatActivity
     private void updateChangeWatchListStatus()
     {
         Equity equity = (Equity)mStockTabLayout.getTabAt(mStockTabLayout.getSelectedTabPosition()).getTag();
-        int watchListIndex = mWatchList.getIndexOf(equity);
+        int watchListIndex = mWatchList.indexOf(equity);
         if (watchListIndex == -1)
             mChangeStatus.setIcon(R.drawable.ic_add_secondary_24dp);
         else

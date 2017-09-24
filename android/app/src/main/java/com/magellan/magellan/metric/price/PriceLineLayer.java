@@ -53,7 +53,6 @@ public class PriceLineLayer implements IMetricLayer
             priceValues.add(new Entry(j, (float) quote.close, quote));
         }
 
-
         LineDataSet missingDataSet = null;
         if (missingStartSteps > 0 || missingEndSteps > 0)
         {
@@ -78,18 +77,11 @@ public class PriceLineLayer implements IMetricLayer
         mStyler.onApply(lineSet);
 
         LineData data = chartData.getLineData();
-        if (data == null){
-            ArrayList<ILineDataSet> priceDataSets = new ArrayList<ILineDataSet>();
-            priceDataSets.add(lineSet);
-            if (missingDataSet != null)
-                priceDataSets.add(missingDataSet);
-            data = new LineData(priceDataSets);
-        }
-        else {
-            data.addDataSet(lineSet);
-            if (missingDataSet != null)
-                data.addDataSet(missingDataSet);
-        }
+        if (data == null)
+            data = new LineData();
+        data.addDataSet(lineSet);
+        if (missingDataSet != null)
+            data.addDataSet(missingDataSet);
         chartData.setData(data);
     }
 }
