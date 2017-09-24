@@ -1,5 +1,7 @@
 package com.magellan.magellan;
 
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,8 +48,18 @@ public abstract class ComparisonItemAdapter extends RecyclerView.Adapter<Compari
         holder.button.setTag(item);
         holder.button.setText(item.equity.getSymbol());
         holder.value.setText(mValueTexts.get(position));
-        holder.button.setTextColor(item.color);
-        holder.value.setTextColor(item.color);
+        if (item.enabled)
+        {
+            holder.button.setTextColor(item.color);
+            holder.value.setTextColor(item.color);
+        }
+        else
+        {
+            Context context = holder.button.getContext();
+            int color =  ContextCompat.getColor(context, R.color.colorBackgroundDark);
+            holder.button.setTextColor(color);
+            holder.value.setTextColor(color);
+        }
     }
 
     @Override

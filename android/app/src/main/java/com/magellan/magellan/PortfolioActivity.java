@@ -442,9 +442,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     }
                 }
 
-                if (newIndex == -1)
-                    mComparisonValueLabels.remove(i);
-                else
+                if (newIndex != -1)
                     commonContexts.put(newIndex, mComparisonLayerHolders.get(i));
             }
 
@@ -452,6 +450,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             mComparisonList.addAll(newComparisonItems);
             mComparisonButtonLabels.clear();
             mComparisonLayerHolders.clear();
+            mComparisonValueLabels.clear();
 
             LineData ld = mComparisonData.getLineData();
             if (ld != null) {
@@ -464,9 +463,9 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 ComparisonList.Item item = mComparisonList.get(i);
                 ComparisonLayerHolder existingContext = commonContexts.get(i);
                 mComparisonButtonLabels.add(item.equity.getSymbol());
+                mComparisonValueLabels.add("0.00%");
                 if (existingContext == null)
                 {
-                    mComparisonValueLabels.add("0.00%");
                     mComparisonLayerHolders.add(new ComparisonLayerHolder(item.color));
                     itemsToLaunch.add(item);
                 }
