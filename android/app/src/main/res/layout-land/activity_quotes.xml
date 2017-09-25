@@ -44,7 +44,7 @@
                         android:gravity="center_vertical"
                         android:text="Today"
                         android:textSize="@dimen/large_header_text_size"
-                        android:textColor="@color/colorTextPrimaryDark"
+                        android:textColor="@color/colorAccentPrimaryDark"
                         android:textStyle="bold"/>
 
                     <TextView
@@ -56,7 +56,7 @@
                         android:gravity="center_vertical"
                         android:text="12:55 PM EST"
                         android:textSize="@dimen/small_header_text_size"
-                        android:textColor="@color/colorTextPrimaryDark"
+                        android:textColor="@color/colorAccentPrimaryDark"
                         android:visibility="gone"/>
                 </LinearLayout>
             </android.support.v7.widget.Toolbar>

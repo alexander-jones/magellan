@@ -65,8 +65,8 @@ public class QuotesActivity extends AppCompatActivity
             lineSet.disableDashedLine();
             lineSet.enableDashedHighlightLine(10f, 5f, 0f);
             lineSet.setHighLightColor(ContextCompat.getColor(QuotesActivity.this, R.color.colorPrimary));
-            lineSet.setColor(ContextCompat.getColor(QuotesActivity.this, R.color.colorAccentPrimary));
-            lineSet.setFillColor(ContextCompat.getColor(QuotesActivity.this, R.color.colorAccentPrimary));
+            lineSet.setColor(ContextCompat.getColor(QuotesActivity.this, R.color.colorPrimary));
+            lineSet.setFillColor(ContextCompat.getColor(QuotesActivity.this, R.color.colorPrimary));
             lineSet.setLineWidth(1f);
             lineSet.setValueTextSize(9f);
             lineSet.setDrawFilled(true);
@@ -125,7 +125,12 @@ public class QuotesActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mWatchList = new WatchList(this, 0);
+        PortfolioList portfolioList = ApplicationContext.getPortfolios(this);
+        portfolioList.load();
+
+        Intent intent = getIntent();
+        int index = intent.getIntExtra("PORTFOLIO", -1);
+        mWatchList = portfolioList.get(index).getWatchList();
         mWatchList.load();
 
         setContentView(R.layout.activity_quotes);

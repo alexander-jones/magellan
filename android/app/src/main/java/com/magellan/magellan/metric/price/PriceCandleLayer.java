@@ -71,7 +71,7 @@ public class PriceCandleLayer implements IMetricLayer
         candleSet.setDecreasingColor(ContextCompat.getColor(mContext, R.color.colorPriceDown));
         candleSet.setIncreasingColor(ContextCompat.getColor(mContext, R.color.colorPriceUp));
         candleSet.setHighLightColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
-        candleSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimary));
+        candleSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimaryLight));
         candleSet.setShadowColor(ContextCompat.getColor(mContext, R.color.colorPrimaryDark));
         candleSet.setNeutralColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
         candleSet.setIncreasingPaintStyle(Paint.Style.STROKE);

@@ -56,7 +56,7 @@ public abstract class ComparisonItemAdapter extends RecyclerView.Adapter<Compari
         else
         {
             Context context = holder.button.getContext();
-            int color =  ContextCompat.getColor(context, R.color.colorBackgroundDark);
+            int color =  ContextCompat.getColor(context, R.color.colorCardBackgroundDark);
             holder.button.setTextColor(color);
             holder.value.setTextColor(color);
         }

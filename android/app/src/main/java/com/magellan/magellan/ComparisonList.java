@@ -24,18 +24,25 @@ public class ComparisonList extends SharedPreferencesList<ComparisonList.Item>
             enabled = enab;
         }
 
-        public void saveTo(SharedPreferences.Editor editor, int offset)
+        @Override
+        public boolean equals(Object obj)
         {
-            equity.saveTo(editor, offset);
-            editor.putInt("COLOR_" + Integer.toString(offset), color);
-            editor.putBoolean("ENABLED_" + Integer.toString(offset), enabled);
+            Item other = (Item)obj;
+            return other.color == color && other.enabled == enabled && other.equity.equals(equity);
         }
 
-        public static Item loadFrom(SharedPreferences sp, int offset)
+        private void saveTo(SharedPreferences.Editor editor, String prefix, int offset)
         {
-            Equity equity = Equity.loadFrom(sp, offset);
-            int color = sp.getInt("COLOR_" + Integer.toString(offset), Color.WHITE);
-            boolean enabled = sp.getBoolean("ENABLED_" + Integer.toString(offset), true);
+            equity.saveTo(editor, offset, prefix);
+            editor.putInt(prefix + "_COLOR_" + Integer.toString(offset), color);
+            editor.putBoolean(prefix + "_ENABLED_" + Integer.toString(offset), enabled);
+        }
+
+        private static Item loadFrom(SharedPreferences sp, String prefix, int offset)
+        {
+            Equity equity = Equity.loadFrom(sp, offset, prefix);
+            int color = sp.getInt(prefix + "_COLOR_" + Integer.toString(offset), Color.WHITE);
+            boolean enabled = sp.getBoolean(prefix + "_ENABLED_" + Integer.toString(offset), true);
             return new Item(equity, color, enabled);
         }
 
@@ -44,21 +51,32 @@ public class ComparisonList extends SharedPreferencesList<ComparisonList.Item>
         int color;
     }
 
-    public ComparisonList(Context context, int storageSlot)
+    public ComparisonList(SharedPreferences sp)
     {
-        super(context, STORAGE_PREFIX + Integer.toString(storageSlot));
+        super(sp, STORAGE_PREFIX, 0);
+    }
+
+    protected ComparisonList()
+    {
+        super();
     }
 
     @Override
-    protected void saveElement(SharedPreferences.Editor editor, int offset)
+    protected void attach(SharedPreferences prefs, String classPrefix, int i)
+    {
+        super.attach(prefs, classPrefix + STORAGE_PREFIX, i);
+    }
+
+    @Override
+    protected void saveItem(SharedPreferences.Editor editor, int offset)
     {
         ComparisonList.Item item = get(offset);
-        item.saveTo(editor, offset);
+        item.saveTo(editor, mPrefix, offset);
     }
 
     @Override
-    protected ComparisonList.Item loadElement(SharedPreferences sp, int offset)
+    protected ComparisonList.Item loadItem(int offset)
     {
-        return Item.loadFrom(sp, offset);
+        return Item.loadFrom(mSharedPreferences, mPrefix, offset);
     }
 }

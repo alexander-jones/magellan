@@ -59,8 +59,8 @@ public class VolumeBarLayer implements IMetricLayer {
         barSet.setDrawIcons(false);
         barSet.setDrawValues(false);
         barSet.setHighLightColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
-        barSet.setBarBorderColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimary));
-        barSet.setColor(ContextCompat.getColor(mContext, R.color.colorAccentPrimaryDark));
+        barSet.setBarBorderColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
+        barSet.setColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
         barSet.setBarBorderWidth(0.1f);
         volumeDataSets.add(barSet);
 

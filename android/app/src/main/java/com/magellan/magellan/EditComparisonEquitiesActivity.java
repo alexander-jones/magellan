@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -29,11 +28,14 @@ import java.util.List;
 
 public class EditComparisonEquitiesActivity extends AppCompatActivity {
 
-
+    private int mPortfolioIndex;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_comparison_layers);
+
+        Intent intent = getIntent();
+        mPortfolioIndex = intent.getIntExtra("PORTFOLIO", -1);
 
         setTitle("");
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
@@ -71,6 +73,7 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
 
     public static class MajorIndicesFragment extends Fragment {
 
+        private ComparisonList mComparisonList;
         private List<Equity> mEquities;
         private EquityEditLayerRowAdapter mAdapter;
 
@@ -79,10 +82,22 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onAttach(Context context)
+        {
+            super.onAttach(context);
+            PortfolioList portfolioList = ApplicationContext.getPortfolios(context);
+            portfolioList.load();
+            int index = getArguments().getInt("PORTFOLIO_INDEX", -1);
+            PortfolioList.Item item = portfolioList.get(index);
+            item.load();
+            mComparisonList = item.getComparisonList();
+        }
+
+        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             Activity act = getActivity();
             ListView rootView = new ListView(act);
-            mAdapter = new EquityEditLayerRowAdapter(act, mEquities);
+            mAdapter = new EquityEditLayerRowAdapter(act, mComparisonList, mEquities);
             rootView.setAdapter(mAdapter);
             return rootView;
         }
@@ -90,6 +105,7 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
 
     public static class SectorIndicesFragment extends Fragment {
 
+        private ComparisonList mComparisonList;
         private List<Equity> mEquities;
         private EquityEditLayerRowAdapter mAdapter;
 
@@ -98,10 +114,22 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onAttach(Context context)
+        {
+            super.onAttach(context);
+            PortfolioList portfolioList = ApplicationContext.getPortfolios(context);
+            portfolioList.load();
+            int index = getArguments().getInt("PORTFOLIO_INDEX", -1);
+            PortfolioList.Item item = portfolioList.get(index);
+            item.load();
+            mComparisonList = item.getComparisonList();
+        }
+
+        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             Activity act = getActivity();
             ListView rootView = new ListView(act);
-            mAdapter = new EquityEditLayerRowAdapter(act, mEquities);
+            mAdapter = new EquityEditLayerRowAdapter(act, mComparisonList, mEquities);
             rootView.setAdapter(mAdapter);
             return rootView;
         }
@@ -109,22 +137,25 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
 
     public static class WatchListFragment extends Fragment {
 
-        private WatchList mEquities;
+        PortfolioList.Item mPortfolioItem;
         private EquityEditLayerRowAdapter mAdapter;
 
         @Override
         public void onAttach(Context context)
         {
             super.onAttach(context);
-            mEquities = new WatchList(context, 0);
-            mEquities.load();
+            PortfolioList portfolioList = ApplicationContext.getPortfolios(context);
+            portfolioList.load();
+            int index = getArguments().getInt("PORTFOLIO_INDEX", -1);
+            mPortfolioItem = portfolioList.get(index);
+            mPortfolioItem.load();
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             Activity act = getActivity();
             ListView rootView = new ListView(act);
-            mAdapter = new EquityEditLayerRowAdapter(act, mEquities);
+            mAdapter = new EquityEditLayerRowAdapter(act, mPortfolioItem.getComparisonList(), mPortfolioItem.getWatchList());
             rootView.setAdapter(mAdapter);
             return rootView;
         }
@@ -139,12 +170,19 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
         // This determines the fragment for each tab
         @Override
         public Fragment getItem(int position) {
+            Fragment frag;
             if (position == 0) {
-                return new MajorIndicesFragment();
+                frag =  new MajorIndicesFragment();
             } else if (position == 1) {
-                return new SectorIndicesFragment();
-            } else
-                return new WatchListFragment();
+                frag =  new SectorIndicesFragment();
+            } else {
+                frag = new WatchListFragment();
+            }
+
+            Bundle bundle = new Bundle();
+            bundle.putInt("PORTFOLIO_INDEX", mPortfolioIndex);
+            frag.setArguments(bundle);
+            return frag;
         }
 
         @Override
@@ -171,11 +209,11 @@ public class EditComparisonEquitiesActivity extends AppCompatActivity {
     {
         private Context mContext;
         private ComparisonList mComparisonList;
-        EquityEditLayerRowAdapter(Context context, List<Equity> equities)
+        EquityEditLayerRowAdapter(Context context, ComparisonList list, List<Equity> equities)
         {
             super(context, equities);
             mContext = context;
-            mComparisonList = new ComparisonList(context, 0);
+            mComparisonList = list;
             mComparisonList.load();
         }
 

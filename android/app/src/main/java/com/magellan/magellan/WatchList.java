@@ -13,23 +13,32 @@ public class WatchList extends SharedPreferencesList<Equity>
 {
     private static String STORAGE_PREFIX = "WATCHLIST";
 
-    private int mGeneration = 0;
-
-    public WatchList(Context context, int storageSlot)
+    public WatchList(SharedPreferences sp)
     {
-        super(context, STORAGE_PREFIX + Integer.toString(storageSlot));
+        super(sp, STORAGE_PREFIX, 0);
+    }
+
+    protected WatchList()
+    {
+        super();
     }
 
     @Override
-    protected void saveElement(SharedPreferences.Editor editor, int offset)
+    protected void attach(SharedPreferences prefs, String classPrefix, int i)
     {
-        get(offset).saveTo(editor, offset);
+        super.attach(prefs, classPrefix + STORAGE_PREFIX, i);
     }
 
     @Override
-    protected Equity loadElement(SharedPreferences sp, int offset)
+    protected void saveItem(SharedPreferences.Editor editor, int offset)
     {
-        return Equity.loadFrom(sp, offset);
+        get(offset).saveTo(editor, offset, mPrefix);
+    }
+
+    @Override
+    protected Equity loadItem(int offset)
+    {
+        return Equity.loadFrom(mSharedPreferences, offset, mPrefix);
     }
 
 }

@@ -41,14 +41,19 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
     private String mSearchViewTextToSet = null;
     private boolean mRemoveSearchViewFocus = false;
 
-    private WatchList mWatchList;
+    private PortfolioList.Item mPortfolio;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_query);
 
-        mWatchList = new WatchList(this, 0);
-        mWatchList.load();
+        Intent intent = getIntent();
+        int portfolioIndex = intent.getIntExtra("PORTFOLIO", -1);
+
+        PortfolioList portfolioList = ApplicationContext.getPortfolios(this);
+        portfolioList.load();
+        mPortfolio = portfolioList.get(portfolioIndex);
+        mPortfolio.load();
 
         setTitle("");
         mList =(ListView) findViewById(R.id.search_list_view);
@@ -201,7 +206,7 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
         @Override
         public void onInitialStatus(Equity equity, ViewHolder holder)
         {
-            if (mWatchList.indexOf(equity) == -1)
+            if (mPortfolio.getWatchList().indexOf(equity) == -1)
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_add_24dp));
             else
                 holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_remove_24dp));
@@ -210,15 +215,16 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
         @Override
         public void onChangeStatusPressed(Equity equity, ViewHolder holder)
         {
-            int curStockIndex = mWatchList.indexOf(equity);
+            WatchList watchList = mPortfolio.getWatchList();
+            int curStockIndex = watchList.indexOf(equity);
             if (curStockIndex == -1)
             {
-                if (mWatchList.add(equity))
+                if (watchList.add(equity))
                     holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_remove_24dp));
             }
             else
             {
-                if (mWatchList.remove(curStockIndex) != null)
+                if (watchList.remove(curStockIndex) != null)
                     holder.changeStatus.setImageDrawable(ContextCompat.getDrawable(EquityQueryActivity.this, R.drawable.ic_add_24dp));
             }
         }

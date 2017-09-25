@@ -1,18 +1,23 @@
 package com.magellan.magellan;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import java.util.ArrayList;
 import java.util.Collection;
 
 public abstract class SharedPreferencesList<E> extends ArrayList<E>
 {
-    private SharedPreferences mSharedPreferences;
+    protected SharedPreferences mSharedPreferences = null;
+    protected String mPrefix = null;
     private int mGeneration = 0;
 
-    public SharedPreferencesList(Context context, String tag)
+    protected SharedPreferencesList()
     {
-        mSharedPreferences = context.getSharedPreferences(tag, Context.MODE_PRIVATE);
+    }
+
+    protected SharedPreferencesList(SharedPreferences prefs, String classPrefix, int i)
+    {
+        mSharedPreferences = prefs;
+        mPrefix = classPrefix + Integer.toString(i);
     }
 
     public int getGeneration()
@@ -22,35 +27,60 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
 
     public int getNewestGeneration()
     {
-       return mSharedPreferences.getInt("GENERATION", 0);
+        if (mSharedPreferences == null)
+            return -1;
+
+        return mSharedPreferences.getInt(mPrefix + "GENERATION", 0);
     }
 
-    public void save()
+    public boolean save()
     {
-        mGeneration++;
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.clear();
-        editor.putInt("GENERATION", mGeneration);
-        editor.putInt("COUNT", size());
-        for (int i = 0; i < size(); ++i)
-            saveElement(editor, i);
-        editor.commit();
+        if (mSharedPreferences == null)
+            return false;
+
+        int generation = getNewestGeneration();
+        if (generation != mGeneration)
+        {
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            save(editor);
+            editor.commit();
+        }
+        return true;
     }
 
-    public void load()
+    public boolean load()
     {
+        if (mSharedPreferences == null)
+            return false;
+
         super.clear();
-        mGeneration = mSharedPreferences.getInt("GENERATION", 0);
-        int itemSize = mSharedPreferences.getInt("COUNT", 0);
+        mGeneration = mSharedPreferences.getInt(mPrefix + "GENERATION", 0);
+        int itemSize = mSharedPreferences.getInt(mPrefix + "COUNT", 0);
         for (int i = 0; i < itemSize; ++i)
-            super.add(loadElement(mSharedPreferences, i));
+            super.add(loadItem(i));
+        return true;
+    }
+
+    public boolean saveItem(int index)
+    {
+        if (mSharedPreferences == null)
+            return false;
+
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        saveItem(editor, index);
+        editor.commit();
+        return true;
     }
 
     @Override
     public boolean add(E e)
     {
         boolean ret = super.add(e);
-        save();
+        if (ret)
+        {
+            mGeneration++;
+            save();
+        }
         return ret;
     }
 
@@ -58,6 +88,7 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     public void add(int i, E e)
     {
         super.add(i, e);
+        mGeneration++;
         save();
     }
 
@@ -65,7 +96,11 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     public boolean addAll(int i, Collection<? extends E> e)
     {
         boolean ret = super.addAll(i, e);
-        save();
+        if (ret)
+        {
+            mGeneration++;
+            save();
+        }
         return ret;
     }
 
@@ -73,7 +108,11 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     public boolean addAll(Collection<? extends E> e)
     {
         boolean ret = super.addAll(e);
-        save();
+        if (ret)
+        {
+            mGeneration++;
+            save();
+        }
         return ret;
     }
 
@@ -81,22 +120,19 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     public void clear()
     {
         super.clear();
+        mGeneration++;
         save();
-    }
-
-    @Override
-    public Object clone()
-    {
-        Object ret = super.clone();
-        save();
-        return ret;
     }
 
     @Override
     public boolean remove(Object e)
     {
         boolean ret = super.remove(e);
-        save();
+        if (ret)
+        {
+            mGeneration++;
+            save();
+        }
         return ret;
     }
 
@@ -104,7 +140,11 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     public E remove(int i)
     {
         E ret = super.remove(i);
-        save();
+        if (ret != null)
+        {
+            mGeneration++;
+            save();
+        }
         return ret;
     }
 
@@ -112,7 +152,11 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     public boolean removeAll(Collection<?> c)
     {
         boolean ret = super.removeAll(c);
-        save();
+        if (ret)
+        {
+            mGeneration++;
+            save();
+        }
         return ret;
     }
 
@@ -120,6 +164,7 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     protected void removeRange(int fromIndex, int toIndex)
     {
         super.removeRange(fromIndex, toIndex);
+        mGeneration++;
         save();
     }
 
@@ -127,7 +172,11 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     public boolean retainAll(Collection<?> c)
     {
         boolean ret = super.retainAll(c);
-        save();
+        if (ret)
+        {
+            mGeneration++;
+            save();
+        }
         return ret;
     }
 
@@ -135,10 +184,29 @@ public abstract class SharedPreferencesList<E> extends ArrayList<E>
     public E set(int index, E element)
     {
         E ret = super.set(index, element);
-        save();
+        if (ret != null)
+        {
+            mGeneration++;
+            save();
+        }
         return ret;
     }
 
-    protected abstract void saveElement(SharedPreferences.Editor editor, int position);
-    protected abstract E loadElement(SharedPreferences sp, int position);
+    protected void attach(SharedPreferences prefs, String classPrefix, int i)
+    {
+        mGeneration++;
+        mPrefix = classPrefix + Integer.toString(i);
+        mSharedPreferences = prefs;
+    }
+
+    protected void save(SharedPreferences.Editor editor)
+    {
+        editor.putInt(mPrefix + "GENERATION", mGeneration);
+        editor.putInt(mPrefix + "COUNT", size());
+        for (int i = 0; i < size(); ++i)
+            saveItem(editor, i);
+    }
+
+    protected abstract void saveItem(SharedPreferences.Editor editor, int position);
+    protected abstract E loadItem(int position);
 }

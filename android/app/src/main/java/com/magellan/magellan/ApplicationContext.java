@@ -34,23 +34,7 @@ public class ApplicationContext {
         return mQuoteService;
     }
 
-    public static void init()
-    {
-
-        /*
-        // if no comparison equities have been saved yet show the S&P 500, Dow Jones, and NASDAQ Composite
-        mComparisonEquities = new ArrayList<Equity>();
-        List<Equity> majEquities = getMajorIndices();
-        mComparisonEquities.add(majEquities.get(0));
-        mComparisonEquities.add(majEquities.get(1));
-        mComparisonEquities.add(majEquities.get(2));
-
-        mComparisonEquityColors = new ArrayList<Integer>();
-        mComparisonEquityColors.add(Color.parseColor("#4a81ff"));
-        mComparisonEquityColors.add(Color.parseColor("#ff8d28"));
-        mComparisonEquityColors.add(Color.parseColor("#d428ff"));
-        */;
-    }
+    public static PortfolioList getPortfolios(Context context) { return new PortfolioList(context.getSharedPreferences("PORT", 0)); }
 
     public static List<Equity> getMajorIndices()
     {
