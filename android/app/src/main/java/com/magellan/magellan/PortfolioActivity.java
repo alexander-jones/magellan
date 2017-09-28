@@ -251,7 +251,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             mComparisonEditLayersButton.setOnClickListener(this);
 
             mComparisonItemButtonContainer = (RecyclerView) rootView.findViewById(R.id.comparison_layers);
-            mComparisonItemButtonAdapter = new PortfolioComparisonItemAdapter(mPortfolioItem.getComparisonList(), mComparisonValueLabels);
+            mComparisonItemButtonContainer.requestDisallowInterceptTouchEvent(true);
+            mComparisonItemButtonAdapter = new PortfolioComparisonItemAdapter(mComparisonItemButtonContainer, mPortfolioItem.getComparisonList(), mComparisonValueLabels);
             mComparisonItemButtonContainer.setAdapter(mComparisonItemButtonAdapter);
 
             mIntervalTabLayout = (TabLayout)rootView.findViewById(R.id.interval_tabs);
@@ -668,9 +669,12 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
         private class PortfolioComparisonItemAdapter extends ComparisonItemAdapter
         {
-            PortfolioComparisonItemAdapter(List<ComparisonList.Item> items, List<String> values)
+            private List<Boolean> longPressStates;
+
+            PortfolioComparisonItemAdapter(RecyclerView view, List<ComparisonList.Item> items, List<String> values)
             {
-                super(items, values);
+                super(view, items, values);
+                longPressStates = new ArrayList<Boolean>(items.size());
             }
 
             @Override
@@ -687,6 +691,45 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     item.enabled = true;
                 comparisonList.saveItem(index);
                 notifyItemChanged(index);
+                redrawComparisonChart();
+            }
+
+            @Override
+            public void onItemLongPressed(ComparisonList.Item item)
+            {
+                ComparisonList comparisonList = mPortfolioItem.getComparisonList();
+                int index = comparisonList.indexOf(item);
+                if (index == -1)
+                    return;
+
+                for (int i=0; i < comparisonList.size(); ++i)
+                {
+                    ComparisonList.Item otherItem = comparisonList.get(i);
+                    longPressStates.add(otherItem.enabled);
+                    if (i == index)
+                        otherItem.enabled = true;
+                    else
+                        otherItem.enabled = false;
+                }
+                // DON'T CALL comparisonList.onItemChanged() here because it will result in these values getting saved, which will effect rotate
+                notifyDataSetChanged();
+                redrawComparisonChart();
+            }
+
+            @Override
+            public void onItemLongPressReleased(ComparisonList.Item item)
+            {
+                ComparisonList comparisonList = mPortfolioItem.getComparisonList();
+                int index = comparisonList.indexOf(item);
+                if (index == -1)
+                    return;
+
+                for (int i=0; i < comparisonList.size(); ++i)
+                {
+                    ComparisonList.Item otherItem = comparisonList.get(i);
+                    otherItem.enabled = longPressStates.get(i);
+                }
+                notifyDataSetChanged();
                 redrawComparisonChart();
             }
         }

@@ -10,9 +10,11 @@ public class NoSwipeViewPager extends ViewPager {
     public NoSwipeViewPager(Context context) {
         super(context);
     }
+
     public NoSwipeViewPager(Context context, AttributeSet attrs){
         super(context,attrs);
     }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         return mScrollingEnabled ? super.onInterceptTouchEvent(event) : false;

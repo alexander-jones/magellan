@@ -18,78 +18,56 @@
             android:id="@+id/app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.AppBarOverlay"
-            app:elevation="0dp">
+            android:theme="@style/AppTheme.ActionBar">
 
-            <android.support.design.widget.CollapsingToolbarLayout
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed">
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:popupTheme="@style/AppTheme.PopupOverlay"
+                app:theme="@style/AppTheme.Toolbar">
 
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    app:layout_collapseMode="pin"
-                    app:popupTheme="@style/AppTheme.PopupOverlay"
-                    app:theme="@style/AppTheme.Toolbar">
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:gravity="left"
+                    android:orientation="vertical">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/header_value"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="left"
-                        android:gravity="left"
-                        android:orientation="vertical">
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="@dimen/spacing_internal"
+                        android:gravity="center_vertical"
+                        android:textSize="@dimen/large_header_text_size"
+                        android:textColor="@color/colorAccentPrimaryDark"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+            </android.support.v7.widget.Toolbar>
 
-                        <TextView
-                            android:id="@+id/header_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginRight="@dimen/spacing_internal"
-                            android:gravity="center_vertical"
-                            android:textSize="@dimen/large_header_text_size"
-                            android:textColor="@color/colorAccentPrimaryDark"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-                </android.support.v7.widget.Toolbar>
+            <android.support.design.widget.TabLayout
+                android:id="@+id/portfolio_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/tab_height"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/spacing_external"
+                android:layout_marginRight="@dimen/spacing_external"
+                app:tabIndicatorColor="@color/colorAccentPrimaryDark"
+                app:tabSelectedTextColor="@color/colorAccentPrimaryDark"
+                app:tabTextColor="@color/colorAccentSecondaryDark"/>
 
-            </android.support.design.widget.CollapsingToolbarLayout>
         </android.support.design.widget.AppBarLayout>
 
-        <LinearLayout
+        <com.magellan.magellan.NoSwipeViewPager
+            android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
+            android:background="@color/colorBackgroundDark"
             app:layout_anchor="@+id/app_bar"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/colorPrimary">
-
-                <android.support.design.widget.TabLayout
-                    android:id="@+id/portfolio_tabs"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="@dimen/spacing_external"
-                    android:layout_marginRight="@dimen/spacing_external"
-                    android:layout_marginTop="@dimen/spacing_external"
-                    app:tabMode="scrollable"
-                    app:tabIndicatorColor="@color/colorAccentPrimaryDark"
-                    app:tabSelectedTextColor="@color/colorAccentPrimaryDark"
-                    app:tabTextColor="@color/colorAccentSecondaryDark"/>
-            </FrameLayout>
-
-            <com.magellan.magellan.NoSwipeViewPager
-                android:id="@+id/view_pager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/colorBackgroundDark" />
-        </LinearLayout>
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     </android.support.design.widget.CoordinatorLayout>
 
 

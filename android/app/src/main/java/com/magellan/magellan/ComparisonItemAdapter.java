@@ -1,9 +1,12 @@
 package com.magellan.magellan;
 
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -11,27 +14,30 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public abstract class ComparisonItemAdapter extends RecyclerView.Adapter<ComparisonItemAdapter.ViewHolder> implements View.OnClickListener
+public abstract class ComparisonItemAdapter extends RecyclerView.Adapter<ComparisonItemAdapter.ViewHolder> implements View.OnClickListener, View.OnLongClickListener, View.OnTouchListener
 {
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView button;
         public TextView value;
-        public ViewHolder(View root, View.OnClickListener list) {
+        public ViewHolder(View root, ComparisonItemAdapter adapter) {
             super(root);
             button = (TextView)root.findViewById(R.id.button);
             value = (TextView)root.findViewById(R.id.value);
-            button.setOnClickListener(list);
+            button.setOnClickListener(adapter);
+            button.setOnLongClickListener(adapter);
         }
     }
 
 
     private List<String> mValueTexts = null;
     private List<ComparisonList.Item> mItems;
+    private ComparisonList.Item mLongSelectedItem = null;
 
-    public ComparisonItemAdapter(List<ComparisonList.Item> items, List<String> texts)
+    public ComparisonItemAdapter(RecyclerView view, List<ComparisonList.Item> items, List<String> texts)
     {
         mValueTexts = texts;
         mItems = items;
+        view.setOnTouchListener(this);
     }
 
     @Override
@@ -73,5 +79,27 @@ public abstract class ComparisonItemAdapter extends RecyclerView.Adapter<Compari
         onItemSelected((ComparisonList.Item)view.getTag());
     }
 
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            if (mLongSelectedItem != null) {
+                onItemLongPressReleased(mLongSelectedItem);
+                mLongSelectedItem = null;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onLongClick(View view)
+    {
+        mLongSelectedItem = (ComparisonList.Item)view.getTag();
+        onItemLongPressed(mLongSelectedItem);
+        return false;
+    }
+
     public abstract void onItemSelected(ComparisonList.Item item);
+    public abstract void onItemLongPressed(ComparisonList.Item item);
+    public abstract void onItemLongPressReleased(ComparisonList.Item item);
 }

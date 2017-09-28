@@ -135,7 +135,8 @@ public class AlphaVantageService implements IQuoteService {
             Log.e("Magellan", "Could not connect to alpha vantage" + e.toString());
 
         }
-        Collections.reverse(ret);
+        if (ret != null)
+            Collections.reverse(ret);
         return ret;
     }
 }

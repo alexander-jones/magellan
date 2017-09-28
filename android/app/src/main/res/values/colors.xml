@@ -16,7 +16,7 @@
 
     <!-- Light theme colors. -->
     <color name="colorAccentPrimaryDark">#212124</color>
-    <color name="colorAccentSecondaryDark">#303032</color>
+    <color name="colorAccentSecondaryDark">#5c5c60</color>
     <color name="colorBackgroundLight">#f4f4f7</color>
     <color name="colorBackgroundLightAlpha">#99f4f4f7</color>
     <color name="colorCardBackgroundLight">#ffffff</color>

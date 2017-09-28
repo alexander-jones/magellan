@@ -26,6 +26,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/spacing_internal"
             android:layout_marginRight="@dimen/spacing_internal"
+            android:layout_marginBottom="@dimen/spacing_internal"
+            android:layout_marginTop="@dimen/spacing_internal"
             android:layout_alignParentTop="true"
             app:cardUseCompatPadding="true"
             app:elevation="@dimen/elevation"

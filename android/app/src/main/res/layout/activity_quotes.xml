@@ -74,6 +74,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginLeft="@dimen/spacing_external"
             android:layout_marginRight="@dimen/spacing_external"
+            android:layout_marginBottom="@dimen/spacing_cleanup"
             app:tabMode="scrollable"
             app:tabIndicatorColor="@color/colorBackgroundDark"
             app:tabSelectedTextColor="@color/colorBackgroundDark"
