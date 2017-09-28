@@ -22,4 +22,9 @@ public class SolidLineDataSetStyler implements ILineDataSetStyler {
         lineSet.setColor(mLineColor);
         lineSet.setLineWidth(1f);
     }
+
+    public void setColor(int color)
+    {
+        mLineColor = color;
+    }
 }

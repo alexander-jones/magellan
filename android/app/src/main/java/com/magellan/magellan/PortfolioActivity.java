@@ -10,6 +10,7 @@ import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -197,6 +198,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         private List<String> mComparisonValueLabels = new ArrayList<String>();
         private List<ComparisonLayerHolder> mComparisonLayerHolders = new ArrayList<ComparisonLayerHolder>();
         private HashMap<QuoteQuery, ComparisonQueryHolder> comparisonQueriesInFlight = new HashMap<QuoteQuery, ComparisonQueryHolder>();
+        private int mComparisonDisabledColor;
 
         private class ComparisonQueryHolder
         {
@@ -215,12 +217,14 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         {
             public ComparisonLayerHolder(ComparisonList.Item i)
             {
-                layer = new PriceLineLayer(new SolidLineDataSetStyler(i.color));
+                styler = new SolidLineDataSetStyler(i.color);
+                layer = new PriceLineLayer(styler);
                 original_quotes = null;
                 percent_difference_quotes = null;
                 item = i;
             }
 
+            SolidLineDataSetStyler styler;
             ComparisonList.Item item;
             PriceLineLayer layer;
             List<Quote> original_quotes;
@@ -247,6 +251,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_portfolio, null);
 
+            mComparisonDisabledColor = ContextCompat.getColor(rootView.getContext(), R.color.colorAccentSecondaryDark);
             mComparisonEditLayersButton = (ImageButton) rootView.findViewById(R.id.edit_layers);
             mComparisonEditLayersButton.setOnClickListener(this);
 
@@ -503,7 +508,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     }
                     else
                     {
-                        existingContext.layer.setStyler(new SolidLineDataSetStyler(item.color));
+                        existingContext.styler.setColor(item.color);
                         mComparisonLayerHolders.add(existingContext);
                         if (item.enabled)
                             existingContext.layer.onDrawQuotes(existingContext.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
@@ -586,7 +591,15 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     mComparisonItemButtonAdapter.notifyItemChanged(position);
 
                     if (holder.item.enabled)
+                    {
+                        lh.styler.setColor(lh.item.color);
                         lh.layer.onDrawQuotes(lh.percent_difference_quotes, missingStartSteps, missingEndSteps, mComparisonData);
+                    }
+                    else
+                    {
+                        lh.styler.setColor(mComparisonDisabledColor);
+                        lh.layer.onDrawQuotes(lh.percent_difference_quotes, missingStartSteps, missingEndSteps, mComparisonData);
+                    }
 
                     YAxis axis = mComparisonChart.getAxisLeft();
                     axis.setAxisMinimum(mLowestComparisonValue);
@@ -639,21 +652,29 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             cleanComparisonContext();
 
             ComparisonList comparisonList = mPortfolioItem.getComparisonList();
+
+            if (mCenterLineSteps != 0)
+                mComparisonCenterLineLayer.draw(mCenterLineSteps, mComparisonData);
+
             for (int i = 0; i < mComparisonLayerHolders.size(); ++i)
             {
                 ComparisonLayerHolder lh = mComparisonLayerHolders.get(i);
-                ComparisonList.Item item = comparisonList.get(i);
-                if (item.enabled) {
-                    for (Quote q : lh.percent_difference_quotes) {
-                        if (q.low < mLowestComparisonValue)
-                            mLowestComparisonValue = q.low;
-                        if (q.high > mHighestComparisonValue)
-                            mHighestComparisonValue = q.high;
-                    }
 
-                    if (mCenterLineSteps != 0)
-                        mComparisonCenterLineLayer.draw(mCenterLineSteps, mComparisonData);
+                for (Quote q : lh.percent_difference_quotes) {
+                    if (q.low < mLowestComparisonValue)
+                        mLowestComparisonValue = q.low;
+                    if (q.high > mHighestComparisonValue)
+                        mHighestComparisonValue = q.high;
+                }
 
+                if (lh.item.enabled)
+                {
+                    lh.styler.setColor(lh.item.color);
+                    lh.layer.onDrawQuotes(lh.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
+                }
+                else
+                {
+                    lh.styler.setColor(mComparisonDisabledColor);
                     lh.layer.onDrawQuotes(lh.percent_difference_quotes, mLastMissingStartSteps, mLastMissingEndSteps, mComparisonData);
                 }
             }
