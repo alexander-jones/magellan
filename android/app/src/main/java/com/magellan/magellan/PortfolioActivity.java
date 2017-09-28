@@ -702,6 +702,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 if (index == -1)
                     return;
 
+                longPressStates.clear();
                 for (int i=0; i < comparisonList.size(); ++i)
                 {
                     ComparisonList.Item otherItem = comparisonList.get(i);
