@@ -10,93 +10,101 @@
     android:fitsSystemWindows="true"
     android:clipToPadding="false">
 
-    <android.support.design.widget.CoordinatorLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/app_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.ActionBar">
-
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay"
-                app:theme="@style/AppTheme.Toolbar">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="left"
-                    android:gravity="left"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/header_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginRight="@dimen/spacing_internal"
-                        android:gravity="center_vertical"
-                        android:textSize="@dimen/large_header_text_size"
-                        android:textColor="@color/colorAccentPrimaryDark"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-            </android.support.v7.widget.Toolbar>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <android.support.design.widget.TabLayout
-                    android:id="@+id/portfolio_tabs"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/tab_height"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="@dimen/spacing_external"
-                    android:layout_marginRight="@dimen/spacing_large"
-                    android:layout_alignParentLeft="true"
-                    android:layout_toLeftOf="@+id/edit_portfolio"
-                    app:tabIndicatorColor="@color/colorAccentPrimaryDark"
-                    app:tabSelectedTextColor="@color/colorAccentPrimaryDark"
-                    app:tabTextColor="@color/colorAccentSecondaryDark"/>
-
-                <ImageButton
-                    android:id="@+id/edit_portfolio"
-                    android:layout_width="@dimen/button_height"
-                    android:layout_height="@dimen/button_height"
-                    android:layout_toLeftOf="@+id/add_portfolio"
-                    android:layout_marginRight="@dimen/spacing_large"
-                    android:src="@drawable/ic_edit_secondary_24dp"
-                    android:background="@color/colorPrimary"
-                    android:tint="@color/colorAccentPrimaryDark"/>
-
-                <ImageButton
-                    android:id="@+id/add_portfolio"
-                    android:layout_width="@dimen/button_height"
-                    android:layout_height="@dimen/button_height"
-                    android:layout_marginRight="@dimen/spacing_large"
-                    android:layout_alignParentRight="true"
-                    android:src="@drawable/ic_add_24dp"
-                    android:background="@color/colorPrimary"
-                    android:tint="@color/colorAccentPrimaryDark"/>
-            </RelativeLayout>
-
-        </android.support.design.widget.AppBarLayout>
-
-        <com.magellan.magellan.NoSwipeViewPager
-            android:id="@+id/view_pager"
+        <android.support.design.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorBackgroundDark"
-            app:layout_anchor="@+id/app_bar"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-    </android.support.design.widget.CoordinatorLayout>
+            android:layout_below="@+id/toolbar">
 
+            <android.support.design.widget.AppBarLayout
+                android:id="@+id/app_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:theme="@style/AppTheme.ActionBar"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+                    <android.support.design.widget.TabLayout
+                        android:id="@+id/portfolio_tabs"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/tab_height"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginLeft="@dimen/spacing_external"
+                        android:layout_marginRight="@dimen/spacing_large"
+                        android:layout_alignParentLeft="true"
+                        android:layout_toLeftOf="@+id/edit_portfolio"
+                        app:tabIndicatorColor="@color/colorAccentPrimaryDark"
+                        app:tabSelectedTextColor="@color/colorAccentPrimaryDark"
+                        app:tabTextColor="@color/colorAccentSecondaryDark"/>
+
+                    <ImageButton
+                        android:id="@+id/edit_portfolio"
+                        android:layout_width="@dimen/button_height"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_toLeftOf="@+id/add_portfolio"
+                        android:layout_marginRight="@dimen/spacing_large"
+                        android:src="@drawable/ic_edit_secondary_24dp"
+                        android:background="@color/colorPrimary"
+                        android:tint="@color/colorAccentPrimaryDark"/>
+
+                    <ImageButton
+                        android:id="@+id/add_portfolio"
+                        android:layout_width="@dimen/button_height"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_marginRight="@dimen/spacing_large"
+                        android:layout_alignParentRight="true"
+                        android:src="@drawable/ic_add_24dp"
+                        android:background="@color/colorPrimary"
+                        android:tint="@color/colorAccentPrimaryDark"/>
+                </RelativeLayout>
+
+            </android.support.design.widget.AppBarLayout>
+
+            <com.magellan.magellan.NoSwipeViewPager
+                android:id="@+id/view_pager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorBackgroundDark"
+                app:layout_anchor="@+id/app_bar"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        </android.support.design.widget.CoordinatorLayout>
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_alignParentTop="true"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:theme="@style/AppTheme.Toolbar">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:gravity="left"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/header_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="@dimen/spacing_internal"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/large_header_text_size"
+                    android:textColor="@color/colorAccentPrimaryDark"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+        </android.support.v7.widget.Toolbar>
+    </RelativeLayout>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"

@@ -6,12 +6,14 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -63,6 +65,9 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private PagerAdapter mAdapter;
     private ViewPager mPager;
     private TabLayout mTabLayout;
+    private AppBarLayout mAppBar;
+    private Toolbar mToolbar;
+    private float mToolbarMaxElevation;
 
     private ImageButton mEditPortfolioButton;
 
@@ -80,6 +85,20 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
+
+        mToolbarMaxElevation = getResources().getDimension(R.dimen.elevation);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mAppBar = (AppBarLayout)findViewById(R.id.app_bar);
+        mAppBar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener()
+        {
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset)
+            {
+                verticalOffset = Math.abs(verticalOffset);
+                float ratio = (float)verticalOffset / (float)appBarLayout.getTotalScrollRange();
+                float elevation = ratio * mToolbarMaxElevation;
+                ViewCompat.setElevation(mToolbar, elevation);
+            }
+        });
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);

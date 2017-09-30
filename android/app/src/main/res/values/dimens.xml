@@ -21,6 +21,6 @@
     <dimen name="medium_header_text_size">17sp</dimen>
     <dimen name="small_header_text_size">15sp</dimen>
     <dimen name="icon_size">300dp</dimen>
-    <dimen name="elevation">5dp</dimen>
+    <dimen name="elevation">8dp</dimen>
     <dimen name="corner_rounding">2dp</dimen>
 </resources>
