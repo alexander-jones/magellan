@@ -98,13 +98,13 @@ public class AlphaVantageService implements IQuoteService {
             try {
                 InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
                 try {
-                    BufferedReader bReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"), 67108864);
+                    BufferedReader bReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"), 4096);
 
-                    String line = null;
                     DateTime queryStart = query.start;
                     bReader.readLine(); // skip header
                     ret = new ArrayList<Quote>();
 
+                    String line = null;
                     while ((line = bReader.readLine()) != null) {
                         String [] parts = line.split(",");
                         DateTime date = formatter.parseDateTime(parts[0]);

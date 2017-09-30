@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.magellan.magellan.ApplicationContext;
+import com.magellan.magellan.equity.Equity;
 import com.magellan.magellan.market.Market;
 
 import org.joda.time.DateTime;
@@ -15,6 +16,8 @@ import org.joda.time.format.DateTimeFormatter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
 
 public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
@@ -44,8 +47,11 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
             File endOfPeriodCachedFile = query.getCacheFile(mCacheDir);
 
             List<Quote> quotes = null;
-            if (endOfPeriodCachedFile.exists())
-                quotes = Quote.loadFrom(endOfPeriodCachedFile);
+            synchronized (getLockForCache(endOfPeriodCachedFile))
+            {
+                if (endOfPeriodCachedFile.exists())
+                    quotes = Quote.loadFrom(endOfPeriodCachedFile);
+            }
 
             if (quotes == null)
             {
@@ -57,18 +63,14 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
                     try {
                         if (quotes != null && !quotes.isEmpty())
                         {
-                            Quote firstQuote = quotes.get(0);
                             Quote lastQuote = quotes.get(quotes.size() -1);
-                            if (firstQuote.time.isEqual(query.start) && lastQuote.time.isEqual(query.end)) {
-                                endOfPeriodCachedFile.createNewFile();
-                                Quote.saveTo(endOfPeriodCachedFile, quotes);
-                            }
-                            /*else // For now don't cache intermediate results.
+                            if (lastQuote.time.isEqual(query.end))  // Only cache up to date results, but results with past data missing is ok (TODO: mark in someway during saving)
                             {
-                                File intermediateFile = getCacheFile(query.symbol, query.period, query.interval, lastQuote.time);
-                                intermediateFile.createNewFile();
-                                Quote.saveTo(intermediateFile, quotes);
-                            }*/
+                                synchronized (getLockForCache(endOfPeriodCachedFile)) {
+                                    endOfPeriodCachedFile.createNewFile();
+                                    Quote.saveTo(endOfPeriodCachedFile, quotes);
+                                }
+                            }
                         }
                     }
                     catch (IOException e)
@@ -97,5 +99,18 @@ public class QuoteQueryTask extends AsyncTask<QuoteQuery, Integer, Long> {
     protected void onPostExecute(Long result) {
 
         mListener.onQuotesReceived(mQueries, mQuoteCollections);
+    }
+
+    private static HashMap<String, Object> mLockMap = new HashMap<String,Object>();
+    private static Object getLockForCache(File file)
+    {
+        String key = file.getName();
+        Object ret = mLockMap.get(key);
+        if (ret == null)
+        {
+            mLockMap.put(key, file);
+            ret = file;
+        }
+        return ret;
     }
 }

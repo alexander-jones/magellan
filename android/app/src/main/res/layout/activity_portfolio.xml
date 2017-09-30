@@ -48,16 +48,43 @@
                 </LinearLayout>
             </android.support.v7.widget.Toolbar>
 
-            <android.support.design.widget.TabLayout
-                android:id="@+id/portfolio_tabs"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/tab_height"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginLeft="@dimen/spacing_external"
-                android:layout_marginRight="@dimen/spacing_external"
-                app:tabIndicatorColor="@color/colorAccentPrimaryDark"
-                app:tabSelectedTextColor="@color/colorAccentPrimaryDark"
-                app:tabTextColor="@color/colorAccentSecondaryDark"/>
+                android:layout_height="wrap_content">
+
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/portfolio_tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/tab_height"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="@dimen/spacing_external"
+                    android:layout_marginRight="@dimen/spacing_large"
+                    android:layout_alignParentLeft="true"
+                    android:layout_toLeftOf="@+id/edit_portfolio"
+                    app:tabIndicatorColor="@color/colorAccentPrimaryDark"
+                    app:tabSelectedTextColor="@color/colorAccentPrimaryDark"
+                    app:tabTextColor="@color/colorAccentSecondaryDark"/>
+
+                <ImageButton
+                    android:id="@+id/edit_portfolio"
+                    android:layout_width="@dimen/button_height"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_toLeftOf="@+id/add_portfolio"
+                    android:layout_marginRight="@dimen/spacing_large"
+                    android:src="@drawable/ic_edit_secondary_24dp"
+                    android:background="@color/colorPrimary"
+                    android:tint="@color/colorAccentPrimaryDark"/>
+
+                <ImageButton
+                    android:id="@+id/add_portfolio"
+                    android:layout_width="@dimen/button_height"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginRight="@dimen/spacing_large"
+                    android:layout_alignParentRight="true"
+                    android:src="@drawable/ic_add_24dp"
+                    android:background="@color/colorPrimary"
+                    android:tint="@color/colorAccentPrimaryDark"/>
+            </RelativeLayout>
 
         </android.support.design.widget.AppBarLayout>
 

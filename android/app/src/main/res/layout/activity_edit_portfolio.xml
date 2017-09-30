@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/spacing_dialog"
+    android:background="@color/colorSecondaryAlpha"
+    android:theme="@style/AppTheme.Overlay">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.Overlay.AppBarOverlay"
+        app:elevation="@dimen/elevation">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorBackgroundDark"
+            app:popupTheme="@style/AppTheme.Overlay.PopupOverlay"
+            app:theme="@style/AppTheme.Overlay"/>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/colorBackgroundDark"
+        app:layout_anchor="@id/app_bar"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/spacing_external"
+            android:layout_marginRight="@dimen/spacing_external"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/spacing_external"
+                android:text="Name:"
+                android:textSize="@dimen/large_header_text_size"
+                android:textColor="@color/colorPrimary"/>
+
+            <EditText
+                android:id="@+id/edit_portfolio_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapCharacters"
+                android:textColor="@color/colorAccentPrimaryLight"
+                android:textSize="@dimen/large_header_text_size"
+                android:foregroundTint="@color/colorAccentPrimaryLight"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>

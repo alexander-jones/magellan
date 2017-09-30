@@ -28,7 +28,6 @@ public abstract class ComparisonItemAdapter extends RecyclerView.Adapter<Compari
         }
     }
 
-
     private List<String> mValueTexts = null;
     private List<ComparisonList.Item> mItems;
     private ComparisonList.Item mLongSelectedItem = null;

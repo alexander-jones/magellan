@@ -27,6 +27,8 @@ import com.magellan.magellan.service.yahoo.YahooService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.os.AsyncTask.THREAD_POOL_EXECUTOR;
+
 public class EquityQueryActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, IEquityQueryListener, AdapterView.OnItemClickListener{
 
     private ListView mList;
@@ -147,10 +149,14 @@ public class EquityQueryActivity extends AppCompatActivity implements SearchView
     @Override
     public boolean onQueryTextChange(String newText) {
         if (newText.isEmpty())
+        {
+            mCurrentEquities.clear();
+            mAdapter.notifyDataSetChanged();
             return false;
+        }
 
         mTask = new EquityQueryTask(mService, this);
-        mTask.execute(new EquityQuery(newText, mSupportedExchanges));
+        mTask.executeOnExecutor(THREAD_POOL_EXECUTOR, new EquityQuery(newText, mSupportedExchanges));
         return false;
     }
 

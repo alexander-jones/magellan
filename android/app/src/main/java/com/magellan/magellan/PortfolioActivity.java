@@ -52,7 +52,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public class PortfolioActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
+import static android.os.AsyncTask.THREAD_POOL_EXECUTOR;
+
+public class PortfolioActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
     private TextView mHeader;
     private DrawerLayout mDrawerLayout;
@@ -60,6 +62,9 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
     private PortfolioList mPortfolioList;
     private PagerAdapter mAdapter;
     private ViewPager mPager;
+    private TabLayout mTabLayout;
+
+    private ImageButton mEditPortfolioButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,26 +88,56 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mHeader = (TextView)findViewById(R.id.header_value);
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.portfolio_tabs);
+        mTabLayout = (TabLayout) findViewById(R.id.portfolio_tabs);
 
+        mEditPortfolioButton = (ImageButton)findViewById(R.id.edit_portfolio);
+        mEditPortfolioButton.setOnClickListener(this);
         mPortfolioList = ApplicationContext.getPortfolios(this);
         mPortfolioList.load();
         while (mPortfolioList.size() < 2)
             mPortfolioList.addDefaultItem("Portfolio " + Integer.toString(mPortfolioList.size()));
 
         for (PortfolioList.Item item : mPortfolioList) {
-            TabLayout.Tab tab = tabLayout.newTab();
+            TabLayout.Tab tab = mTabLayout.newTab();
             tab.setText(item.name);
             tab.setTag(item);
-            tabLayout.addTab(tab);
+            mTabLayout.addTab(tab);
         }
 
-        TabLayout.Tab selectedTab = tabLayout.getTabAt(tabLayout.getSelectedTabPosition());
+        TabLayout.Tab selectedTab = mTabLayout.getTabAt(mTabLayout.getSelectedTabPosition());
 
         mPager = (ViewPager) findViewById(R.id.view_pager);
         mAdapter = new PagerAdapter();
         mPager.setAdapter(mAdapter);
-        tabLayout.setupWithViewPager(mPager);
+        mTabLayout.setupWithViewPager(mPager);
+    }
+
+    @Override
+    public void onClick(View view) {
+        int portfolioIndex = mPager.getCurrentItem();
+        Intent intent = new Intent(this, EditPortfolioActivity.class);
+        intent.putExtra("PORTFOLIO", portfolioIndex);
+        startActivityForResult(intent, 0);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        Bundle extras = data.getExtras();
+        if (extras == null)
+            return;
+
+        String newName = extras.getString("NEW_NAME", null);
+        if (newName == null)
+            return;
+
+        int portfolioIndex = mPager.getCurrentItem();
+        PortfolioList.Item item = mPortfolioList.get(portfolioIndex);
+        item.load();
+        item.name = newName;
+        mPortfolioList.saveItem(portfolioIndex);
+        mTabLayout.getTabAt(portfolioIndex).setText(newName);
     }
 
     private class PagerAdapter extends FragmentPagerAdapter {
@@ -188,7 +223,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
         private CombinedChart mComparisonChart;
         private CombinedData mComparisonData = new CombinedData();
         private RecyclerView mComparisonItemButtonContainer;
-        private PortfolioComparisonItemAdapter mComparisonItemButtonAdapter;
+        private PortfolioComparisonItemAdapter mComparisonItemAdapter;
         private ImageButton mComparisonEditLayersButton;
         private float mLowestComparisonValue = Float.MAX_VALUE;
         private float mHighestComparisonValue = Float.MIN_VALUE;
@@ -242,7 +277,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             mPortfolioItem.load();
             for (ComparisonList.Item comparisonItem : mPortfolioItem.getComparisonList())
             {
-                mComparisonValueLabels.add("0.0%");
+                mComparisonValueLabels.add("---");
                 mComparisonButtonLabels.add(comparisonItem.equity.getSymbol());
             }
         }
@@ -257,8 +292,8 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
             mComparisonItemButtonContainer = (RecyclerView) rootView.findViewById(R.id.comparison_layers);
             mComparisonItemButtonContainer.requestDisallowInterceptTouchEvent(true);
-            mComparisonItemButtonAdapter = new PortfolioComparisonItemAdapter(mComparisonItemButtonContainer, mPortfolioItem.getComparisonList(), mComparisonValueLabels);
-            mComparisonItemButtonContainer.setAdapter(mComparisonItemButtonAdapter);
+            mComparisonItemAdapter = new PortfolioComparisonItemAdapter(mComparisonItemButtonContainer, mPortfolioItem.getComparisonList(), mComparisonValueLabels);
+            mComparisonItemButtonContainer.setAdapter(mComparisonItemAdapter);
 
             mIntervalTabLayout = (TabLayout)rootView.findViewById(R.id.interval_tabs);
 
@@ -403,14 +438,17 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                     break;
             }
 
+            mComparisonValueLabels.clear();
             for (ComparisonList.Item item: items)
             {
+                mComparisonValueLabels.add("--");
                 QuoteQuery query = new QuoteQuery(item.equity.getSymbol(), period, interval, mComparisonIntervalGeneration);
                 mCenterLineSteps = query.getExpectedSteps();
                 QuoteQueryTask task = new QuoteQueryTask(getContext(), ApplicationContext.getQuoteService(), this);
                 comparisonQueriesInFlight.put(query, new ComparisonQueryHolder(query, task, item));
-                task.execute(query);
+                task.executeOnExecutor(THREAD_POOL_EXECUTOR, query);
             }
+            mComparisonItemAdapter.notifyDataSetChanged();
         }
 
         private void drawSelectedInterval()
@@ -518,7 +556,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
                 if (itemsToLaunch.size() > 0)
                     launchQueriesForComparisons(itemsToLaunch);
 
-                mComparisonItemButtonAdapter.notifyDataSetChanged();
+                mComparisonItemAdapter.notifyDataSetChanged();
                 mComparisonChart.setData(mComparisonData);
                 mComparisonChart.notifyDataSetChanged();
                 mComparisonChart.fitScreen();
@@ -588,7 +626,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
 
                     float finalPercentageDifference = lh.percent_difference_quotes.get(lh.percent_difference_quotes.size() -1).close;
                     mComparisonValueLabels.set(position, String.format("%.2f%%", finalPercentageDifference * 100));
-                    mComparisonItemButtonAdapter.notifyItemChanged(position);
+                    mComparisonItemAdapter.notifyItemChanged(position);
 
                     if (holder.item.enabled)
                     {
@@ -634,7 +672,7 @@ public class PortfolioActivity extends AppCompatActivity implements NavigationVi
             watchListQueriesInFlight.put(dh.query, dh);
 
             QuoteQueryTask task = new QuoteQueryTask(getContext(), ApplicationContext.getQuoteService(), this);
-            task.execute(dh.query);
+            task.executeOnExecutor(THREAD_POOL_EXECUTOR, dh.query);
         }
 
         private void cleanComparisonContext()
